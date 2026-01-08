@@ -1,26 +1,221 @@
+/* ============================================
+   FONTS - IMPORT DOIT ÊTRE EN PREMIER
+   ============================================ */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --font-cormorant: 'Cormorant Garamond', serif;
+  --font-dm-sans: 'DM Sans', sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ============================================
+   VARIABLES ADMIN (MZ Energy Design) - À CONSERVER
+   ============================================ */
+:root {
+  /* Couleurs oklch pour l'admin */
+  --admin-bg: oklch(0.99 0 0);
+  --admin-card: oklch(1 0 0);
+  --admin-border: oklch(0.9 0 0);
+  --admin-text: oklch(0.2 0 0);
+  --admin-text-muted: oklch(0.5 0 0);
+  --admin-primary: oklch(0.5 0.15 250);
+  --admin-accent: oklch(0.95 0.02 250);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ============================================
+   PALETTE K PRESTIGE - OR (COULEUR PRINCIPALE)
+   ============================================ */
+:root {
+  /* Or K Prestige - Palette complète */
+  --gold-dark: #8B6914;      /* Or foncé */
+  --gold: #C9A227;           /* Or principal */
+  --gold-light: #D4AF37;     /* Or clair */
+  --gold-shine: #E8C547;     /* Or brillant */
+  --gold-pale: #F5E6B3;      /* Or pâle (backgrounds) */
+  
+  /* Fonds sombres (du logo) */
+  --dark-bg: #1A1A1A;        /* Fond principal sombre */
+  --dark-surface: #242424;   /* Surface élevée */
+  --dark-elevated: #2D2D2D;  /* Éléments en relief */
+  
+  /* Neutres */
+  --white: #FFFFFF;
+  --cream: #FAFAF8;          /* Fond sections alternées */
+  --gray-50: #F9FAFB;
+  --gray-100: #F3F4F6;
+  --gray-200: #E5E7EB;
+  --gray-300: #D1D5DB;
+  --gray-400: #9CA3AF;
+  --gray-500: #6B7280;
+  --gray-600: #4B5563;
+  --gray-700: #374151;
+  --gray-800: #1F2937;
+  --gray-900: #111827;
+  --black: #0A0A0A;
+  
+  /* Dégradé Header Pessah (inspiré des affiches) */
+  --gradient-pessah: linear-gradient(180deg, #E8B4B8 0%, #A8D4E6 50%, #87CEEB 100%);
+  
+  /* Bleus Méditerranée */
+  --blue-mediterranean: #0077B6;
+  --blue-light: #87CEEB;
+  --blue-dark: #03045E;
+  
+  /* Couleurs de statut (Admin) */
+  --status-nouveau: #C4C4C4;      /* Gris */
+  --status-devis: #FDAB3D;        /* Orange */
+  --status-attente: #007EB5;      /* Bleu */
+  --status-valide: #00C875;       /* Vert */
+  --status-hs: #DF2F4A;           /* Rouge */
+  
+  /* Modes de paiement (Admin) */
+  --payment-virement: #FF5AC4;    /* Rose */
+  --payment-cb: #00C875;          /* Vert */
+  --payment-cerfa: #579BFC;       /* Bleu */
+  --payment-espece: #FFCB00;      /* Jaune */
+  
+  /* Variables pour compatibilité */
+  --background: oklch(0.99 0.002 90);
+  --foreground: oklch(0.15 0.02 260);
+  --card: oklch(1 0 0);
+  --border: oklch(0.92 0.01 260);
+}
+
+/* ============================================
+   BASE STYLES - À CONSERVER pour Admin
+   ============================================ */
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-dm-sans);
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-cormorant);
+    font-weight: 600;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ============================================
+   COMPOSANTS UI (MZ Energy) - À CONSERVER
+   ============================================ */
+@layer components {
+  /* Card avec style MZ Energy */
+  .card-mz {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+  }
+  
+  /* Button avec style MZ Energy */
+  .btn-mz {
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    font-family: var(--font-dm-sans);
+  }
+}
+
+/* ============================================
+   UTILITIES - GRADIENTS K PRESTIGE
+   ============================================ */
+@layer utilities {
+  /* Gradient bouton principal doré */
+  .gradient-button-gold {
+    background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 50%, var(--gold-shine) 100%);
+    box-shadow: 0 4px 20px rgba(201, 162, 39, 0.3);
+  }
+  
+  .gradient-button-gold:hover {
+    box-shadow: 0 6px 30px rgba(201, 162, 39, 0.5);
+    transform: scale(1.02);
+  }
+  
+  /* Gradient Hero Pessah */
+  .gradient-pessah {
+    background: var(--gradient-pessah);
+  }
+  
+  /* Gradient Hero général */
+  .gradient-hero {
+    background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue-mediterranean) 50%, var(--blue-light) 100%);
+  }
+  
+  /* Espacements généreux MZ Energy */
+  .spacing-generous {
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+/* ============================================
+   STYLES BOUTONS PUBLIC K PRESTIGE
+   ============================================ */
+@layer components {
+  /* Bouton principal doré */
+  .btn-gold-primary {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    color: white;
+    transition: all 0.3s;
+    background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 50%, var(--gold-shine) 100%);
+    box-shadow: 0 4px 20px rgba(201, 162, 39, 0.3);
+    font-family: var(--font-dm-sans);
+    border: none;
+    cursor: pointer;
+  }
+  
+  .btn-gold-primary:hover {
+    box-shadow: 0 6px 30px rgba(201, 162, 39, 0.5);
+    transform: scale(1.02);
+  }
+  
+  /* Bouton outline doré */
+  .btn-gold-outline {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: all 0.3s;
+    border: 2px solid var(--gold);
+    color: var(--gold);
+    background: transparent;
+    font-family: var(--font-dm-sans);
+    cursor: pointer;
+  }
+  
+  .btn-gold-outline:hover {
+    background: var(--gold);
+    color: var(--dark-bg);
+  }
+  
+  /* Bouton blanc */
+  .btn-white {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: all 0.3s;
+    background: var(--white);
+    color: var(--dark-bg);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    font-family: var(--font-dm-sans);
+    border: none;
+    cursor: pointer;
+  }
+  
+  .btn-white:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  }
 }

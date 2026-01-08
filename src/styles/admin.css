@@ -1,0 +1,27 @@
+/* 
+ * Styles Admin - Design MZ Energy
+ * À CONSERVER lors du refactoring
+ * 
+ * Ces styles sont utilisés uniquement par l'espace privé/admin
+ */
+
+/* Variables de couleur oklch pour l'admin */
+:root {
+  /* Couleurs admin MZ Energy - À CONSERVER */
+  --admin-bg: oklch(0.99 0 0);
+  --admin-card: oklch(1 0 0);
+  --admin-border: oklch(0.9 0 0);
+  --admin-text: oklch(0.2 0 0);
+  --admin-text-muted: oklch(0.5 0 0);
+  --admin-primary: oklch(0.5 0.15 250);
+  --admin-accent: oklch(0.95 0.02 250);
+}
+
+/* Styles pour les pages admin */
+[data-admin="true"] {
+  font-family: var(--font-dm-sans);
+  background: var(--admin-bg);
+  color: var(--admin-text);
+}
+
+/* Les composants UI réutilisables gardent leur style MZ Energy */

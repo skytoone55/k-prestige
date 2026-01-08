@@ -1,0 +1,71 @@
+export type ClientStatus = 'NOUVEAU' | 'DEVIS ENVOYÉ' | 'ATTENTE ACOMPTE' | 'VALIDÉ' | 'HS';
+export type PaymentMethod = 'VIREMENT' | 'CB' | 'CERFA' | 'ESPÈCE';
+
+export interface Client {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  nom: string;
+  liaison?: string | null;
+  telephone?: string | null;
+  email?: string | null;
+  info?: string | null;
+  statut: ClientStatus;
+  nb_adultes: number;
+  nb_bebes: number;
+  nb_enfants_3ans: number;
+  nb_enfants_4_6ans: number;
+  nb_enfants_7_11ans: number;
+  femme_prenom?: string | null;
+  femme_nom?: string | null;
+  femme_date_naissance?: string | null;
+  enfant1_prenom?: string | null;
+  enfant1_date_naissance?: string | null;
+  enfant2_prenom?: string | null;
+  enfant2_date_naissance?: string | null;
+  enfant3_prenom?: string | null;
+  enfant3_date_naissance?: string | null;
+  enfant4_prenom?: string | null;
+  enfant4_date_naissance?: string | null;
+  enfant5_prenom?: string | null;
+  enfant5_date_naissance?: string | null;
+  enfant6_prenom?: string | null;
+  enfant6_date_naissance?: string | null;
+  chambre_id?: string | null;
+  numero_devis?: string | null;
+  montant_du: number;
+  acompte1_montant?: number | null;
+  acompte1_mode?: PaymentMethod | null;
+  acompte1_date?: string | null;
+  acompte2_montant?: number | null;
+  acompte2_mode?: PaymentMethod | null;
+  acompte2_date?: string | null;
+  acompte3_montant?: number | null;
+  acompte3_mode?: PaymentMethod | null;
+  acompte3_date?: string | null;
+  acompte4_montant?: number | null;
+  acompte4_mode?: PaymentMethod | null;
+  acompte4_date?: string | null;
+  navette_arrivee_date?: string | null;
+  navette_arrivee_nb?: number | null;
+  navette_arrivee_vol?: string | null;
+  navette_retour_date?: string | null;
+  navette_retour_nb?: number | null;
+  navette_retour_vol?: string | null;
+  devis_url?: string | null;
+  passeports_urls?: string[] | null;
+}
+
+export interface Chambre {
+  id: string;
+  numero: string;
+  type_code: string;
+  type_nom: string;
+  vue?: string | null;
+  surface?: string | null;
+  capacite?: number | null;
+  etage?: number | null;
+  communicante: boolean;
+  adaptee: boolean;
+  disponible: boolean;
+}
