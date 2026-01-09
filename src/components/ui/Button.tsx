@@ -72,7 +72,7 @@ function Button({
       data-variant={variant}
       data-size={size}
       className={cn(buttonVariants({ variant, size }), className, "relative overflow-hidden")}
-      {...props}
+      {...(props as any)}
     >
       {/* Effet shimmer au hover pour les boutons gold */}
       {(variant === "gold" || className?.includes("btn-gold")) && (
