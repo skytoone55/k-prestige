@@ -10,11 +10,12 @@ export function Footer() {
           <div className="md:col-span-1">
             <div className="mb-6">
               <Image
-                src="/logo.jpg"
+                src="/logo.png"
                 alt="K PRESTIGE"
                 width={150}
                 height={50}
                 className="h-12 w-auto"
+                style={{ mixBlendMode: 'multiply' }}
               />
             </div>
             <p className="text-sm text-white/70 mb-2" style={{ fontFamily: 'var(--font-dm-sans)' }}>

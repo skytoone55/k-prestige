@@ -1,8 +1,13 @@
+'use client';
+
+import { motion } from 'framer-motion';
 import { PublicNavigation } from '@/components/layout/PublicNavigation';
 import { Footer } from '@/components/layout/Footer';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
+import Image from 'next/image';
+import { placeholderImages } from '@/lib/images';
 
 export default function HilloulaPage() {
   return (
@@ -10,26 +15,36 @@ export default function HilloulaPage() {
       <PublicNavigation />
       <main className="min-h-screen bg-white pt-20">
         {/* Hero */}
-        <section className="relative h-[50vh] flex items-center justify-center">
-          <div className="absolute inset-0 bg-gradient-to-br from-[var(--gold-pale)] to-[var(--gold-light)] flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-8xl mb-4">🕯️</div>
-              <p className="text-gray-600" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                Photo à venir
-              </p>
-            </div>
+        <section className="relative h-[70vh] overflow-hidden">
+          <div className="absolute inset-0">
+            <Image
+              src={placeholderImages.candles}
+              alt="Hilloula - Pèlerinage"
+              fill
+              className="object-cover scale-110 animate-slow-zoom"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[var(--gold)]/20 to-transparent" />
           </div>
-          <div className="absolute inset-0 bg-black/30" />
-          <div className="relative z-10 text-center text-white">
-            <h1 
-              className="text-5xl md:text-7xl mb-4 text-[var(--gold)]"
-              style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}
-            >
-              Hilloula
-            </h1>
-            <p className="text-xl md:text-2xl" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-              Pèlerinages sur Tombes de Tsadikim
-            </p>
+          
+          <div className="relative z-10 h-full flex flex-col justify-end pb-16 px-6">
+            <div className="max-w-7xl mx-auto w-full">
+              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
+                <span className="text-[var(--gold)] uppercase tracking-[0.2em] text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                  Pèlerinages Spirituels
+                </span>
+                <h1 
+                  className="text-6xl md:text-7xl font-cormorant text-white mt-4 mb-4"
+                  style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}
+                >
+                  Hilloula
+                </h1>
+                <p className="text-white/80 text-xl mt-4 max-w-xl" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                  Pèlerinages sur les tombes des Tsadikim
+                </p>
+              </motion.div>
+            </div>
           </div>
         </section>
 
@@ -72,14 +87,12 @@ export default function HilloulaPage() {
                 </p>
               </div>
               <div className="relative h-[500px] rounded-2xl overflow-hidden shadow-2xl">
-                <div className="absolute inset-0 bg-gradient-to-br from-[var(--gold-pale)] to-[var(--gold-light)] flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-8xl mb-4">🕯️</div>
-                    <p className="text-gray-600" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                      Photo pèlerinage à venir
-                    </p>
-                  </div>
-                </div>
+                <Image
+                  src={placeholderImages.pilgrimage}
+                  alt="Pèlerinage Hilloula"
+                  fill
+                  className="object-cover"
+                />
               </div>
             </div>
           </section>
@@ -145,6 +158,35 @@ export default function HilloulaPage() {
                 </div>
               </CardContent>
             </Card>
+          </section>
+
+          {/* Bande d'images décoratives */}
+          <section className="mb-16">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                placeholderImages.candles,
+                placeholderImages.synagogue,
+                placeholderImages.prayer,
+                placeholderImages.pilgrimage,
+              ].map((img, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="relative h-48 md:h-64 rounded-xl overflow-hidden group cursor-pointer"
+                >
+                  <Image
+                    src={img}
+                    alt={`Hilloula ${idx + 1}`}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </motion.div>
+              ))}
+            </div>
           </section>
 
           {/* CTA */}

@@ -1,8 +1,15 @@
+'use client';
+
+import { motion } from 'framer-motion';
 import { PublicNavigation } from '@/components/layout/PublicNavigation';
 import { Footer } from '@/components/layout/Footer';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
+import Image from 'next/image';
+import { placeholderImages } from '@/lib/images';
+import { ScrollReveal } from '@/components/ui/ScrollReveal';
+import { SectionTitle } from '@/components/ui/SectionTitle';
 
 export default function MarrakechPage() {
   return (
@@ -10,26 +17,36 @@ export default function MarrakechPage() {
       <PublicNavigation />
       <main className="min-h-screen bg-white pt-20">
         {/* Hero */}
-        <section className="relative h-[50vh] flex items-center justify-center">
-          <div className="absolute inset-0 bg-gradient-to-br from-[var(--gold-pale)] to-[var(--gold-light)] flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-8xl mb-4">🎉</div>
-              <p className="text-gray-600" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                Photo à venir
-              </p>
-            </div>
+        <section className="relative h-[70vh] overflow-hidden">
+          <div className="absolute inset-0">
+            <Image
+              src={placeholderImages.marrakechEvent}
+              alt="Traiteur Marrakech"
+              fill
+              className="object-cover scale-110 animate-slow-zoom"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[var(--gold)]/20 to-transparent" />
           </div>
-          <div className="absolute inset-0 bg-black/30" />
-          <div className="relative z-10 text-center text-white">
-            <h1 
-              className="text-5xl md:text-7xl mb-4 text-[var(--gold)]"
-              style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}
-            >
-              Marrakech
-            </h1>
-            <p className="text-xl md:text-2xl" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-              Service Traiteur sur Mesure
-            </p>
+          
+          <div className="relative z-10 h-full flex flex-col justify-end pb-16 px-6">
+            <div className="max-w-7xl mx-auto w-full">
+              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
+                <span className="text-[var(--gold)] uppercase tracking-[0.2em] text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                  Service Traiteur
+                </span>
+                <h1 
+                  className="text-6xl md:text-7xl font-cormorant text-white mt-4 mb-4"
+                  style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}
+                >
+                  Marrakech
+                </h1>
+                <p className="text-white/80 text-xl mt-4 max-w-xl" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                  Traiteur casher pour vos événements au Maroc
+                </p>
+              </motion.div>
+            </div>
           </div>
         </section>
 
@@ -53,46 +70,61 @@ export default function MarrakechPage() {
                 </p>
               </div>
               <div className="relative h-[500px] rounded-2xl overflow-hidden shadow-2xl">
-                <div className="absolute inset-0 bg-gradient-to-br from-[var(--gold-pale)] to-[var(--gold-light)] flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-8xl mb-4">🎉</div>
-                    <p className="text-gray-600" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                      Photo événement à venir
-                    </p>
-                  </div>
-                </div>
+                <Image
+                  src={placeholderImages.weddingMorocco}
+                  alt="Événement Marrakech"
+                  fill
+                  className="object-cover"
+                />
               </div>
             </div>
           </section>
 
           {/* Types d'événements */}
           <section className="mb-16">
-            <h2 
-              className="text-4xl md:text-5xl mb-8 text-center text-[var(--gold)]"
-              style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}
-            >
-              Types d&apos;Événements
-            </h2>
+            <SectionTitle title="Types d'Événements" />
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {[
-                { icon: '💍', title: 'Mariages', desc: 'Organisation complète' },
-                { icon: '🎊', title: 'Bar-mitzvahs', desc: 'Cérémonies et réceptions' },
-                { icon: '🕯️', title: 'Hilloula', desc: 'Pèlerinages et célébrations' },
-                { icon: '🕊️', title: 'Shabbat', desc: 'Repas de Shabbat' },
-                { icon: '🎈', title: 'Réceptions', desc: 'Événements privés' },
-                { icon: '🎂', title: 'Anniversaires', desc: 'Célébrations familiales' },
-                { icon: '🏛️', title: 'Événements corporatifs', desc: 'Séminaires et conférences' },
-                { icon: '✨', title: 'Autres', desc: 'Sur demande' },
+                { image: placeholderImages.weddingMorocco, title: 'Mariages', desc: 'Organisation complète' },
+                { image: placeholderImages.eventMorocco, title: 'Bar-mitzvahs', desc: 'Cérémonies et réceptions' },
+                { image: placeholderImages.candles, title: 'Hilloula', desc: 'Pèlerinages et célébrations' },
+                { image: placeholderImages.restaurantFood, title: 'Shabbat', desc: 'Repas de Shabbat' },
+                { image: placeholderImages.eventMorocco, title: 'Réceptions', desc: 'Événements privés' },
+                { image: placeholderImages.weddingMorocco, title: 'Anniversaires', desc: 'Célébrations familiales' },
+                { image: placeholderImages.moroccanDecor, title: 'Événements corporatifs', desc: 'Séminaires et conférences' },
+                { image: placeholderImages.eventMorocco, title: 'Autres', desc: 'Sur demande' },
               ].map((event, idx) => (
-                <Card key={idx} className="p-6 text-center hover:shadow-lg transition-shadow">
-                  <div className="text-4xl mb-3">{event.icon}</div>
-                  <h3 className="text-lg font-semibold mb-2 text-[var(--gold)]" style={{ fontFamily: 'var(--font-cormorant)' }}>
-                    {event.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                    {event.desc}
-                  </p>
-                </Card>
+                <ScrollReveal key={idx} delay={idx * 0.05}>
+                  <motion.div
+                    whileHover={{ y: -8 }}
+                    className="group relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500"
+                  >
+                    {/* Image avec overlay au hover */}
+                    <div className="relative h-48 overflow-hidden">
+                      <Image
+                        src={event.image}
+                        alt={event.title}
+                        fill
+                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+                    </div>
+                    
+                    {/* Contenu */}
+                    <CardContent className="p-6">
+                      <div className="w-12 h-[2px] bg-[var(--gold)] mb-4 transition-all duration-500 group-hover:w-20" />
+                      <h3 
+                        className="text-lg font-cormorant font-semibold mb-2 group-hover:text-[var(--gold)] transition-colors"
+                        style={{ fontFamily: 'var(--font-cormorant)' }}
+                      >
+                        {event.title}
+                      </h3>
+                      <p className="text-gray-600 text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                        {event.desc}
+                      </p>
+                    </CardContent>
+                  </motion.div>
+                </ScrollReveal>
               ))}
             </div>
           </section>

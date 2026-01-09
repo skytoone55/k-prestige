@@ -1,9 +1,16 @@
+'use client';
+
+import { motion } from 'framer-motion';
 import { PublicNavigation } from '@/components/layout/PublicNavigation';
 import { Footer } from '@/components/layout/Footer';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import Image from 'next/image';
 import Link from 'next/link';
+import { placeholderImages } from '@/lib/images';
+import { MapPin, Star } from 'lucide-react';
+import { ScrollReveal } from '@/components/ui/ScrollReveal';
+import { SectionTitle } from '@/components/ui/SectionTitle';
 
 export default function MarbellaPage() {
   return (
@@ -11,26 +18,46 @@ export default function MarbellaPage() {
       <PublicNavigation />
       <main className="min-h-screen bg-white pt-20">
         {/* Hero */}
-        <section className="relative h-[50vh] flex items-center justify-center">
-          <div className="absolute inset-0 bg-gradient-to-br from-[var(--gold-pale)] to-[var(--gold-light)] flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-8xl mb-4">🍽️</div>
-              <p className="text-gray-600" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                Photo à venir
-              </p>
-            </div>
+        <section className="relative h-[70vh] overflow-hidden">
+          <div className="absolute inset-0">
+            <Image
+              src={placeholderImages.restaurantExterior}
+              alt="El Dorado Marbella"
+              fill
+              className="object-cover scale-110 animate-slow-zoom"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[var(--gold)]/20 to-transparent" />
           </div>
-          <div className="absolute inset-0 bg-black/30" />
-          <div className="relative z-10 text-center text-white">
-            <h1 
-              className="text-5xl md:text-7xl mb-4 text-[var(--gold)]"
-              style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}
-            >
-              El Dorado
-            </h1>
-            <p className="text-xl md:text-2xl" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-              Restaurant Casher • Marbella, Espagne
-            </p>
+          
+          <div className="relative z-10 h-full flex flex-col justify-end pb-16 px-6">
+            <div className="max-w-7xl mx-auto w-full">
+              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
+                <span className="text-[var(--gold)] uppercase tracking-[0.2em] text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                  Restaurant Casher
+                </span>
+                <h1 
+                  className="text-6xl md:text-7xl font-cormorant text-white mt-4 mb-4"
+                  style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}
+                >
+                  El Dorado
+                </h1>
+                <p className="text-white/80 text-xl mt-4 max-w-xl mb-6" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                  Marbella, Espagne
+                </p>
+                <div className="flex items-center gap-4">
+                  <span className="flex items-center gap-2 text-white/60" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                    <MapPin className="w-4 h-4" />
+                    70 couverts
+                  </span>
+                  <span className="flex items-center gap-2 text-white/60" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                    <Star className="w-4 h-4 text-[var(--gold)]" />
+                    Glatt Kosher
+                  </span>
+                </div>
+              </motion.div>
+            </div>
           </div>
         </section>
 
@@ -77,54 +104,57 @@ export default function MarbellaPage() {
                 </div>
               </div>
               <div className="relative h-[500px] rounded-2xl overflow-hidden shadow-2xl">
-                <div className="absolute inset-0 bg-gradient-to-br from-[var(--gold-pale)] to-[var(--gold-light)] flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-8xl mb-4">🍽️</div>
-                    <p className="text-gray-600" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                      Photo restaurant à venir
-                    </p>
-                  </div>
-                </div>
+                <Image
+                  src={placeholderImages.restaurantInterior}
+                  alt="El Dorado Marbella - Intérieur"
+                  fill
+                  className="object-cover"
+                />
               </div>
             </div>
           </section>
 
           {/* Services */}
           <section className="mb-16">
-            <h2 
-              className="text-4xl md:text-5xl mb-8 text-center text-[var(--gold)]"
-              style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}
-            >
-              Nos Services
-            </h2>
+            <SectionTitle title="Nos Services" />
             <div className="grid md:grid-cols-3 gap-6">
-              <Card className="p-6 text-center">
-                <div className="text-5xl mb-4">🍴</div>
-                <h3 className="text-xl font-semibold mb-3 text-[var(--gold)]" style={{ fontFamily: 'var(--font-cormorant)' }}>
-                  Restaurant
-                </h3>
-                <p className="text-gray-600 text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  Réservations de tables pour déjeuner et dîner
-                </p>
-              </Card>
-              <Card className="p-6 text-center">
-                <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-xl font-semibold mb-3 text-[var(--gold)]" style={{ fontFamily: 'var(--font-cormorant)' }}>
-                  Traiteur Événementiel
-                </h3>
-                <p className="text-gray-600 text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  Mariages, Bar-mitzvahs, Shabbat, Hilloula, Réceptions
-                </p>
-              </Card>
-              <Card className="p-6 text-center">
-                <div className="text-5xl mb-4">🏛️</div>
-                <h3 className="text-xl font-semibold mb-3 text-[var(--gold)]" style={{ fontFamily: 'var(--font-cormorant)' }}>
-                  Privatisation
-                </h3>
-                <p className="text-gray-600 text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  Privatisation complète du restaurant pour vos événements
-                </p>
-              </Card>
+              {[
+                { image: placeholderImages.restaurantFood, title: 'Restaurant', desc: 'Réservations de tables pour déjeuner et dîner' },
+                { image: placeholderImages.eventMorocco, title: 'Traiteur Événementiel', desc: 'Mariages, Bar-mitzvahs, Shabbat, Hilloula, Réceptions' },
+                { image: placeholderImages.restaurantInterior, title: 'Privatisation', desc: 'Privatisation complète du restaurant pour vos événements' },
+              ].map((service, idx) => (
+                <ScrollReveal key={idx} delay={idx * 0.1}>
+                  <motion.div
+                    whileHover={{ y: -8 }}
+                    className="group relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500"
+                  >
+                    {/* Image avec overlay au hover */}
+                    <div className="relative h-48 overflow-hidden">
+                      <Image
+                        src={service.image}
+                        alt={service.title}
+                        fill
+                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+                    </div>
+                    
+                    {/* Contenu */}
+                    <CardContent className="p-6">
+                      <div className="w-12 h-[2px] bg-[var(--gold)] mb-4 transition-all duration-500 group-hover:w-20" />
+                      <h3 
+                        className="text-xl font-cormorant font-semibold mb-3 group-hover:text-[var(--gold)] transition-colors"
+                        style={{ fontFamily: 'var(--font-cormorant)' }}
+                      >
+                        {service.title}
+                      </h3>
+                      <p className="text-gray-600 text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                        {service.desc}
+                      </p>
+                    </CardContent>
+                  </motion.div>
+                </ScrollReveal>
+              ))}
             </div>
           </section>
 

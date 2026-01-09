@@ -1,9 +1,15 @@
+'use client';
+
+import { motion } from 'framer-motion';
 import { PublicNavigation } from '@/components/layout/PublicNavigation';
 import { Footer } from '@/components/layout/Footer';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import Image from 'next/image';
 import Link from 'next/link';
+import { ScrollReveal } from '@/components/ui/ScrollReveal';
+import { SectionTitle } from '@/components/ui/SectionTitle';
+import { placeholderImages } from '@/lib/images';
 
 export default function PessahHotelPage() {
   const chambres = [
@@ -21,96 +27,79 @@ export default function PessahHotelPage() {
   return (
     <>
       <PublicNavigation />
-      <main className="min-h-screen bg-white pt-20">
+      <main className="min-h-screen bg-white">
         {/* Hero */}
-        <section className="relative h-[50vh] flex items-center justify-center">
-          <Image
-            src="/images/hotel/FAÇADE.jpg"
-            alt="Cabogata Beach Hotel 5★"
-            fill
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-black/50" />
-          <div className="relative z-10 text-center text-white">
-            <h1 
-              className="text-5xl md:text-7xl mb-4 text-[var(--gold)]"
-              style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}
-            >
-              L&apos;Hôtel
-            </h1>
-            <p className="text-xl md:text-2xl" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-              Cabogata Beach Hotel 5★ • El Toyo - Retamar, Almería
-            </p>
+        <section className="relative h-[70vh] overflow-hidden">
+          <div className="absolute inset-0">
+            <Image
+              src="/images/hotel/FAÇADE.jpg"
+              alt="Cabogata Beach Hotel 5★"
+              fill
+              className="object-cover scale-110 animate-slow-zoom"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[var(--gold)]/20 to-transparent" />
+          </div>
+          
+          <div className="relative z-10 h-full flex flex-col justify-end pb-16 px-6">
+            <div className="max-w-7xl mx-auto w-full">
+              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
+                <span className="text-[var(--gold)] uppercase tracking-[0.2em] text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                  Hôtel 5 Étoiles
+                </span>
+                <h1 
+                  className="text-6xl md:text-7xl font-cormorant text-white mt-4 mb-4"
+                  style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}
+                >
+                  L&apos;Hôtel
+                </h1>
+                <p className="text-white/80 text-xl mt-4 max-w-xl" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                  Cabogata Beach Hotel 5★ • El Toyo - Retamar, Almería
+                </p>
+              </motion.div>
+            </div>
           </div>
         </section>
 
         <div className="max-w-7xl mx-auto px-6 py-16">
           {/* Présentation */}
           <section className="mb-16">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
-                <h2 
-                  className="text-4xl md:text-5xl mb-6 text-[var(--gold)]"
-                  style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}
-                >
-                  Cabogata Beach Hotel 5★
-                </h2>
-                <p className="text-lg text-gray-700 mb-6" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  Notre écrin de luxe au bord de la Méditerranée pour Pessah 2026
-                </p>
-                <ul className="space-y-3 text-gray-600 mb-8" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  <li className="flex items-center gap-3">
-                    <span className="text-[var(--gold)] text-xl">✓</span>
-                    <span>257 chambres de standing</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <span className="text-[var(--gold)] text-xl">✓</span>
-                    <span>Pied dans l&apos;eau</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <span className="text-[var(--gold)] text-xl">✓</span>
-                    <span>3 piscines dont 1 chauffée</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <span className="text-[var(--gold)] text-xl">✓</span>
-                    <span>SPA complet</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <span className="text-[var(--gold)] text-xl">✓</span>
-                    <span>Accès direct plage</span>
-                  </li>
-                </ul>
-                <div className="bg-[var(--gold-pale)] p-4 rounded-lg">
-                  <p className="text-sm text-gray-700" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                    <strong>Lieu :</strong> El Toyo - Retamar, Almería, Espagne
+            <ScrollReveal>
+              <div className="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                  <SectionTitle subtitle="Notre Écrin de Luxe" title="Cabogata Beach Hotel 5★" centered={false} />
+                  <p className="text-lg text-gray-700 mb-8" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                    Notre écrin de luxe au bord de la Méditerranée pour Pessah 2026
                   </p>
+                  <div className="bg-[var(--gold-pale)] p-4 rounded-lg mb-8">
+                    <p className="text-sm text-gray-700" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                      <strong>Lieu :</strong> El Toyo - Retamar, Almería, Espagne
+                    </p>
+                  </div>
+                </div>
+                <div className="relative h-[500px] rounded-2xl overflow-hidden shadow-2xl">
+                  <Image
+                    src="/images/hotel/FAÇADE.jpg"
+                    alt="Cabogata Beach Hotel 5★"
+                    fill
+                    className="object-cover"
+                  />
                 </div>
               </div>
-              <div className="relative h-[500px] rounded-2xl overflow-hidden shadow-2xl">
-                <Image
-                  src="/images/hotel/FAÇADE.jpg"
-                  alt="Cabogata Beach Hotel 5★"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            </div>
+            </ScrollReveal>
           </section>
 
           {/* Types de chambres */}
           <section className="mb-16">
-            <h2 
-              className="text-4xl md:text-5xl mb-8 text-center text-[var(--gold)]"
-              style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}
-            >
-              Types de Chambres
-            </h2>
+            <SectionTitle title="Types de Chambres" />
             <p className="text-center text-gray-600 mb-8" style={{ fontFamily: 'var(--font-dm-sans)' }}>
               257 chambres réparties en 9 catégories différentes
             </p>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {chambres.map((chambre, idx) => (
-                <Card key={idx} className="p-6 hover:shadow-lg transition-shadow">
+                <ScrollReveal key={idx} delay={idx * 0.05}>
+                  <Card className="p-6 hover:shadow-xl transition-shadow">
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <h3 className="text-xl font-semibold text-[var(--gold)] mb-1" style={{ fontFamily: 'var(--font-cormorant)' }}>
@@ -138,37 +127,55 @@ export default function PessahHotelPage() {
                       </p>
                     )}
                   </div>
-                </Card>
+                  </Card>
+                </ScrollReveal>
               ))}
             </div>
           </section>
 
           {/* Services */}
           <section className="mb-16">
-            <h2 
-              className="text-4xl md:text-5xl mb-8 text-center text-[var(--gold)]"
-              style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}
-            >
-              Services & Équipements
-            </h2>
-            <div className="grid md:grid-cols-3 gap-6">
+            <SectionTitle title="Services & Équipements" />
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[
-                { icon: '🏖️', title: 'Pied dans l\'eau', desc: 'Accès direct plage' },
-                { icon: '🏊', title: '3 Piscines', desc: 'Dont une chauffée' },
-                { icon: '💆', title: 'SPA Luxueux', desc: 'Centre bien-être complet' },
-                { icon: '🍽️', title: 'Gastronomie', desc: 'Cuisine française et orientale' },
-                { icon: '💪', title: 'Sport & Fitness', desc: 'Salle équipée, coach' },
-                { icon: '👶', title: 'Clubs Enfants', desc: 'Baby, Mini, Kids Club' },
+                { image: placeholderImages.beachAccess, title: 'Pied dans l\'eau', desc: 'Accès direct plage' },
+                { image: placeholderImages.pool, title: '3 Piscines', desc: 'Dont une chauffée' },
+                { image: placeholderImages.spa, title: 'SPA Luxueux', desc: 'Centre bien-être complet' },
+                { image: placeholderImages.restaurant, title: 'Gastronomie', desc: 'Cuisine française et orientale' },
+                { image: placeholderImages.fitness, title: 'Sport & Fitness', desc: 'Salle équipée, coach' },
+                { image: placeholderImages.kidsClub, title: 'Clubs Enfants', desc: 'Baby, Mini, Kids Club' },
               ].map((service, idx) => (
-                <Card key={idx} className="p-6 text-center">
-                  <div className="text-4xl mb-3">{service.icon}</div>
-                  <h3 className="text-lg font-semibold mb-2 text-[var(--gold)]" style={{ fontFamily: 'var(--font-cormorant)' }}>
-                    {service.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                    {service.desc}
-                  </p>
-                </Card>
+                <ScrollReveal key={idx} delay={idx * 0.1}>
+                  <motion.div
+                    whileHover={{ y: -8 }}
+                    className="group relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500"
+                  >
+                    {/* Image avec overlay au hover */}
+                    <div className="relative h-48 overflow-hidden">
+                      <Image
+                        src={service.image}
+                        alt={service.title}
+                        fill
+                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+                    </div>
+                    
+                    {/* Contenu */}
+                    <CardContent className="p-6">
+                      <div className="w-12 h-[2px] bg-[var(--gold)] mb-4 transition-all duration-500 group-hover:w-20" />
+                      <h3 
+                        className="text-lg font-cormorant font-semibold mb-2 group-hover:text-[var(--gold)] transition-colors"
+                        style={{ fontFamily: 'var(--font-cormorant)' }}
+                      >
+                        {service.title}
+                      </h3>
+                      <p className="text-gray-600 text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                        {service.desc}
+                      </p>
+                    </CardContent>
+                  </motion.div>
+                </ScrollReveal>
               ))}
             </div>
           </section>

@@ -29,6 +29,33 @@ export function PublicNavigation() {
     return pathname === path || pathname.startsWith(path);
   };
 
+  // Pages avec Hero (menu transparent + texte blanc)
+  const pagesWithHero = [
+    '/',
+    '/marbella',
+    '/marrakech',
+    '/hilloula',
+    '/soucott',
+    '/pessah-2026',
+    '/pessah-2026/sejour',
+    '/pessah-2026/hotel',
+    '/contact',
+  ];
+  
+  const hasHero = pagesWithHero.some(path => pathname === path || pathname.startsWith(path));
+  // Logique simplifiée : texte blanc si Hero ET pas scrollé, sinon texte gris
+  const shouldUseLightText = hasHero && !scrolled;
+  
+  // Helper pour les classes de texte de manière uniforme
+  const getTextClasses = (isActive: boolean) => {
+    if (isActive) {
+      return 'text-[var(--gold)]';
+    }
+    return shouldUseLightText 
+      ? 'text-white hover:text-[var(--gold)]' 
+      : 'text-gray-700 hover:text-[var(--gold)]';
+  };
+
   const navigation = [
     { name: 'Accueil', href: '/' },
     {
@@ -56,7 +83,7 @@ export function PublicNavigation() {
           : 'bg-transparent'
       )}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
+          <div className="flex items-center justify-between h-14">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 z-10">
               <Image
@@ -83,9 +110,7 @@ export function PublicNavigation() {
                       <button
                         className={cn(
                           'flex items-center gap-1 px-4 py-2 text-sm font-medium transition-colors rounded-lg',
-                          isActive(item.href)
-                            ? 'text-[var(--gold)]'
-                            : 'text-gray-700 hover:text-[var(--gold)]'
+                          getTextClasses(isActive(item.href))
                         )}
                         style={{ fontFamily: 'var(--font-dm-sans)' }}
                       >
@@ -128,9 +153,7 @@ export function PublicNavigation() {
                     href={item.href}
                     className={cn(
                       'px-4 py-2 text-sm font-medium transition-colors rounded-lg',
-                      isActive(item.href)
-                        ? 'text-[var(--gold)]'
-                        : 'text-gray-700 hover:text-[var(--gold)]'
+                      getTextClasses(isActive(item.href))
                     )}
                     style={{ fontFamily: 'var(--font-dm-sans)' }}
                   >
@@ -140,7 +163,15 @@ export function PublicNavigation() {
               })}
 
               <Link href="/login" className="ml-4">
-                <Button variant="outline" size="sm" className="border-[var(--gold)] text-[var(--gold)] hover:bg-[var(--gold)] hover:text-white">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className={cn(
+                    shouldUseLightText
+                      ? 'border-white text-white hover:bg-white hover:text-[var(--dark-bg)]'
+                      : 'border-[var(--gold)] text-[var(--gold)] hover:bg-[var(--gold)] hover:text-white'
+                  )}
+                >
                   Connexion
                 </Button>
               </Link>
@@ -148,7 +179,10 @@ export function PublicNavigation() {
 
             {/* Mobile Menu Button */}
             <button
-              className="lg:hidden p-2 z-10"
+              className={cn(
+                "lg:hidden p-2 z-10 transition-colors",
+                shouldUseLightText ? "text-white" : "text-gray-700"
+              )}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
