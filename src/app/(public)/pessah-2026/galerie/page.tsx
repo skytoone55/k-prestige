@@ -72,14 +72,16 @@ export default function PessahGaleriePage() {
   const nextImage = () => {
     if (currentIndex >= 0 && currentIndex < allImagesFlat.length - 1) {
       const nextImg = allImagesFlat[currentIndex + 1];
-      setSelectedImage(nextImg.src || nextImg);
+      const imgSrc = typeof nextImg === 'string' ? nextImg : (nextImg as any).src || nextImg;
+      setSelectedImage(imgSrc);
     }
   };
 
   const prevImage = () => {
     if (currentIndex > 0) {
       const prevImg = allImagesFlat[currentIndex - 1];
-      setSelectedImage(prevImg.src || prevImg);
+      const imgSrc = typeof prevImg === 'string' ? prevImg : (prevImg as any).src || prevImg;
+      setSelectedImage(imgSrc);
     }
   };
 
