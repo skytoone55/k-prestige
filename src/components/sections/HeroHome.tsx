@@ -36,11 +36,11 @@ export function HeroHome() {
       </div>
       
       {/* Contenu avec animations */}
-      <div className="relative z-10 h-full flex flex-col justify-center items-center text-center px-6">
+      <div className="relative z-10 h-full flex flex-col justify-center items-center text-center px-6 pt-20 md:pt-0">
         <motion.span 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-[var(--gold)] uppercase tracking-[0.3em] text-sm mb-4 px-4 py-2 bg-black/40 backdrop-blur-sm rounded-lg font-bold"
+          className="text-[var(--gold)] uppercase tracking-[0.3em] text-sm mb-4 px-4 py-2 bg-black/40 backdrop-blur-sm rounded-lg font-bold mt-8 md:mt-0"
           style={{ fontFamily: 'var(--font-dm-sans)', textShadow: '0 2px 8px rgba(0,0,0,0.8)', fontWeight: 700 }}
         >
           {hero.subtitle}
@@ -117,7 +117,7 @@ export function HeroHome() {
       <motion.div 
         animate={{ y: [0, 12, 0] }}
         transition={{ repeat: Infinity, duration: 2 }}
-        className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-20"
+        className="absolute bottom-2 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-20"
       >
         <span className="text-white/90 text-xs uppercase tracking-wider drop-shadow-lg" style={{ fontFamily: 'var(--font-dm-sans)', textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>
           Découvrir
