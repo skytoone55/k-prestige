@@ -774,7 +774,7 @@ export function PageEditorFull({ pageId }: PageEditorFullProps) {
                 </CardHeader>
                 <CardContent className="pt-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {activeSection.fields.map((field: any) => renderField(activeSection.id, field))}
+                    {activeSection.fields.map((field: any) => renderField(activeSection.id, field, undefined))}
                   </div>
                 </CardContent>
               </Card>

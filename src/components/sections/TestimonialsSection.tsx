@@ -45,7 +45,7 @@ export function TestimonialsSection() {
         </ScrollReveal>
         
         <div className="grid md:grid-cols-3 gap-8">
-          {testimonials.map((testimonial, index) => (
+          {testimonials.map((testimonial: any, index: number) => (
             <ScrollReveal key={index} delay={index * 0.1}>
               <Card className="p-6 h-full hover:shadow-xl transition-shadow">
                 <Quote className="w-8 h-8 text-[var(--gold)] mb-4" />
