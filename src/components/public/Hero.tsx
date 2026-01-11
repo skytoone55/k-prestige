@@ -26,7 +26,7 @@ export function Hero() {
         <div className="mb-8 flex justify-center">
           <div className="inline-block p-6 bg-white/95 backdrop-blur-sm rounded-lg border-2 border-[var(--gold)] shadow-xl">
             <Image
-              src="/logo.jpg"
+              src="/K PRETIGE OR.png"
               alt="K PRESTIGE"
               width={200}
               height={80}

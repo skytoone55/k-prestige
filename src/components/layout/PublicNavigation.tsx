@@ -10,50 +10,31 @@ import { Menu, X, ChevronDown, MessageCircle } from 'lucide-react';
 
 export function PublicNavigation() {
   const pathname = usePathname();
-  const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [pessahDropdownOpen, setPessahDropdownOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Logique isActive corrigée : pour Accueil, vérifier exactement '/', pour les autres utiliser startsWith
   const isActive = (path: string) => {
     if (!mounted) return false;
-    return pathname === path || pathname.startsWith(path);
+    // Pour "Accueil", vérifier exactement la racine
+    if (path === '/') {
+      return pathname === '/';
+    }
+    // Pour les autres pages, utiliser startsWith pour inclure les sous-pages
+    return pathname === path || pathname.startsWith(path + '/');
   };
-
-  // Pages avec Hero (menu transparent + texte blanc)
-  const pagesWithHero = [
-    '/',
-    '/marbella',
-    '/marrakech',
-    '/hilloula',
-    '/soucott',
-    '/pessah-2026',
-    '/pessah-2026/sejour',
-    '/pessah-2026/hotel',
-    '/contact',
-  ];
-  
-  const hasHero = pagesWithHero.some(path => pathname === path || pathname.startsWith(path));
-  // Logique simplifiée : texte blanc si Hero ET pas scrollé, sinon texte gris
-  const shouldUseLightText = hasHero && !scrolled;
   
   // Helper pour les classes de texte de manière uniforme
-  const getTextClasses = (isActive: boolean) => {
-    if (isActive) {
+  const getTextClasses = (isActiveItem: boolean) => {
+    if (isActiveItem) {
       return 'text-[var(--gold)]';
     }
-    return shouldUseLightText 
-      ? 'text-white hover:text-[var(--gold)]' 
-      : 'text-gray-700 hover:text-[var(--gold)]';
+    return 'text-gray-700 hover:text-[var(--gold)]';
   };
 
   const navigation = [
@@ -76,18 +57,13 @@ export function PublicNavigation() {
 
   return (
     <>
-      <header className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-        scrolled
-          ? 'bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm'
-          : 'bg-transparent'
-      )}>
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 z-10">
               <Image
-                src="/logo.jpg"
+                src="/K PRESTIGE NOIR.png"
                 alt="K PRESTIGE"
                 width={140}
                 height={50}
@@ -166,11 +142,7 @@ export function PublicNavigation() {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className={cn(
-                    shouldUseLightText
-                      ? 'border-white text-white hover:bg-white hover:text-[var(--dark-bg)]'
-                      : 'border-[var(--gold)] text-[var(--gold)] hover:bg-[var(--gold)] hover:text-white'
-                  )}
+                  className="border-[var(--gold)] text-[var(--gold)] hover:bg-[var(--gold)] hover:text-white"
                 >
                   Connexion
                 </Button>
@@ -179,10 +151,7 @@ export function PublicNavigation() {
 
             {/* Mobile Menu Button */}
             <button
-              className={cn(
-                "lg:hidden p-2 z-10 transition-colors",
-                shouldUseLightText ? "text-white" : "text-gray-700"
-              )}
+              className="lg:hidden p-2 z-10 transition-colors text-gray-700"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}

@@ -43,7 +43,7 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <Image
-              src="/logo.jpg"
+              src="/K PRETIGE OR.png"
               alt="K PRESTIGE"
               width={200}
               height={80}

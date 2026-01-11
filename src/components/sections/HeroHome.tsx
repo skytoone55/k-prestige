@@ -29,8 +29,8 @@ export function HeroHome() {
         <motion.span 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-[var(--gold)] uppercase tracking-[0.3em] text-sm mb-4"
-          style={{ fontFamily: 'var(--font-dm-sans)' }}
+          className="text-[var(--gold)] uppercase tracking-[0.3em] text-sm mb-4 px-4 py-2 bg-black/40 backdrop-blur-sm rounded-lg"
+          style={{ fontFamily: 'var(--font-dm-sans)', textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}
         >
           Expérience Premium
         </motion.span>
@@ -56,8 +56,8 @@ export function HeroHome() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="text-lg md:text-xl text-[var(--gold)] mb-8 tracking-[0.3em] drop-shadow-lg"
-          style={{ fontFamily: 'var(--font-cormorant)' }}
+          className="text-lg md:text-xl text-[var(--gold)] mb-8 tracking-[0.3em] px-4 py-2 bg-black/40 backdrop-blur-sm rounded-lg"
+          style={{ fontFamily: 'var(--font-cormorant)', textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}
         >
           31 MARS - 10 AVRIL
         </motion.p>

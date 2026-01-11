@@ -100,23 +100,10 @@ export default function PessahHotelPage() {
               {chambres.map((chambre, idx) => (
                 <ScrollReveal key={idx} delay={idx * 0.05}>
                   <Card className="p-6 hover:shadow-xl transition-shadow">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h3 className="text-xl font-semibold text-[var(--gold)] mb-1" style={{ fontFamily: 'var(--font-cormorant)' }}>
-                        {chambre.nom}
-                      </h3>
-                      <p className="text-sm text-gray-500" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                        Code: {chambre.code}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-gray-800" style={{ fontFamily: 'var(--font-cormorant)' }}>
-                        {chambre.nombre}
-                      </p>
-                      <p className="text-xs text-gray-500" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                        chambres
-                      </p>
-                    </div>
+                  <div className="mb-4">
+                    <h3 className="text-xl font-semibold text-[var(--gold)] mb-1" style={{ fontFamily: 'var(--font-cormorant)' }}>
+                      {chambre.nom}
+                    </h3>
                   </div>
                   <div className="space-y-2 text-sm text-gray-600" style={{ fontFamily: 'var(--font-dm-sans)' }}>
                     <p><strong>Surface :</strong> {chambre.surface}</p>

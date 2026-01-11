@@ -23,18 +23,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 3. BANDEAU DE CONFIANCE */}
-        <section className="py-6 bg-[var(--dark-bg)] border-y border-[var(--gold)]/20">
-          <div className="max-w-7xl mx-auto px-6 flex justify-center items-center gap-12 text-white/60 text-sm flex-wrap" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-            <span>✓ 10+ ans d&apos;expérience</span>
-            <span className="w-px h-4 bg-[var(--gold)]/30" />
-            <span>✓ Kashrout irréprochable</span>
-            <span className="w-px h-4 bg-[var(--gold)]/30" />
-            <span>✓ 500+ familles satisfaites</span>
-          </div>
-        </section>
-
-        {/* 4. SECTION STATS ANIMÉES */}
+        {/* 3. SECTION STATS ANIMÉES */}
         <StatsSection />
 
         {/* 5. SECTION TÉMOIGNAGES */}

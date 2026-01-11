@@ -169,7 +169,7 @@ export function AdminNav({ user }: AdminNavProps) {
         <div className="flex items-center justify-between p-4 bg-card border-b">
           <Link href="/admin" className="flex items-center gap-2">
             <Image
-              src="/logo.jpg"
+              src="/K PRETIGE OR.png"
               alt="K PRESTIGE"
               width={32}
               height={32}
@@ -199,7 +199,7 @@ export function AdminNav({ user }: AdminNavProps) {
           <div className="p-6 border-b hidden lg:block">
             <Link href="/admin" className="flex items-center gap-2">
               <Image
-                src="/logo.jpg"
+                src="/K PRETIGE OR.png"
                 alt="K PRESTIGE"
                 width={120}
                 height={40}
