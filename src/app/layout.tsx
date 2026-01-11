@@ -19,6 +19,15 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
   title: "K PRESTIGE | Pessah 2026 - Cabogata Beach Hotel 5★",
   description: "Séjour Pessah 2026 au Cabogata Beach Hotel 5★ en Espagne. Glatt Kasher Laméhadrine. 31 Mars - 10 Avril 2026.",
+  icons: {
+    icon: [
+      { url: '/icon.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon.ico', sizes: 'any' },
+    ],
+    apple: [
+      { url: '/apple-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
 };
 
 export default function RootLayout({
