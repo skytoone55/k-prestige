@@ -19,7 +19,7 @@ export function HeroHome() {
   };
 
   return (
-    <section className="relative h-[70vh] overflow-hidden">
+    <section className="relative h-[80vh] overflow-hidden">
       {/* Video ou Image avec parallax */}
       <div className="absolute inset-0">
         <Image
