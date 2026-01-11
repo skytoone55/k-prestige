@@ -1,13 +1,15 @@
 /* ============================================
    FONTS - IMPORT DOIT ÊTRE EN PREMIER
    ============================================ */
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Lora:wght@400;500;600;700&display=swap');
 
 @import "tailwindcss";
 
 :root {
   --font-cormorant: 'Cormorant Garamond', serif;
   --font-dm-sans: 'DM Sans', sans-serif;
+  --font-playfair: 'Playfair Display', serif;
+  --font-lora: 'Lora', serif;
 }
 
 /* ============================================
@@ -258,4 +260,16 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* ============================================
+   SCROLLBAR HIDE - Pour les scrolls horizontaux
+   ============================================ */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
 }

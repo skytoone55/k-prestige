@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -9,8 +9,10 @@ import { Button } from '@/components/ui/Button';
 import { ArrowRight } from 'lucide-react';
 import { placeholderImages } from '@/lib/images';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
+import { usePageContent } from '@/lib/usePageContent';
 
-const univers = [
+// Valeurs par défaut
+const defaultUnivers = [
   {
     title: 'Séjours Pessah',
     description: 'Vivez des fêtes inoubliables dans les plus beaux hôtels',
@@ -45,7 +47,7 @@ const univers = [
   },
 ];
 
-function UniversCard({ item, index }: { item: typeof univers[0]; index: number }) {
+function UniversCard({ item, index }: { item: any; index: number }) {
   const [imgSrc, setImgSrc] = useState(item.image);
   const [hasError, setHasError] = useState(false);
 
@@ -104,10 +106,13 @@ function UniversCard({ item, index }: { item: typeof univers[0]; index: number }
 }
 
 export function UniversCards() {
+  const { data } = usePageContent('accueil');
+  const univers = data?.univers || defaultUnivers;
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
-      {univers.map((item, index) => (
-        <UniversCard key={item.href} item={item} index={index} />
+      {univers.map((item: any, index: number) => (
+        <UniversCard key={item.href || index} item={item} index={index} />
       ))}
     </div>
   );

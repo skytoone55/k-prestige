@@ -5,8 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Search, X, Upload } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
-// Utilisation de img standard pour compatibilité Supabase
+import { uploadImageToSupabase } from '@/lib/supabase/storage';
 
 interface GalleryImage {
   id: string;
@@ -29,7 +28,6 @@ export function ImageSelector({ isOpen, onClose, onSelect, currentImageUrl }: Im
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [uploading, setUploading] = useState(false);
-  const supabase = createClient();
 
   useEffect(() => {
     if (isOpen) {
@@ -40,40 +38,24 @@ export function ImageSelector({ isOpen, onClose, onSelect, currentImageUrl }: Im
   const loadImages = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('galerie_generale')
-        .select('id, nom, url, tags, categorie')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        // Fallback localStorage
-        const saved = localStorage.getItem('galerie_generale');
-        if (saved) {
-          const allImages = JSON.parse(saved);
-          setImages(allImages.map((img: any) => ({
-            id: img.id,
-            nom: img.nom,
-            url: img.url,
-            tags: img.tags || [],
-            categorie: img.categorie,
-          })));
-        }
-      } else if (data) {
-        setImages(data);
-      }
-    } catch (error) {
-      console.error('Erreur:', error);
+      // Charger depuis localStorage (solution simple qui fonctionne)
       const saved = localStorage.getItem('galerie_generale');
       if (saved) {
         const allImages = JSON.parse(saved);
         setImages(allImages.map((img: any) => ({
-          id: img.id,
-          nom: img.nom,
-          url: img.url,
+          id: img.id || Date.now().toString(),
+          nom: img.nom || img.name || 'Image sans nom',
+          url: img.url || img.src,
           tags: img.tags || [],
-          categorie: img.categorie,
+          categorie: img.categorie || img.category || null,
         })));
+      } else {
+        // Si pas d'images en localStorage, initialiser avec un tableau vide
+        setImages([]);
       }
+    } catch (error) {
+      console.error('Erreur lors du chargement:', error);
+      setImages([]);
     } finally {
       setLoading(false);
     }
@@ -83,8 +65,8 @@ export function ImageSelector({ isOpen, onClose, onSelect, currentImageUrl }: Im
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 52428800) {
-      alert('Le fichier est trop volumineux. Taille maximale : 50MB');
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Le fichier est trop volumineux. Taille maximale : 10MB');
       return;
     }
 
@@ -96,34 +78,25 @@ export function ImageSelector({ isOpen, onClose, onSelect, currentImageUrl }: Im
 
     setUploading(true);
     try {
-      const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-      const filePath = `galerie-generale/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('images')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('images')
-        .getPublicUrl(filePath);
-
+      // Upload vers Supabase Storage (solution durable)
+      const imageUrl = await uploadImageToSupabase(
+        file,
+        'pages',
+        'images'
+      );
+      
       // Ajouter à la liste locale
       const newImage: GalleryImage = {
         id: Date.now().toString(),
         nom: file.name.replace(/\.[^/.]+$/, ''),
-        url: publicUrl,
+        url: imageUrl, // URL Supabase ou base64 en fallback
         tags: [],
         categorie: null,
       };
 
       setImages([newImage, ...images]);
       
-      // Sauvegarder dans localStorage
+      // Sauvegarder dans localStorage (métadonnées uniquement)
       const saved = localStorage.getItem('galerie_generale');
       const allImages = saved ? JSON.parse(saved) : [];
       allImages.unshift({
@@ -137,12 +110,12 @@ export function ImageSelector({ isOpen, onClose, onSelect, currentImageUrl }: Im
       localStorage.setItem('galerie_generale', JSON.stringify(allImages));
 
       // Sélectionner automatiquement la nouvelle image
-      onSelect(publicUrl);
+      onSelect(imageUrl);
       e.target.value = '';
+      setUploading(false);
     } catch (error: any) {
       console.error('Erreur upload:', error);
       alert(error.message || 'Erreur lors de l\'upload');
-    } finally {
       setUploading(false);
     }
   };
@@ -162,7 +135,7 @@ export function ImageSelector({ isOpen, onClose, onSelect, currentImageUrl }: Im
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+      <Card className="w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col bg-white">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Sélectionner une image</CardTitle>
@@ -177,7 +150,7 @@ export function ImageSelector({ isOpen, onClose, onSelect, currentImageUrl }: Im
         </CardHeader>
         <CardContent className="flex-1 overflow-y-auto space-y-4">
           {/* Filtres */}
-          <div className="grid md:grid-cols-2 gap-4 sticky top-0 bg-background pb-4 z-10">
+          <div className="grid md:grid-cols-2 gap-4 sticky top-0 bg-white pb-4 z-10">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input

@@ -2,8 +2,9 @@
 
 import { useInView } from 'framer-motion';
 import { useRef, useEffect, useState } from 'react';
+import { usePageContent } from '@/lib/usePageContent';
 
-const stats = [
+const defaultStats = [
   { value: 7000, suffix: '+', label: 'Familles accompagnées' },
   { value: 10, suffix: ' ans', label: "D'expérience" },
   { value: 15, suffix: '+', label: 'Destinations' },
@@ -44,6 +45,9 @@ function AnimatedNumber({ value, suffix }: { value: number; suffix: string }) {
 }
 
 export function StatsSection() {
+  const { data } = usePageContent('accueil');
+  const stats = data?.stats || defaultStats;
+
   return (
     <section className="py-24 bg-[var(--dark-bg)] relative overflow-hidden">
       {/* Background pattern */}
@@ -55,7 +59,7 @@ export function StatsSection() {
       
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
-          {stats.map((stat, i) => (
+          {stats.map((stat: any, i: number) => (
             <div key={i} className="text-center">
               <AnimatedNumber value={stat.value} suffix={stat.suffix} />
               <p className="text-white/60 mt-2 text-sm uppercase tracking-wider" style={{ fontFamily: 'var(--font-dm-sans)' }}>

@@ -27,7 +27,7 @@ export default function PessahGaleriePage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [images, setImages] = useState<GalleryImage[]>([]);
-  const [activeCategory, setActiveCategory] = useState<string>('Tout');
+  const [activeCategory, setActiveCategory] = useState<string>('');
   
   // Images placeholder si galerie vide
   const placeholderGalleryImages = [
@@ -39,31 +39,93 @@ export default function PessahGaleriePage() {
   ];
 
   useEffect(() => {
-    const savedCategories = localStorage.getItem('galerie_categories');
-    if (savedCategories) {
-      const parsedCategories: Category[] = JSON.parse(savedCategories);
-      setCategories(parsedCategories);
-    }
-
-    const allImages: GalleryImage[] = [];
-    if (savedCategories) {
-      JSON.parse(savedCategories).forEach((cat: Category) => {
-        const savedImages = localStorage.getItem(`galerie_images_${cat.id}`);
-        if (savedImages) {
-          allImages.push(...JSON.parse(savedImages));
-        }
-      });
-    }
-    setImages(allImages);
+    loadGalleryData();
   }, []);
+
+  useEffect(() => {
+    // Sélectionner automatiquement la première catégorie quand elles sont chargées
+    if (categories.length > 0 && !activeCategory) {
+      setActiveCategory(categories[0].name);
+    }
+  }, [categories]);
+
+  const loadGalleryData = async () => {
+    try {
+      const supabase = (await import('@/lib/supabase/client')).createClient();
+      
+      // Charger les catégories depuis Supabase
+      const { data: categoriesData, error: catError } = await supabase
+        .from('galerie_categories')
+        .select('*')
+        .order('created_at', { ascending: true });
+      
+      if (!catError && categoriesData) {
+        setCategories(categoriesData);
+        
+        // Charger les images par catégorie depuis Supabase
+        const allImages: GalleryImage[] = [];
+        for (const cat of categoriesData) {
+          const { data: imagesData, error: imgError } = await supabase
+            .from('galerie_images')
+            .select('images')
+            .eq('id', `category_${cat.id}`)
+            .single();
+          
+          if (!imgError && imagesData?.images) {
+            allImages.push(...imagesData.images);
+          } else {
+            // Fallback localStorage
+            const savedImages = localStorage.getItem(`galerie_images_${cat.id}`);
+            if (savedImages) {
+              allImages.push(...JSON.parse(savedImages));
+            }
+          }
+        }
+        setImages(allImages);
+      } else {
+        // Fallback localStorage
+        const savedCategories = localStorage.getItem('galerie_categories');
+        if (savedCategories) {
+          const parsedCategories: Category[] = JSON.parse(savedCategories);
+          setCategories(parsedCategories);
+          
+          const allImages: GalleryImage[] = [];
+          parsedCategories.forEach((cat: Category) => {
+            const savedImages = localStorage.getItem(`galerie_images_${cat.id}`);
+            if (savedImages) {
+              allImages.push(...JSON.parse(savedImages));
+            }
+          });
+          setImages(allImages);
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement:', error);
+      // Fallback localStorage
+      const savedCategories = localStorage.getItem('galerie_categories');
+      if (savedCategories) {
+        const parsedCategories: Category[] = JSON.parse(savedCategories);
+        setCategories(parsedCategories);
+        
+        const allImages: GalleryImage[] = [];
+        parsedCategories.forEach((cat: Category) => {
+          const savedImages = localStorage.getItem(`galerie_images_${cat.id}`);
+          if (savedImages) {
+            allImages.push(...JSON.parse(savedImages));
+          }
+        });
+        setImages(allImages);
+      }
+    }
+  };
   
-  const categoriesList = ['Tout', ...categories.map(c => c.name)];
+  const categoriesList = categories.map(c => c.name);
   
   const displayImages = images.length > 0 
-    ? (activeCategory === 'Tout' ? images : images.filter(img => {
+    ? (activeCategory ? images.filter(img => {
         const cat = categories.find(c => c.id === img.category_id);
         return cat?.name === activeCategory;
-      }))
+      }) : [])
     : placeholderGalleryImages;
 
   const allImagesFlat = images.length > 0 ? images : placeholderGalleryImages;

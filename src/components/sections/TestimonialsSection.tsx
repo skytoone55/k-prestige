@@ -3,8 +3,9 @@
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Quote } from 'lucide-react';
+import { usePageContent } from '@/lib/usePageContent';
 
-const testimonials = [
+const defaultTestimonials = [
   {
     name: 'Sarah M.',
     location: 'Paris',
@@ -26,6 +27,8 @@ const testimonials = [
 ];
 
 export function TestimonialsSection() {
+  const { data } = usePageContent('accueil');
+  const testimonials = data?.testimonials || defaultTestimonials;
   return (
     <section className="py-24 px-6 bg-white">
       <div className="max-w-7xl mx-auto">

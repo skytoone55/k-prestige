@@ -5,14 +5,25 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { ChevronDown } from 'lucide-react';
+import { usePageContent } from '@/lib/usePageContent';
 
 export function HeroHome() {
+  const { data } = usePageContent('accueil');
+  const hero = data?.hero || {
+    subtitle: 'Expérience Premium',
+    title: 'PESSAH 2026',
+    location: 'Cabogata Beach Hotel 5★ • Espagne',
+    date: '31 MARS - 10 AVRIL',
+    image: '/images/hero/PANORAMIC.jpg',
+    animation_text: 'Animation non-stop par Laurent Folies Musical Band × Yonni Chemla DJ Live',
+  };
+
   return (
     <section className="relative h-[70vh] overflow-hidden">
       {/* Video ou Image avec parallax */}
       <div className="absolute inset-0">
         <Image
-          src="/images/hero/PANORAMIC.jpg"
+          src={hero.image || '/images/hero/PANORAMIC.jpg'}
           alt="Pessah 2026 - Cabogata Beach Hotel"
           fill
           className="object-cover scale-110 animate-slow-zoom"
@@ -29,19 +40,19 @@ export function HeroHome() {
         <motion.span 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-[var(--gold)] uppercase tracking-[0.3em] text-sm mb-4 px-4 py-2 bg-black/40 backdrop-blur-sm rounded-lg"
-          style={{ fontFamily: 'var(--font-dm-sans)', textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}
+          className="text-[var(--gold)] uppercase tracking-[0.3em] text-sm mb-4 px-4 py-2 bg-black/40 backdrop-blur-sm rounded-lg font-bold"
+          style={{ fontFamily: 'var(--font-dm-sans)', textShadow: '0 2px 8px rgba(0,0,0,0.8)', fontWeight: 700 }}
         >
-          Expérience Premium
+          {hero.subtitle}
         </motion.span>
         <motion.h1 
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="text-6xl md:text-8xl lg:text-9xl font-cormorant text-white mb-6 tracking-tight drop-shadow-2xl"
-          style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}
+          className="text-5xl md:text-7xl lg:text-8xl font-cormorant text-white mb-6 tracking-tight drop-shadow-2xl"
+          style={{ fontFamily: 'var(--font-lora)', fontWeight: 500 }}
         >
-          PESSAH 2026
+          {hero.title}
         </motion.h1>
         <motion.p
           initial={{ opacity: 0, y: 20 }}
@@ -50,16 +61,16 @@ export function HeroHome() {
           className="text-xl md:text-2xl text-white mb-2 drop-shadow-lg"
           style={{ fontFamily: 'var(--font-dm-sans)' }}
         >
-          Cabogata Beach Hotel 5★ • Espagne
+          {hero.location}
         </motion.p>
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="text-lg md:text-xl text-[var(--gold)] mb-8 tracking-[0.3em] px-4 py-2 bg-black/40 backdrop-blur-sm rounded-lg"
-          style={{ fontFamily: 'var(--font-cormorant)', textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}
+          className="text-lg md:text-xl text-[var(--gold)] mb-8 tracking-[0.3em] px-4 py-2 bg-black/40 backdrop-blur-sm rounded-lg font-bold"
+          style={{ fontFamily: 'var(--font-cormorant)', textShadow: '0 2px 8px rgba(0,0,0,0.8)', fontWeight: 700 }}
         >
-          31 MARS - 10 AVRIL
+          {hero.date}
         </motion.p>
         
         {/* Ligne décorative animée */}
@@ -106,12 +117,12 @@ export function HeroHome() {
       <motion.div 
         animate={{ y: [0, 12, 0] }}
         transition={{ repeat: Infinity, duration: 2 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+        className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-20"
       >
-        <span className="text-white/80 text-xs uppercase tracking-wider" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+        <span className="text-white/90 text-xs uppercase tracking-wider drop-shadow-lg" style={{ fontFamily: 'var(--font-dm-sans)', textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>
           Découvrir
         </span>
-        <ChevronDown className="w-8 h-8 text-white/80" />
+        <ChevronDown className="w-8 h-8 text-white/90 drop-shadow-lg" style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.8))' }} />
       </motion.div>
     </section>
   );

@@ -4,8 +4,18 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
+import { usePageContent } from '@/lib/usePageContent';
 
 export function CTASection() {
+  const { data } = usePageContent('accueil');
+  const cta = data?.cta || {
+    subtitle: 'Prêt à vivre l\'expérience K Prestige ?',
+    title: 'Contactez-nous dès aujourd\'hui',
+    description: 'Notre équipe est à votre disposition pour répondre à toutes vos questions et vous accompagner dans l\'organisation de votre événement.',
+    button1_text: 'Demander un devis',
+    button2_text: 'Nous contacter sur WhatsApp',
+  };
+
   return (
     <section className="py-24 px-6 bg-gradient-to-br from-[var(--gold-pale)]/30 via-[var(--gold-pale)]/20 to-transparent relative overflow-hidden">
       {/* Background decoration */}
@@ -23,7 +33,7 @@ export function CTASection() {
             className="text-[var(--gold)] uppercase tracking-[0.2em] text-sm"
             style={{ fontFamily: 'var(--font-dm-sans)' }}
           >
-            Prêt à vivre l&apos;expérience K Prestige ?
+            {cta.subtitle}
           </motion.span>
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
@@ -33,7 +43,7 @@ export function CTASection() {
             className="text-4xl md:text-5xl font-cormorant mt-4 mb-6 text-[var(--dark-bg)]"
             style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}
           >
-            Contactez-nous dès aujourd&apos;hui
+            {cta.title}
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -43,7 +53,7 @@ export function CTASection() {
             className="text-lg text-gray-700 mb-8 max-w-2xl mx-auto"
             style={{ fontFamily: 'var(--font-dm-sans)' }}
           >
-            Notre équipe est à votre disposition pour répondre à toutes vos questions et vous accompagner dans l&apos;organisation de votre événement.
+            {cta.description}
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -54,12 +64,12 @@ export function CTASection() {
           >
             <Link href="/contact">
               <Button className="btn-gold-primary text-lg px-8 py-4">
-                Demander un devis
+                {cta.button1_text}
               </Button>
             </Link>
             <a href="https://wa.me/33699951963" target="_blank" rel="noopener noreferrer">
               <Button className="btn-gold-outline text-lg px-8 py-4">
-                Nous contacter sur WhatsApp
+                {cta.button2_text}
               </Button>
             </a>
           </motion.div>
