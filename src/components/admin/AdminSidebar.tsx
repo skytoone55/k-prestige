@@ -50,6 +50,7 @@ const menuCategories: MenuCategory[] = [
         children: [
           { id: 'pessah-sejour', name: 'Le Séjour' },
           { id: 'pessah-hotel', name: 'L\'Hôtel' },
+          { id: 'galerie', name: 'Galerie' },
         ],
       },
       {
@@ -76,11 +77,6 @@ const menuCategories: MenuCategory[] = [
         id: 'contact',
         name: 'Contact',
         icon: Mail,
-      },
-      {
-        id: 'galerie',
-        name: 'Galerie',
-        icon: ImageIcon,
       },
     ],
   },
