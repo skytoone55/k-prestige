@@ -13,7 +13,7 @@ import { SectionTitle } from '@/components/ui/SectionTitle';
 import { usePageContent } from '@/lib/usePageContent';
 
 export default function SoucottPage() {
-  const { data, loading } = usePageContent('soucott');
+  const { data, loading } = usePageContent('souccot');
 
   // Données dynamiques avec fallback
   const hero = data?.hero || {
