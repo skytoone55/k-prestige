@@ -19,14 +19,18 @@ export default function GaleriePage() {
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
         const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+        // Ajouter timestamp pour éviter tout cache navigateur
+        const timestamp = Date.now();
         const response = await fetch(
-          `${supabaseUrl}/rest/v1/galerie_content?id=eq.00000000-0000-0000-0000-000000000001&select=categories,images`,
+          `${supabaseUrl}/rest/v1/galerie_content?id=eq.00000000-0000-0000-0000-000000000001&select=categories,images&_t=${timestamp}`,
           {
             headers: {
               'apikey': supabaseKey!,
               'Authorization': `Bearer ${supabaseKey}`,
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache',
             },
-            cache: 'no-store', // Force pas de cache
+            cache: 'no-store',
           }
         );
 
