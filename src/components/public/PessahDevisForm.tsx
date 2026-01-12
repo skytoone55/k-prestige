@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -25,19 +24,9 @@ const formSchema = z.object({
 
 type PessahDevisFormValues = z.infer<typeof formSchema>;
 
-// Tarifs selon le brief
-const TARIFS = {
-  adulte: 2190,
-  bebe: 0,
-  enfant_2_3: 390,
-  enfant_4_6: 990,
-  enfant_7_11: 1390,
-};
-
 export function PessahDevisForm() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [estimatedPrice, setEstimatedPrice] = useState(0);
   const supabase = createClient();
 
   const form = useForm({
@@ -56,25 +45,6 @@ export function PessahDevisForm() {
     },
   });
 
-  // Calcul du prix estimé en temps réel
-  const calculatePrice = (values: Partial<PessahDevisFormValues>) => {
-    const total =
-      (values.nb_adultes || 0) * TARIFS.adulte +
-      (values.nb_bebes || 0) * TARIFS.bebe +
-      (values.nb_enfants_2_3ans || 0) * TARIFS.enfant_2_3 +
-      (values.nb_enfants_4_6ans || 0) * TARIFS.enfant_4_6 +
-      (values.nb_enfants_7_11ans || 0) * TARIFS.enfant_7_11;
-    setEstimatedPrice(total);
-  };
-
-  // Écouter les changements pour recalculer
-  const watchedValues = form.watch();
-  
-  // Recalculer le prix quand les valeurs changent
-  React.useEffect(() => {
-    calculatePrice(watchedValues);
-  }, [watchedValues]);
-
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
     try {
@@ -90,7 +60,7 @@ export function PessahDevisForm() {
           nb_enfants_4_6ans: values.nb_enfants_4_6ans,
           nb_enfants_7_11ans: values.nb_enfants_7_11ans,
           statut: 'NOUVEAU',
-          montant_du: estimatedPrice,
+          montant_du: null,
           info: values.whatsapp ? 'Souhaite être recontacté par WhatsApp' : '',
           created_at: new Date().toISOString(),
         },
@@ -142,21 +112,6 @@ export function PessahDevisForm() {
         Demande de devis
       </h3>
 
-      {/* Estimation prix */}
-      {estimatedPrice > 0 && (
-        <div className="mb-6 p-4 bg-[var(--gold-pale)] rounded-lg border-2 border-[var(--gold)]">
-          <p className="text-sm text-gray-600 mb-1" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-            Estimation pour 10 nuits :
-          </p>
-          <p className="text-3xl font-bold text-[var(--gold)]" style={{ fontFamily: 'var(--font-cormorant)' }}>
-            {estimatedPrice.toLocaleString('fr-FR')} €
-          </p>
-          <p className="text-xs text-gray-500 mt-2" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-            * Prix indicatif. Devis personnalisé sous 24h.
-          </p>
-        </div>
-      )}
-
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {/* Composition famille */}
         <div>
@@ -170,10 +125,6 @@ export function PessahDevisForm() {
               </label>
               <select
                 {...form.register('nb_adultes', { valueAsNumber: true })}
-                onChange={(e) => {
-                  form.setValue('nb_adultes', parseInt(e.target.value));
-                  calculatePrice({ ...form.getValues(), nb_adultes: parseInt(e.target.value) });
-                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--gold)]"
               >
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
@@ -187,10 +138,6 @@ export function PessahDevisForm() {
               </label>
               <select
                 {...form.register('nb_bebes', { valueAsNumber: true })}
-                onChange={(e) => {
-                  form.setValue('nb_bebes', parseInt(e.target.value));
-                  calculatePrice({ ...form.getValues(), nb_bebes: parseInt(e.target.value) });
-                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--gold)]"
               >
                 {[0, 1, 2, 3, 4, 5].map((n) => (
@@ -204,10 +151,6 @@ export function PessahDevisForm() {
               </label>
               <select
                 {...form.register('nb_enfants_2_3ans', { valueAsNumber: true })}
-                onChange={(e) => {
-                  form.setValue('nb_enfants_2_3ans', parseInt(e.target.value));
-                  calculatePrice({ ...form.getValues(), nb_enfants_2_3ans: parseInt(e.target.value) });
-                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--gold)]"
               >
                 {[0, 1, 2, 3, 4, 5].map((n) => (
@@ -221,10 +164,6 @@ export function PessahDevisForm() {
               </label>
               <select
                 {...form.register('nb_enfants_4_6ans', { valueAsNumber: true })}
-                onChange={(e) => {
-                  form.setValue('nb_enfants_4_6ans', parseInt(e.target.value));
-                  calculatePrice({ ...form.getValues(), nb_enfants_4_6ans: parseInt(e.target.value) });
-                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--gold)]"
               >
                 {[0, 1, 2, 3, 4, 5].map((n) => (
@@ -238,10 +177,6 @@ export function PessahDevisForm() {
               </label>
               <select
                 {...form.register('nb_enfants_7_11ans', { valueAsNumber: true })}
-                onChange={(e) => {
-                  form.setValue('nb_enfants_7_11ans', parseInt(e.target.value));
-                  calculatePrice({ ...form.getValues(), nb_enfants_7_11ans: parseInt(e.target.value) });
-                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--gold)]"
               >
                 {[0, 1, 2, 3, 4, 5].map((n) => (
