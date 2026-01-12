@@ -37,10 +37,10 @@ export default function PessahSejourPage() {
   };
 
   const animations = data?.animations || [
-    { image: placeholderImages.musicBand, title: 'Laurent Folies Musical Band', desc: '@laurentfolies', instagram: 'https://www.instagram.com/laurentfolies' },
-    { image: placeholderImages.dj, title: 'Yonni Chemla DJ Live', desc: '@yonnichemla', instagram: 'https://www.instagram.com/yonnichemla' },
-    { image: placeholderImages.singer, title: 'Avi Ohayon', desc: 'Rabbin & Paytan', instagram: null },
-    { image: placeholderImages.kidsAnimation, title: 'Gueoula Animation', desc: 'Animation Enfants', instagram: 'https://www.instagram.com/gueoula_animation' },
+    { image: placeholderImages.musicBand, name: 'Laurent Folies Musical Band', description: '@laurentfolies', instagram: 'https://www.instagram.com/laurentfolies' },
+    { image: placeholderImages.dj, name: 'Yonni Chemla DJ Live', description: '@yonnichemla', instagram: 'https://www.instagram.com/yonnichemla' },
+    { image: placeholderImages.singer, name: 'Avi Ohayon', description: 'Rabbin & Paytan', instagram: null },
+    { image: placeholderImages.kidsAnimation, name: 'Gueoula Animation', description: 'Animation Enfants', instagram: 'https://www.instagram.com/gueoula_animation' },
   ];
 
   const services = data?.services || [
@@ -199,7 +199,7 @@ export default function PessahSejourPage() {
                     <div className="relative h-64 overflow-hidden">
                       <Image
                         src={anim.image || placeholderImages.musicBand}
-                        alt={anim.title}
+                        alt={anim.title || 'Animation'}
                         fill
                         className="object-cover transition-transform duration-700 group-hover:scale-110"
                       />
@@ -214,10 +214,10 @@ export default function PessahSejourPage() {
                         className="text-xl font-cormorant font-semibold mb-2 group-hover:text-[var(--gold)] transition-colors"
                         style={{ fontFamily: 'var(--font-cormorant)' }}
                       >
-                        {anim.title}
+                        {anim.title || anim.name}
                       </h3>
                       <p className="text-gray-600 text-sm mb-4" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                        {anim.desc}
+                        {anim.desc || anim.description}
                       </p>
                       {anim.instagram && (
                         <a
@@ -251,7 +251,7 @@ export default function PessahSejourPage() {
                     <div className="relative h-48 overflow-hidden">
                       <Image
                         src={service.image || placeholderImages.beachAccess}
-                        alt={service.title}
+                        alt={service.title || 'Service'}
                         fill
                         className="object-cover transition-transform duration-700 group-hover:scale-110"
                       />
