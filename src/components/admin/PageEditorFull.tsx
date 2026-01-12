@@ -387,9 +387,8 @@ export function PageEditorFull({ pageId }: PageEditorFullProps) {
 
     try {
       // Charger UNIQUEMENT depuis Supabase - PAS de localStorage
-      const timestamp = Date.now();
       const response = await fetch(
-        `${SUPABASE_URL}/rest/v1/page_content?page_id=eq.${pageId}&select=content&_t=${timestamp}`,
+        `${SUPABASE_URL}/rest/v1/page_content?page_id=eq.${pageId}&select=content`,
         {
           headers: {
             'apikey': SUPABASE_ANON_KEY,

@@ -56,9 +56,8 @@ export default function PessahGaleriePage() {
   const loadGalleryData = async () => {
     try {
       // Charger UNIQUEMENT depuis Supabase - PAS de localStorage
-      const timestamp = Date.now();
       const response = await fetch(
-        `${SUPABASE_URL}/rest/v1/galerie_content?id=eq.00000000-0000-0000-0000-000000000001&select=categories,images&_t=${timestamp}`,
+        `${SUPABASE_URL}/rest/v1/galerie_content?id=eq.00000000-0000-0000-0000-000000000001&select=categories,images`,
         {
           headers: {
             'apikey': SUPABASE_ANON_KEY,

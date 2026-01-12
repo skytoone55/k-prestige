@@ -156,13 +156,13 @@ export function PageEditor({ pageId }: PageEditorProps) {
       }
 
       try {
-        const timestamp = Date.now();
         const response = await fetch(
-          `${SUPABASE_URL}/rest/v1/page_content?page_id=eq.${pageId}&select=content&_t=${timestamp}`,
+          `${SUPABASE_URL}/rest/v1/page_content?page_id=eq.${pageId}&select=content`,
           {
             headers: {
               'apikey': SUPABASE_ANON_KEY,
               'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
             },
             cache: 'no-store',
           }

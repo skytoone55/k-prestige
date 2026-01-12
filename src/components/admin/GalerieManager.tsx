@@ -43,15 +43,14 @@ export function GalerieManager() {
     console.log('[GalerieManager] Loading from Supabase...');
 
     try {
-      // Ajouter timestamp pour éviter tout cache navigateur
-      const timestamp = Date.now();
       const response = await fetch(
-        `${SUPABASE_URL}/rest/v1/galerie_content?id=eq.00000000-0000-0000-0000-000000000001&select=categories,images&_t=${timestamp}`,
+        `${SUPABASE_URL}/rest/v1/galerie_content?id=eq.00000000-0000-0000-0000-000000000001&select=categories,images`,
         {
           headers: {
             'apikey': SUPABASE_ANON_KEY,
             'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
             'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
           },
           cache: 'no-store',
         }

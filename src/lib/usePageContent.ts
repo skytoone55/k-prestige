@@ -20,8 +20,7 @@ export function usePageContent(pageId: string) {
 
       try {
         // Toujours charger depuis Supabase - PAS de localStorage
-        const timestamp = Date.now();
-        const url = `${SUPABASE_URL}/rest/v1/page_content?page_id=eq.${pageId}&select=content&_t=${timestamp}`;
+        const url = `${SUPABASE_URL}/rest/v1/page_content?page_id=eq.${pageId}&select=content`;
 
         const response = await fetch(url, {
           method: 'GET',
