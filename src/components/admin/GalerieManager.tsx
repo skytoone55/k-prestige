@@ -78,31 +78,50 @@ export function GalerieManager() {
     }
   };
 
+  // Sauvegarde automatique vers Supabase
+  const saveToSupabase = async (newCategories: Category[], newImages: GalleryImage[]) => {
+    try {
+      const { createClient } = await import('@/lib/supabase/client');
+      const supabase = createClient();
+
+      console.log('[GalerieManager] Auto-saving to Supabase...', {
+        categories: newCategories.length,
+        images: newImages.length
+      });
+
+      const { error } = await supabase
+        .from('galerie_content')
+        .update({
+          categories: newCategories,
+          images: newImages,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', '00000000-0000-0000-0000-000000000001');
+
+      if (error) {
+        console.error('[GalerieManager] Supabase auto-save error:', error);
+      } else {
+        console.log('[GalerieManager] ✅ Auto-saved to Supabase');
+      }
+    } catch (error) {
+      console.error('[GalerieManager] Auto-save error:', error);
+    }
+
+    // Toujours sauvegarder en localStorage aussi
+    localStorage.setItem('galerie_categories', JSON.stringify(newCategories));
+    localStorage.setItem('galerie_images', JSON.stringify(newImages));
+  };
+
   const saveCategories = (newCategories: Category[]) => {
     setCategories(newCategories);
-    // Sauvegarder dans localStorage (solution simple qui fonctionne)
-    localStorage.setItem('galerie_categories', JSON.stringify(newCategories));
+    // Sauvegarder automatiquement dans Supabase et localStorage
+    saveToSupabase(newCategories, images);
   };
 
   const saveImages = (newImages: GalleryImage[]) => {
     setImages(newImages);
-    
-    // Sauvegarder par catégorie dans localStorage (solution simple qui fonctionne)
-    const imagesByCategory: Record<string, GalleryImage[]> = {};
-    newImages.forEach(img => {
-      if (!imagesByCategory[img.category_id]) {
-        imagesByCategory[img.category_id] = [];
-      }
-      imagesByCategory[img.category_id].push(img);
-    });
-    
-    // Sauvegarder globalement
-    localStorage.setItem('galerie_images', JSON.stringify(newImages));
-    
-    // Sauvegarder par catégorie (pour la page publique)
-    Object.keys(imagesByCategory).forEach(catId => {
-      localStorage.setItem(`galerie_images_${catId}`, JSON.stringify(imagesByCategory[catId]));
-    });
+    // Sauvegarder automatiquement dans Supabase et localStorage
+    saveToSupabase(categories, newImages);
   };
 
   const handleAddCategory = () => {
@@ -182,13 +201,12 @@ export function GalerieManager() {
         src: imageUrl, // URL Supabase ou base64 en fallback
         alt: file.name,
       };
-      
-      // Utiliser setImages avec callback pour éviter les conflits avec plusieurs uploads simultanés
-      setImages((prevImages) => {
-        const updatedImages = [...prevImages, newImage];
-        saveImages(updatedImages);
-        return updatedImages;
-      });
+
+      // Ajouter l'image et sauvegarder
+      const updatedImages = [...images, newImage];
+      setImages(updatedImages);
+      // Sauvegarder automatiquement dans Supabase
+      saveToSupabase(categories, updatedImages);
     } catch (error: any) {
       console.error('Erreur lors de l\'upload:', error);
       alert(`Erreur lors de l'upload de l'image: ${error.message || 'Erreur inconnue'}`);

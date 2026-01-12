@@ -8,8 +8,64 @@ import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { placeholderImages } from '@/lib/images';
+import { usePageContent } from '@/lib/usePageContent';
 
 export default function HilloulaPage() {
+  const { data, loading } = usePageContent('hilloula');
+
+  // Données dynamiques avec fallback
+  const hero = data?.hero || {
+    subtitle: 'Pèlerinages Spirituels',
+    title: 'Hilloula',
+    description: 'Pèlerinages sur les tombes des Tsadikim',
+    image: placeholderImages.candles,
+  };
+
+  const main = data?.main || {
+    title: 'Voyages Organisés',
+    description: 'K Prestige organise des voyages pour pèlerinages sur tombes de Tsadikim plusieurs fois par an, vers différentes destinations.',
+    features: [
+      'Pension complète',
+      'Transferts organisés',
+      'Kashrout certifié',
+      'Programme complet',
+    ],
+    note: 'Les prix sont affichés pour chaque événement. Le contenu change fréquemment, consultez régulièrement les nouvelles dates.',
+    image: placeholderImages.pilgrimage,
+  };
+
+  const event = data?.event || {
+    title: 'Prochain Événement',
+    name: 'Hilloula Rabbi Itshak Abouhassira 2026',
+    dates: '29 Janvier - 1er Février 2026',
+    duration: '4 jours / 3 nuits',
+    lieu: 'Hôtel Taddart 4★, Midelt, Maroc',
+    price: '990€ / personne',
+    kashrout: 'Glatt Kosher Beth Yossef',
+    inclus: 'Pension complète, transferts (vols exclus)',
+    link: '/hilloula/rabbi-itshak-abouhassira-2026',
+    button_text: 'Voir le programme complet',
+  };
+
+  const cta = data?.cta || {
+    title: 'Intéressé par un pèlerinage ?',
+    description: 'Contactez-nous pour plus d\'informations sur les prochains événements',
+    button1_text: 'Nous contacter',
+    button2_text: 'WhatsApp',
+  };
+
+  if (loading) {
+    return (
+      <>
+        <PublicNavigation />
+        <main className="min-h-screen bg-white flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--gold)]"></div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
   return (
     <>
       <PublicNavigation />
@@ -18,7 +74,7 @@ export default function HilloulaPage() {
         <section className="relative h-[70vh] overflow-hidden">
           <div className="absolute inset-0">
             <Image
-              src={placeholderImages.candles}
+              src={hero.image || placeholderImages.candles}
               alt="Hilloula - Pèlerinage"
               fill
               className="object-cover scale-110 animate-slow-zoom"
@@ -27,21 +83,21 @@ export default function HilloulaPage() {
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
             <div className="absolute inset-0 bg-gradient-to-r from-[var(--gold)]/20 to-transparent" />
           </div>
-          
+
           <div className="relative z-10 h-full flex flex-col justify-end pb-16 px-6">
             <div className="max-w-7xl mx-auto w-full">
               <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
                 <span className="text-[var(--gold)] uppercase tracking-[0.2em] text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  Pèlerinages Spirituels
+                  {hero.subtitle}
                 </span>
-                <h1 
+                <h1
                   className="text-6xl md:text-7xl font-cormorant text-white mt-4 mb-4"
                   style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}
                 >
-                  Hilloula
+                  {hero.title}
                 </h1>
                 <p className="text-white/80 text-xl mt-4 max-w-xl" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  Pèlerinages sur les tombes des Tsadikim
+                  {hero.description}
                 </p>
               </motion.div>
             </div>
@@ -53,42 +109,30 @@ export default function HilloulaPage() {
           <section className="mb-16">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
-                <h2 
+                <h2
                   className="text-4xl md:text-5xl mb-6 text-[var(--gold)]"
                   style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}
                 >
-                  Voyages Organisés
+                  {main.title}
                 </h2>
                 <p className="text-lg text-gray-700 mb-6" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  K Prestige organise des voyages pour pèlerinages sur tombes de Tsadikim plusieurs fois par an, 
-                  vers différentes destinations.
+                  {main.description}
                 </p>
                 <ul className="space-y-3 text-gray-600 mb-8" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  <li className="flex items-center gap-3">
-                    <span className="text-[var(--gold)] text-xl">✓</span>
-                    <span>Pension complète</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <span className="text-[var(--gold)] text-xl">✓</span>
-                    <span>Transferts organisés</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <span className="text-[var(--gold)] text-xl">✓</span>
-                    <span>Kashrout certifié</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <span className="text-[var(--gold)] text-xl">✓</span>
-                    <span>Programme complet</span>
-                  </li>
+                  {(main.features || []).map((feature: string, idx: number) => (
+                    <li key={idx} className="flex items-center gap-3">
+                      <span className="text-[var(--gold)] text-xl">✓</span>
+                      <span>{feature}</span>
+                    </li>
+                  ))}
                 </ul>
                 <p className="text-sm text-gray-500" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  <strong>Note :</strong> Les prix sont affichés pour chaque événement. 
-                  Le contenu change fréquemment, consultez régulièrement les nouvelles dates.
+                  <strong>Note :</strong> {main.note}
                 </p>
               </div>
               <div className="relative h-[500px] rounded-2xl overflow-hidden shadow-2xl">
                 <Image
-                  src={placeholderImages.pilgrimage}
+                  src={main.image || placeholderImages.pilgrimage}
                   alt="Pèlerinage Hilloula"
                   fill
                   className="object-cover"
@@ -101,57 +145,57 @@ export default function HilloulaPage() {
           <section className="mb-16">
             <Card className="border-2 border-[var(--gold)]/30 bg-gradient-to-br from-[var(--gold-pale)]/20 to-transparent">
               <CardContent className="p-8">
-                <h2 
+                <h2
                   className="text-3xl md:text-4xl mb-6 text-center text-[var(--gold)]"
                   style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}
                 >
-                  Prochain Événement
+                  {event.title}
                 </h2>
                 <div className="max-w-3xl mx-auto">
                   <div className="bg-white rounded-lg p-6 mb-6">
-                    <h3 
+                    <h3
                       className="text-2xl mb-4 text-gray-800"
                       style={{ fontFamily: 'var(--font-cormorant)' }}
                     >
-                      Hilloula Rabbi Itshak Abouhassira 2026
+                      {event.name}
                     </h3>
                     <div className="grid md:grid-cols-2 gap-4 mb-4">
                       <div>
                         <p className="text-sm text-gray-500 mb-1" style={{ fontFamily: 'var(--font-dm-sans)' }}>Dates</p>
                         <p className="font-semibold text-gray-800" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                          29 Janvier - 1er Février 2026
+                          {event.dates}
                         </p>
-                        <p className="text-sm text-gray-600" style={{ fontFamily: 'var(--font-dm-sans)' }}>4 jours / 3 nuits</p>
+                        <p className="text-sm text-gray-600" style={{ fontFamily: 'var(--font-dm-sans)' }}>{event.duration}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-500 mb-1" style={{ fontFamily: 'var(--font-dm-sans)' }}>Lieu</p>
                         <p className="font-semibold text-gray-800" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                          Hôtel Taddart 4★, Midelt, Maroc
+                          {event.lieu}
                         </p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-500 mb-1" style={{ fontFamily: 'var(--font-dm-sans)' }}>Prix</p>
                         <p className="text-2xl font-bold text-[var(--gold)]" style={{ fontFamily: 'var(--font-cormorant)' }}>
-                          990€ / personne
+                          {event.price}
                         </p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-500 mb-1" style={{ fontFamily: 'var(--font-dm-sans)' }}>Kashrout</p>
                         <p className="font-semibold text-gray-800" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                          Glatt Kosher Beth Yossef
+                          {event.kashrout}
                         </p>
                       </div>
                     </div>
                     <div className="border-t pt-4">
                       <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                        <strong>Inclus :</strong> Pension complète, transferts (vols exclus)
+                        <strong>Inclus :</strong> {event.inclus}
                       </p>
                     </div>
                   </div>
                   <div className="text-center">
-                    <Link href="/hilloula/rabbi-itshak-abouhassira-2026">
+                    <Link href={event.link || '/hilloula/rabbi-itshak-abouhassira-2026'}>
                       <Button className="btn-gold-primary">
-                        Voir le programme complet
+                        {event.button_text}
                       </Button>
                     </Link>
                   </div>
@@ -191,24 +235,24 @@ export default function HilloulaPage() {
 
           {/* CTA */}
           <section className="text-center py-16 bg-gradient-to-br from-[var(--gold-pale)]/30 to-transparent rounded-lg">
-            <h2 
+            <h2
               className="text-3xl md:text-4xl mb-6 text-gray-800"
               style={{ fontFamily: 'var(--font-cormorant)' }}
             >
-              Intéressé par un pèlerinage ?
+              {cta.title}
             </h2>
             <p className="text-lg text-gray-600 mb-8" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-              Contactez-nous pour plus d&apos;informations sur les prochains événements
+              {cta.description}
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/contact">
                 <Button className="btn-gold-primary">
-                  Nous contacter
+                  {cta.button1_text}
                 </Button>
               </Link>
               <a href="https://wa.me/33699951963" target="_blank" rel="noopener noreferrer">
                 <Button className="btn-gold-outline">
-                  WhatsApp
+                  {cta.button2_text}
                 </Button>
               </a>
             </div>
