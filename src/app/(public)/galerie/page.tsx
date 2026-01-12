@@ -6,29 +6,32 @@ import { PublicNavigation } from '@/components/layout/PublicNavigation';
 import { Footer } from '@/components/layout/Footer';
 import { Card } from '@/components/ui/Card';
 
+// Constantes Supabase hardcodées pour éviter les problèmes d'env
+const SUPABASE_URL = 'https://htemxbrbxazzatmjerij.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh0ZW14YnJieGF6emF0bWplcmlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4MDI0MjQsImV4cCI6MjA4MzM3ODQyNH0.6RiC65zsSb9INtYpRC7PLurvoHmbb_LX3NkPBM4wodw';
+
 export default function GaleriePage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [categories, setCategories] = useState<Array<{ id: string; name: string; slug: string }>>([]);
   const [images, setImages] = useState<Array<{ id: string; src: string; alt: string; category_id: string }>>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadGalerie = async () => {
-      // Fetch direct avec no-store pour éviter tout cache
-      try {
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      console.log('[Galerie] Loading from Supabase...');
 
+      try {
         // Ajouter timestamp pour éviter tout cache navigateur
         const timestamp = Date.now();
         const response = await fetch(
-          `${supabaseUrl}/rest/v1/galerie_content?id=eq.00000000-0000-0000-0000-000000000001&select=categories,images&_t=${timestamp}`,
+          `${SUPABASE_URL}/rest/v1/galerie_content?id=eq.00000000-0000-0000-0000-000000000001&select=categories,images&_t=${timestamp}`,
           {
             headers: {
-              'apikey': supabaseKey!,
-              'Authorization': `Bearer ${supabaseKey}`,
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'Pragma': 'no-cache',
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+              'Content-Type': 'application/json',
             },
             cache: 'no-store',
           }
@@ -38,7 +41,7 @@ export default function GaleriePage() {
           const data = await response.json();
           if (data && data[0]) {
             const galerieData = data[0];
-            console.log('[Galerie] Loaded from Supabase (no-cache):', {
+            console.log('[Galerie] ✅ Loaded from Supabase:', {
               categories: galerieData.categories?.length || 0,
               images: galerieData.images?.length || 0
             });
@@ -48,31 +51,22 @@ export default function GaleriePage() {
             if (cats.length > 0) {
               setActiveCategory(cats[0].id);
             }
-            return;
+            setError(null);
+          } else {
+            console.log('[Galerie] ⚠️ Pas de données dans Supabase');
+            setError('Aucune donnée trouvée');
           }
+        } else {
+          console.error('[Galerie] ❌ Erreur Supabase:', response.status);
+          setError(`Erreur Supabase: ${response.status}`);
         }
-
-        console.warn('[Galerie] Fetch error:', response.status);
-      } catch (error) {
-        console.error('[Galerie] Error loading from Supabase:', error);
+      } catch (err) {
+        console.error('[Galerie] ❌ Erreur:', err);
+        setError(err instanceof Error ? err.message : 'Erreur inconnue');
       }
 
-      // Fallback localStorage uniquement si Supabase échoue
-      console.log('[Galerie] Using localStorage fallback');
-      const savedCategories = localStorage.getItem('galerie_categories');
-      const savedImages = localStorage.getItem('galerie_images');
-
-      if (savedCategories) {
-        const cats = JSON.parse(savedCategories);
-        setCategories(cats);
-        if (cats.length > 0) {
-          setActiveCategory(cats[0].id);
-        }
-      }
-
-      if (savedImages) {
-        setImages(JSON.parse(savedImages));
-      }
+      // PAS de fallback localStorage - Supabase est la seule source
+      setLoading(false);
     };
 
     loadGalerie();

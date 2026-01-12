@@ -9,6 +9,10 @@ import Image from 'next/image';
 import { Textarea } from '@/components/ui/Textarea';
 import { defaultPageContent } from '@/lib/page-content';
 
+// Constantes Supabase hardcodées pour éviter les problèmes d'env
+const SUPABASE_URL = 'https://htemxbrbxazzatmjerij.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh0ZW14YnJieGF6emF0bWplcmlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4MDI0MjQsImV4cCI6MjA4MzM3ODQyNH0.6RiC65zsSb9INtYpRC7PLurvoHmbb_LX3NkPBM4wodw';
+
 // Configuration spécifique pour chaque page
 const pageConfigs: Record<string, {
   title: string;
@@ -141,21 +145,49 @@ export function PageEditor({ pageId }: PageEditorProps) {
 
   useEffect(() => {
     if (!config) return;
-    
-    // Charger depuis localStorage ou utiliser les valeurs par défaut
-    const saved = localStorage.getItem(`page_content_${pageId}`);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      setContent(parsed.content || {});
-      setImages(parsed.images || {});
-    } else {
-      // Charger le contenu par défaut de la page
+
+    // Charger UNIQUEMENT depuis Supabase - PAS de localStorage
+    const loadData = async () => {
+      // Initialiser avec valeurs par défaut
       const defaults = defaultPageContent[pageId];
       if (defaults) {
         setContent(defaults.content || {});
         setImages(defaults.images || {});
       }
-    }
+
+      try {
+        const timestamp = Date.now();
+        const response = await fetch(
+          `${SUPABASE_URL}/rest/v1/page_content?page_id=eq.${pageId}&select=content&_t=${timestamp}`,
+          {
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            },
+            cache: 'no-store',
+          }
+        );
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result && result[0]?.content) {
+            console.log('[PageEditor] ✅ Loaded from Supabase');
+            // Adapter le format si nécessaire
+            const supabaseContent = result[0].content;
+            if (supabaseContent.content) {
+              setContent(supabaseContent.content);
+            }
+            if (supabaseContent.images) {
+              setImages(supabaseContent.images);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('[PageEditor] ❌ Erreur Supabase:', error);
+      }
+    };
+
+    loadData();
   }, [pageId, config]);
 
   if (!config) {
@@ -168,9 +200,35 @@ export function PageEditor({ pageId }: PageEditorProps) {
 
   const handleSave = async () => {
     setLoading(true);
-    localStorage.setItem(`page_content_${pageId}`, JSON.stringify({ content, images }));
+
+    try {
+      // Sauvegarder UNIQUEMENT dans Supabase - PAS de localStorage
+      const supabase = (await import('@/lib/supabase/client')).createClient();
+
+      const { error } = await supabase
+        .from('page_content')
+        .upsert(
+          {
+            page_id: pageId,
+            content: { content, images },
+            updated_at: new Date().toISOString()
+          },
+          { onConflict: 'page_id' }
+        );
+
+      if (error) {
+        console.error('[PageEditor] ❌ Erreur Supabase:', error);
+        alert('❌ Erreur Supabase: ' + error.message);
+      } else {
+        console.log('[PageEditor] ✅ Saved to Supabase');
+        alert('✅ Contenu sauvegardé avec succès dans Supabase !');
+      }
+    } catch (error) {
+      console.error('[PageEditor] ❌ Erreur:', error);
+      alert('❌ Erreur de connexion');
+    }
+
     setLoading(false);
-    alert('Contenu sauvegardé !');
   };
 
   const handleImageUpload = (field: string, file: File) => {

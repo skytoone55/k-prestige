@@ -10,6 +10,10 @@ import { Textarea } from '@/components/ui/Textarea';
 import { fullPageContent } from '@/lib/page-content-full';
 import { ImageSelector } from '@/components/admin/ImageSelector';
 
+// Constantes Supabase hardcodées pour éviter les problèmes d'env
+const SUPABASE_URL = 'https://htemxbrbxazzatmjerij.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh0ZW14YnJieGF6emF0bWplcmlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4MDI0MjQsImV4cCI6MjA4MzM3ODQyNH0.6RiC65zsSb9INtYpRC7PLurvoHmbb_LX3NkPBM4wodw';
+
 // Configuration pour chaque page avec TOUS les éléments
 const pageConfigs: Record<string, any> = {
   'accueil': {
@@ -375,52 +379,42 @@ export function PageEditorFull({ pageId }: PageEditorFullProps) {
   const loadPageData = async () => {
     if (!config) return;
 
-    try {
-      // Charger directement depuis Supabase via fetch (sans cache)
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-      if (supabaseUrl && supabaseKey) {
-        // Ajouter timestamp pour éviter tout cache navigateur
-        const timestamp = Date.now();
-        const response = await fetch(
-          `${supabaseUrl}/rest/v1/page_content?page_id=eq.${pageId}&select=content&_t=${timestamp}`,
-          {
-            headers: {
-              'apikey': supabaseKey,
-              'Authorization': `Bearer ${supabaseKey}`,
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'Pragma': 'no-cache',
-            },
-            cache: 'no-store',
-          }
-        );
-
-        if (response.ok) {
-          const result = await response.json();
-          if (result && result[0]?.content) {
-            console.log('[PageEditorFull] Loaded from Supabase (no-cache)');
-            setData(result[0].content);
-            return;
-          }
-        }
-      }
-    } catch (error) {
-      console.error('[PageEditorFull] Erreur Supabase:', error);
+    // Initialiser avec les valeurs par défaut pour éviter le flash
+    const defaults = fullPageContent[pageId];
+    if (defaults) {
+      setData(defaults);
     }
 
-    // Fallback localStorage
-    const saved = localStorage.getItem(`page_content_full_${pageId}`);
-    if (saved) {
-      console.log('[PageEditorFull] Using localStorage fallback');
-      setData(JSON.parse(saved));
-    } else {
-      // Utiliser les valeurs par défaut
-      console.log('[PageEditorFull] Using default values');
-      const defaults = fullPageContent[pageId];
-      if (defaults) {
-        setData(defaults);
+    try {
+      // Charger UNIQUEMENT depuis Supabase - PAS de localStorage
+      const timestamp = Date.now();
+      const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/page_content?page_id=eq.${pageId}&select=content&_t=${timestamp}`,
+        {
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+          },
+          cache: 'no-store',
+        }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result && result[0]?.content) {
+          console.log('[PageEditorFull] ✅ Loaded from Supabase');
+          setData(result[0].content);
+        } else {
+          console.log('[PageEditorFull] ⚠️ No data in Supabase, using defaults');
+        }
+      } else {
+        console.error('[PageEditorFull] ❌ Supabase error:', response.status);
       }
+    } catch (error) {
+      console.error('[PageEditorFull] ❌ Erreur Supabase:', error);
+      // PAS de fallback localStorage - on garde les valeurs par défaut
     }
   };
 
@@ -436,7 +430,7 @@ export function PageEditorFull({ pageId }: PageEditorFullProps) {
     setLoading(true);
 
     try {
-      // Sauvegarder dans Supabase
+      // Sauvegarder UNIQUEMENT dans Supabase - PAS de localStorage
       const supabase = (await import('@/lib/supabase/client')).createClient();
 
       console.log('[PageEditorFull] Saving to Supabase...', {
@@ -463,10 +457,8 @@ export function PageEditorFull({ pageId }: PageEditorFullProps) {
       });
 
       if (error) {
-        console.error('[PageEditorFull] Erreur Supabase:', error);
-        // Fallback localStorage
-        localStorage.setItem(`page_content_full_${pageId}`, JSON.stringify(data));
-        alert('⚠️ Sauvegarde locale uniquement (erreur Supabase: ' + error.message + ')');
+        console.error('[PageEditorFull] ❌ Erreur Supabase:', error);
+        alert('❌ Erreur Supabase: ' + error.message);
       } else {
         // Vérifier que la sauvegarde a bien fonctionné en relisant
         const { data: verifyData, error: verifyError } = await supabase
@@ -481,15 +473,11 @@ export function PageEditorFull({ pageId }: PageEditorFullProps) {
           error: verifyError?.message || null
         });
 
-        // Aussi sauvegarder en localStorage pour le cache
-        localStorage.setItem(`page_content_full_${pageId}`, JSON.stringify(data));
         alert('✅ Contenu sauvegardé avec succès dans Supabase !');
       }
     } catch (error) {
-      console.error('[PageEditorFull] Erreur:', error);
-      // Fallback localStorage
-      localStorage.setItem(`page_content_full_${pageId}`, JSON.stringify(data));
-      alert('⚠️ Sauvegarde locale uniquement (erreur de connexion)');
+      console.error('[PageEditorFull] ❌ Erreur:', error);
+      alert('❌ Erreur de connexion: ' + (error instanceof Error ? error.message : 'Erreur inconnue'));
     }
 
     setLoading(false);
@@ -797,13 +785,13 @@ export function PageEditorFull({ pageId }: PageEditorFullProps) {
                 <p className="text-xs text-gray-500 mt-0.5">Modifiez le contenu de cette page</p>
               </div>
             </div>
-            <Button 
-              onClick={handleSave} 
-              disabled={loading} 
-              className="btn-gold-primary px-5 py-2.5 text-base shadow-lg hover:shadow-xl transition-all flex-shrink-0 flex items-center gap-2"
+            <Button
+              onClick={handleSave}
+              disabled={loading}
+              className="btn-gold-primary h-10 px-5 text-base shadow-lg hover:shadow-xl transition-all flex-shrink-0 inline-flex items-center gap-2 whitespace-nowrap"
             >
-              <Save className="w-4 h-4" />
-              <span className="whitespace-nowrap">{loading ? 'Sauvegarde...' : 'Sauvegarder'}</span>
+              <Save className="w-4 h-4 flex-shrink-0" />
+              {loading ? 'Sauvegarde...' : 'Sauvegarder'}
             </Button>
           </div>
         </div>

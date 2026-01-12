@@ -8,6 +8,10 @@ import { Plus, Trash2, Upload, X, Save, Edit3, Check } from 'lucide-react';
 import Image from 'next/image';
 import { uploadImageToSupabase, deleteImageFromSupabase } from '@/lib/supabase/storage';
 
+// Constantes Supabase hardcodées pour éviter les problèmes d'env
+const SUPABASE_URL = 'https://htemxbrbxazzatmjerij.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh0ZW14YnJieGF6emF0bWplcmlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4MDI0MjQsImV4cCI6MjA4MzM3ODQyNH0.6RiC65zsSb9INtYpRC7PLurvoHmbb_LX3NkPBM4wodw';
+
 interface Category {
   id: string;
   name: string;
@@ -29,70 +33,56 @@ export function GalerieManager() {
   const [loading, setLoading] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
   const [editingCategoryName, setEditingCategoryName] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
   }, []);
 
   const loadData = async () => {
+    console.log('[GalerieManager] Loading from Supabase...');
+
     try {
-      // Charger directement depuis Supabase via fetch (sans cache)
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-      if (supabaseUrl && supabaseKey) {
-        // Ajouter timestamp pour éviter tout cache navigateur
-        const timestamp = Date.now();
-        const response = await fetch(
-          `${supabaseUrl}/rest/v1/galerie_content?id=eq.00000000-0000-0000-0000-000000000001&select=categories,images&_t=${timestamp}`,
-          {
-            headers: {
-              'apikey': supabaseKey,
-              'Authorization': `Bearer ${supabaseKey}`,
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'Pragma': 'no-cache',
-            },
-            cache: 'no-store',
-          }
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data && data[0]) {
-            const galerieData = data[0];
-            console.log('[GalerieManager] Loaded from Supabase (no-cache):', {
-              categories: galerieData.categories?.length || 0,
-              images: galerieData.images?.length || 0
-            });
-            setCategories(galerieData.categories || []);
-            setImages(galerieData.images || []);
-            // Cache en localStorage
-            localStorage.setItem('galerie_categories', JSON.stringify(galerieData.categories || []));
-            localStorage.setItem('galerie_images', JSON.stringify(galerieData.images || []));
-            return;
-          }
+      // Ajouter timestamp pour éviter tout cache navigateur
+      const timestamp = Date.now();
+      const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/galerie_content?id=eq.00000000-0000-0000-0000-000000000001&select=categories,images&_t=${timestamp}`,
+        {
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          cache: 'no-store',
         }
+      );
 
-        console.warn('[GalerieManager] Fetch error:', response.status);
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data[0]) {
+          const galerieData = data[0];
+          console.log('[GalerieManager] ✅ Loaded from Supabase:', {
+            categories: galerieData.categories?.length || 0,
+            images: galerieData.images?.length || 0
+          });
+          setCategories(galerieData.categories || []);
+          setImages(galerieData.images || []);
+          setError(null);
+          return;
+        }
       }
-    } catch (error) {
-      console.error('[GalerieManager] Error loading from Supabase:', error);
+
+      console.error('[GalerieManager] ❌ Erreur Supabase:', response.status);
+      setError(`Erreur Supabase: ${response.status}`);
+    } catch (err) {
+      console.error('[GalerieManager] ❌ Erreur:', err);
+      setError(err instanceof Error ? err.message : 'Erreur inconnue');
     }
 
-    // Fallback localStorage
-    console.log('[GalerieManager] Using localStorage fallback');
-    const savedCategories = localStorage.getItem('galerie_categories');
-    if (savedCategories) {
-      setCategories(JSON.parse(savedCategories));
-    }
-
-    const savedImages = localStorage.getItem('galerie_images');
-    if (savedImages) {
-      setImages(JSON.parse(savedImages));
-    }
+    // PAS de fallback localStorage - Supabase est la seule source
   };
 
-  // Sauvegarde automatique vers Supabase
+  // Sauvegarde automatique vers Supabase (SANS localStorage)
   const saveToSupabase = async (newCategories: Category[], newImages: GalleryImage[]) => {
     try {
       const { createClient } = await import('@/lib/supabase/client');
@@ -113,28 +103,28 @@ export function GalerieManager() {
         .eq('id', '00000000-0000-0000-0000-000000000001');
 
       if (error) {
-        console.error('[GalerieManager] Supabase auto-save error:', error);
+        console.error('[GalerieManager] ❌ Supabase auto-save error:', error);
+        setError(`Erreur sauvegarde: ${error.message}`);
       } else {
         console.log('[GalerieManager] ✅ Auto-saved to Supabase');
+        setError(null);
       }
-    } catch (error) {
-      console.error('[GalerieManager] Auto-save error:', error);
+    } catch (err) {
+      console.error('[GalerieManager] ❌ Auto-save error:', err);
+      setError(err instanceof Error ? err.message : 'Erreur sauvegarde');
     }
-
-    // Toujours sauvegarder en localStorage aussi
-    localStorage.setItem('galerie_categories', JSON.stringify(newCategories));
-    localStorage.setItem('galerie_images', JSON.stringify(newImages));
+    // PAS de localStorage - Supabase uniquement
   };
 
   const saveCategories = (newCategories: Category[]) => {
     setCategories(newCategories);
-    // Sauvegarder automatiquement dans Supabase et localStorage
+    // Sauvegarder automatiquement dans Supabase uniquement
     saveToSupabase(newCategories, images);
   };
 
   const saveImages = (newImages: GalleryImage[]) => {
     setImages(newImages);
-    // Sauvegarder automatiquement dans Supabase et localStorage
+    // Sauvegarder automatiquement dans Supabase uniquement
     saveToSupabase(categories, newImages);
   };
 
@@ -154,14 +144,11 @@ export function GalerieManager() {
 
   const handleDeleteCategory = (id: string) => {
     if (!confirm('Supprimer cette catégorie et toutes ses photos ?')) return;
-    
+
     // Supprimer les images de la catégorie
     const remainingImages = images.filter(img => img.category_id !== id);
     saveImages(remainingImages);
-    
-    // Supprimer la catégorie de localStorage
-    localStorage.removeItem(`galerie_images_${id}`);
-    
+
     // Supprimer la catégorie
     saveCategories(categories.filter(c => c.id !== id));
     if (selectedCategory === id) setSelectedCategory(null);
@@ -240,7 +227,7 @@ export function GalerieManager() {
         await deleteImageFromSupabase(imageToDelete.src, 'galerie');
       } catch (error) {
         console.error('Erreur lors de la suppression de Supabase:', error);
-        // Continuer quand même pour supprimer de localStorage
+        // Continuer quand même pour supprimer de la liste
       }
     }
     
@@ -264,7 +251,7 @@ export function GalerieManager() {
         images: images.length
       });
 
-      // Sauvegarder dans Supabase
+      // Sauvegarder dans Supabase UNIQUEMENT
       const { error } = await supabase
         .from('galerie_content')
         .update({
@@ -274,23 +261,20 @@ export function GalerieManager() {
         })
         .eq('id', '00000000-0000-0000-0000-000000000001');
 
-      // Toujours sauvegarder en localStorage
-      localStorage.setItem('galerie_categories', JSON.stringify(categories));
-      localStorage.setItem('galerie_images', JSON.stringify(images));
-
       if (error) {
-        console.error('[GalerieManager] Supabase error:', error);
-        alert('⚠️ Sauvegarde locale uniquement. Erreur Supabase: ' + error.message);
+        console.error('[GalerieManager] ❌ Supabase error:', error);
+        setError(`Erreur Supabase: ${error.message}`);
+        alert('❌ Erreur Supabase: ' + error.message);
       } else {
         console.log('[GalerieManager] ✅ Saved to Supabase');
-        alert('✅ Galerie sauvegardée avec succès !');
+        setError(null);
+        alert('✅ Galerie sauvegardée avec succès dans Supabase !');
       }
-    } catch (error) {
-      console.error('[GalerieManager] Error:', error);
-      // Sauvegarder en localStorage comme fallback
-      localStorage.setItem('galerie_categories', JSON.stringify(categories));
-      localStorage.setItem('galerie_images', JSON.stringify(images));
-      alert('⚠️ Sauvegarde locale uniquement. Erreur de connexion.');
+    } catch (err) {
+      console.error('[GalerieManager] ❌ Error:', err);
+      const message = err instanceof Error ? err.message : 'Erreur inconnue';
+      setError(message);
+      alert('❌ Erreur de connexion: ' + message);
     }
 
     setLoading(false);
@@ -310,12 +294,12 @@ export function GalerieManager() {
               </div>
             </div>
             <Button 
-              onClick={handleSave} 
-              disabled={loading} 
-              className="btn-gold-primary px-5 py-2.5 text-base shadow-lg hover:shadow-xl transition-all flex-shrink-0 flex items-center gap-2"
+              onClick={handleSave}
+              disabled={loading}
+              className="btn-gold-primary h-10 px-5 text-base shadow-lg hover:shadow-xl transition-all flex-shrink-0 inline-flex items-center gap-2 whitespace-nowrap"
             >
-              <Save className="w-4 h-4" />
-              <span className="whitespace-nowrap">{loading ? 'Sauvegarde...' : 'Sauvegarder'}</span>
+              <Save className="w-4 h-4 flex-shrink-0" />
+              {loading ? 'Sauvegarde...' : 'Sauvegarder'}
             </Button>
           </div>
         </div>

@@ -9,6 +9,10 @@ import Image from 'next/image';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { placeholderImages } from '@/lib/images';
 
+// Constantes Supabase hardcodées pour éviter les problèmes d'env
+const SUPABASE_URL = 'https://htemxbrbxazzatmjerij.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh0ZW14YnJieGF6emF0bWplcmlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4MDI0MjQsImV4cCI6MjA4MzM3ODQyNH0.6RiC65zsSb9INtYpRC7PLurvoHmbb_LX3NkPBM4wodw';
+
 interface GalleryImage {
   id: string;
   src: string;
@@ -51,57 +55,41 @@ export default function PessahGaleriePage() {
 
   const loadGalleryData = async () => {
     try {
-      // Charger directement depuis Supabase via fetch (sans cache)
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-      if (supabaseUrl && supabaseKey) {
-        // Ajouter timestamp pour éviter tout cache navigateur
-        const timestamp = Date.now();
-        const response = await fetch(
-          `${supabaseUrl}/rest/v1/galerie_content?id=eq.00000000-0000-0000-0000-000000000001&select=categories,images&_t=${timestamp}`,
-          {
-            headers: {
-              'apikey': supabaseKey,
-              'Authorization': `Bearer ${supabaseKey}`,
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'Pragma': 'no-cache',
-            },
-            cache: 'no-store',
-          }
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data && data[0]) {
-            const galerieData = data[0];
-            console.log('[PessahGalerie] Loaded from Supabase (no-cache):', {
-              categories: galerieData.categories?.length || 0,
-              images: galerieData.images?.length || 0
-            });
-            const cats = galerieData.categories || [];
-            setCategories(cats);
-            setImages(galerieData.images || []);
-            return;
-          }
+      // Charger UNIQUEMENT depuis Supabase - PAS de localStorage
+      const timestamp = Date.now();
+      const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/galerie_content?id=eq.00000000-0000-0000-0000-000000000001&select=categories,images&_t=${timestamp}`,
+        {
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+          },
+          cache: 'no-store',
         }
+      );
 
-        console.warn('[PessahGalerie] Fetch error:', response.status);
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data[0]) {
+          const galerieData = data[0];
+          console.log('[PessahGalerie] ✅ Loaded from Supabase:', {
+            categories: galerieData.categories?.length || 0,
+            images: galerieData.images?.length || 0
+          });
+          const cats = galerieData.categories || [];
+          setCategories(cats);
+          setImages(galerieData.images || []);
+        } else {
+          console.log('[PessahGalerie] ⚠️ No data in Supabase');
+        }
+      } else {
+        console.error('[PessahGalerie] ❌ Supabase error:', response.status);
       }
     } catch (error) {
-      console.error('[PessahGalerie] Erreur lors du chargement:', error);
-    }
-
-    // Fallback localStorage
-    console.log('[PessahGalerie] Using localStorage fallback');
-    const savedCategories = localStorage.getItem('galerie_categories');
-    if (savedCategories) {
-      const parsedCategories: Category[] = JSON.parse(savedCategories);
-      setCategories(parsedCategories);
-    }
-    const savedImages = localStorage.getItem('galerie_images');
-    if (savedImages) {
-      setImages(JSON.parse(savedImages));
+      console.error('[PessahGalerie] ❌ Erreur lors du chargement:', error);
+      // PAS de fallback localStorage
     }
   };
   
