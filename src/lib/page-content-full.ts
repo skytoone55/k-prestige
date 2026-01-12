@@ -76,6 +76,49 @@ export const fullPageContent: Record<string, any> = {
       button2_text: 'Nous contacter sur WhatsApp',
     },
   },
+  'pessah-2026': {
+    hero: {
+      title: 'PESSAH 2026',
+      location: 'Cabogata Beach Hotel 5★ • Espagne',
+      dates: '31 Mars - 10 Avril 2026',
+      image: '/images/hero/PANORAMIC VIEW.jpg',
+    },
+    hotel: {
+      title: 'Cabogata Beach Hotel 5★',
+      description: 'Notre écrin de luxe au bord de la Méditerranée pour Pessah 2026',
+      image: '/images/hotel/FAÇADE.jpg',
+    },
+    features: [
+      { text: '257 chambres de standing' },
+      { text: 'Pied dans l\'eau' },
+      { text: '3 piscines dont 1 chauffée' },
+      { text: 'SPA complet' },
+      { text: 'Accès direct plage' },
+    ],
+    bandeaux: [
+      { image: '/images/piscines/POOLS & SEA.jpg', caption: '3 Piscines dont 1 chauffée' },
+      { image: '/images/chambres/MEDITERRANEAN SUITE.jpg', caption: 'Nos chambres de standing' },
+      { image: '/images/restaurant/ORIGEN.jpg', caption: 'Gastronomie Glatt Kasher' },
+      { image: '/images/spa/SPA.jpg', caption: 'SPA & Bien-être' },
+    ],
+    dates: {
+      principal: { title: 'Séjour Principal', dates: '31 Mars - 10 Avril 2026', duration: '10 nuits' },
+      prolonge: { title: 'Weekend Prolongé', dates: '10 - 12 Avril 2026', duration: '+2 nuits (optionnel)' },
+    },
+    supervision: {
+      title: 'Glatt Kasher Laméhadrine',
+      rav: 'Rav Mordehai Cohen de Malaga',
+    },
+    animation: [
+      { name: 'Laurent Folies Musical Band', description: '@laurentfolies', icon: '🎵' },
+      { name: 'Yonni Chemla DJ Live', description: '@yonnichemla', icon: '🎧' },
+      { name: 'Avi Ohayon', description: 'Rabbin & Paytan', icon: '🎤' },
+    ],
+    cta: {
+      title: 'Prêt à vivre un Pessah inoubliable ?',
+      button_text: 'Demander un devis',
+    },
+  },
   'pessah-sejour': {
     hero: {
       subtitle: 'Séjour Premium',
@@ -84,16 +127,8 @@ export const fullPageContent: Record<string, any> = {
       image: '/images/hero/PANORAMIC VIEW.jpg',
     },
     dates: {
-      principal: {
-        title: 'Séjour Principal',
-        date: '31 Mars - 10 Avril 2026',
-        nights: '10 nuits',
-      },
-      weekend: {
-        title: 'Weekend Prolongé',
-        date: '10 - 12 Avril 2026',
-        nights: '+2 nuits (optionnel)',
-      },
+      principal: { title: 'Séjour Principal', dates: '31 Mars - 10 Avril 2026', duration: '10 nuits' },
+      prolonge: { title: 'Weekend Prolongé', dates: '10 - 12 Avril 2026', duration: '+2 nuits (optionnel)' },
     },
     supervision: {
       title: 'Glatt Kasher Laméhadrine',
@@ -126,6 +161,14 @@ export const fullPageContent: Record<string, any> = {
         instagram: 'https://www.instagram.com/gueoula_animation',
       },
     ],
+    services: [
+      { title: 'Pied dans l\'eau', desc: 'Accès direct plage', image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80' },
+      { title: '3 Piscines', desc: 'Dont une chauffée', image: 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=800&q=80' },
+      { title: 'SPA Luxueux', desc: 'Centre bien-être complet', image: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&q=80' },
+      { title: 'Gastronomie', desc: 'Cuisine française et orientale', image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80' },
+      { title: 'Clubs Enfants', desc: 'Baby, Mini, Kids Club', image: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=800&q=80' },
+      { title: 'Sport & Fitness', desc: 'Salle équipée, coach', image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80' },
+    ],
   },
   'pessah-hotel': {
     hero: {
@@ -135,9 +178,11 @@ export const fullPageContent: Record<string, any> = {
       image: '/images/hotel/FAÇADE.jpg',
     },
     hotel: {
-      name: 'Cabogata Beach Hotel 5★',
-      location: 'El Toyo - Retamar, Almería, Espagne',
+      subtitle: 'Notre Écrin de Luxe',
+      title: 'Cabogata Beach Hotel 5★',
       description: 'Notre écrin de luxe au bord de la Méditerranée pour Pessah 2026',
+      location: 'El Toyo - Retamar, Almería, Espagne',
+      image: '/images/hotel/FAÇADE.jpg',
     },
     chambres: [
       { code: 'S', nom: 'Superior', surface: '27m²', vue: 'Jardins/Montagnes' },
@@ -149,6 +194,14 @@ export const fullPageContent: Record<string, any> = {
       { code: 'SSU', nom: 'Junior Suite Comm.', surface: '70-80m²', vue: 'Variable', special: 'Suite, Communicante' },
       { code: 'TSU', nom: 'Terrace Suite', surface: '43-70m²', vue: 'Mer', special: 'Suite, Terrasse' },
       { code: 'MED', nom: 'Mediterranean Suite', surface: '66-84m²', vue: 'Mer', special: 'Suite Premium' },
+    ],
+    services: [
+      { title: 'Pied dans l\'eau', desc: 'Accès direct plage', image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80' },
+      { title: '3 Piscines', desc: 'Dont une chauffée', image: 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=800&q=80' },
+      { title: 'SPA Luxueux', desc: 'Centre bien-être complet', image: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&q=80' },
+      { title: 'Gastronomie', desc: 'Cuisine française et orientale', image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80' },
+      { title: 'Sport & Fitness', desc: 'Salle équipée, coach', image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80' },
+      { title: 'Clubs Enfants', desc: 'Baby, Mini, Kids Club', image: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=800&q=80' },
     ],
   },
   'marbella': {
@@ -166,6 +219,13 @@ export const fullPageContent: Record<string, any> = {
       phone: '06 99 95 19 63',
       image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=80',
     },
+    features: [
+      { text: 'Cuisine viande Glatt Kosher' },
+      { text: 'Hamburgers gourmets' },
+      { text: 'Salades fraîches' },
+      { text: 'Grillades premium' },
+      { text: 'Tajines traditionnels' },
+    ],
     services: [
       {
         title: 'Restaurant',
@@ -199,8 +259,25 @@ export const fullPageContent: Record<string, any> = {
     },
     main: {
       title: 'Traiteur Événementiel',
-      description: 'Service traiteur sur demande pour vos événements dans tout le Maroc. Disponible sur demande pour tous vos événements.\n\nNous proposons une cuisine casher de qualité pour tous vos événements importants, partout au Maroc.',
+      description: 'Service traiteur sur demande pour vos événements dans tout le Maroc. Disponible sur demande pour tous vos événements.',
+      description2: 'Nous proposons une cuisine casher de qualité pour tous vos événements importants, partout au Maroc.',
       image: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&q=80',
+    },
+    events: [
+      { title: 'Mariages', desc: 'Organisation complète', image: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80' },
+      { title: 'Bar-mitzvahs', desc: 'Cérémonies et réceptions', image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=80' },
+      { title: 'Hilloula', desc: 'Pèlerinages et célébrations', image: 'https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=800&q=80' },
+      { title: 'Shabbat', desc: 'Repas de Shabbat', image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80' },
+      { title: 'Réceptions', desc: 'Événements privés', image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=80' },
+      { title: 'Anniversaires', desc: 'Célébrations familiales', image: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80' },
+      { title: 'Événements corporatifs', desc: 'Séminaires et conférences', image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=80' },
+      { title: 'Autres', desc: 'Sur demande', image: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80' },
+    ],
+    cta: {
+      title: 'Organisons votre événement ensemble',
+      description: 'Contactez-nous pour discuter de votre projet et recevoir une proposition personnalisée',
+      button1_text: 'Demander une proposition',
+      button2_text: 'WhatsApp',
     },
   },
   'hilloula': {
@@ -213,17 +290,74 @@ export const fullPageContent: Record<string, any> = {
     main: {
       title: 'Voyages Organisés',
       description: 'K Prestige organise des voyages pour pèlerinages sur tombes de Tsadikim plusieurs fois par an, vers différentes destinations.',
+      note: 'Les prix sont affichés pour chaque événement. Le contenu change fréquemment, consultez régulièrement les nouvelles dates.',
+      image: 'https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=800&q=80',
+    },
+    features: [
+      { text: 'Pension complète' },
+      { text: 'Transferts organisés' },
+      { text: 'Kashrout certifié' },
+      { text: 'Programme complet' },
+    ],
+    event: {
+      title: 'Prochain Événement',
+      name: 'Hilloula Rabbi Itshak Abouhassira 2026',
+      dates: '29 Janvier - 1er Février 2026',
+      duration: '4 jours / 3 nuits',
+      lieu: 'Hôtel Taddart 4★, Midelt, Maroc',
+      price: '990€ / personne',
+      kashrout: 'Glatt Kosher Beth Yossef',
+      inclus: 'Pension complète, transferts (vols exclus)',
+      link: '/hilloula/rabbi-itshak-abouhassira-2026',
+      button_text: 'Voir le programme complet',
+    },
+    gallery: [
+      { image: 'https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=800&q=80', alt: 'Bougies' },
+      { image: 'https://images.unsplash.com/photo-1544261327-dca8892d4821?w=800&q=80', alt: 'Synagogue' },
+      { image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80', alt: 'Prière' },
+      { image: 'https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=800&q=80', alt: 'Pèlerinage' },
+    ],
+    cta: {
+      title: 'Intéressé par un pèlerinage ?',
+      description: 'Contactez-nous pour plus d\'informations sur les prochains événements',
+      button1_text: 'Nous contacter',
+      button2_text: 'WhatsApp',
     },
   },
   'souccot': {
     hero: {
       subtitle: 'E-commerce',
       title: 'Souccot',
-      description: 'Loulav & Etrog de qualité pour Souccot',
+      description: 'Kits Arba Minim (4 espèces) de qualité',
       image: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?w=1200&q=80',
     },
     main: {
-      description: 'Commandez vos Arba Minim (Loulav & Etrog) pour Souccot. Qualité certifiée, livraison rapide.',
+      title: 'Les 4 Espèces',
+      description: 'Vente en ligne de kits Arba Minim pour la fête de Souccot. Période : Avant Souccot (septembre-octobre)',
+    },
+    especes: [
+      { name: 'Loulav', desc: 'Branche de palmier', image: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?w=800&q=80' },
+      { name: 'Etrog', desc: 'Cédrat', image: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?w=800&q=80' },
+      { name: 'Hadassim', desc: '3 branches de myrte', image: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?w=800&q=80' },
+      { name: 'Aravot', desc: '2 branches de saule', image: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?w=800&q=80' },
+    ],
+    kits: [
+      { level: 'א', name: 'Standard / Kosher', nameHe: 'א', description: 'Valide halakhiquement', price: '~50€', available: true },
+      { level: 'אא', name: 'Méhoudar', nameHe: 'אא', description: 'Qualité améliorée', price: '~70-80€', available: true },
+      { level: 'ב', name: 'Méhoudar min haméhoudar', nameHe: 'ב', description: 'Très haute qualité', price: '~100-120€', available: true },
+      { level: 'ג', name: 'Premium / Luxe', nameHe: 'ג', description: 'Qualité exceptionnelle', price: '150€+', available: true },
+    ],
+    livraison: {
+      title: 'Livraison',
+      description: 'Livraison en France principalement. Architecture prête pour expansion vers Israël.',
+      note: 'Frais de livraison conditionnels selon la quantité et la période.',
+    },
+    cta: {
+      title: 'Prêt à commander votre kit ?',
+      description: 'Sélectionnez votre niveau de qualité et passez commande',
+      note: 'Le système e-commerce complet sera disponible prochainement. En attendant, contactez-nous directement.',
+      button1_text: 'Nous contacter',
+      button2_text: 'Commander par WhatsApp',
     },
   },
   'contact': {
@@ -233,11 +367,34 @@ export const fullPageContent: Record<string, any> = {
       description: 'Notre équipe est à votre écoute pour répondre à toutes vos questions',
       image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200&q=80',
     },
-    contact: {
+    coordonnees: {
+      title: 'Nos coordonnées',
       phone1: '06 99 95 19 63',
       phone2: '06 51 70 19 78',
+      phones: ['06 99 95 19 63', '06 51 70 19 78'],
       email: 'k-prestige@outlook.fr',
-      address: '33 Avenue Philippe Auguste\n75011 Paris, France',
+      address: {
+        name: 'K PRESTIGE EVENT',
+        street: '33 Avenue Philippe Auguste',
+        city: '75011 Paris, France',
+        siret: 'SIRET: 894 067 594 R.C.S. Paris',
+      },
+    },
+    form: {
+      title: 'Envoyez-nous un message',
+    },
+    quickContact: {
+      title: 'Autres moyens de contact',
+      whatsapp: {
+        title: 'WhatsApp',
+        description: 'Contactez-nous directement',
+        button: 'Ouvrir WhatsApp',
+      },
+      callback: {
+        title: 'Être rappelé',
+        description: 'Formulaire rapide',
+        button: 'Formulaire rappel',
+      },
     },
   },
 };
