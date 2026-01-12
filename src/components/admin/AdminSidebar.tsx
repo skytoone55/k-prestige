@@ -48,7 +48,6 @@ const menuCategories: MenuCategory[] = [
         name: 'Pessah 2026',
         icon: Calendar,
         children: [
-          { id: 'pessah-main', name: 'Page principale' },
           { id: 'pessah-sejour', name: 'Le Séjour' },
           { id: 'pessah-hotel', name: 'L\'Hôtel' },
         ],
