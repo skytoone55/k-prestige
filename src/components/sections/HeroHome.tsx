@@ -114,7 +114,7 @@ export function HeroHome() {
             className="px-6 py-4 bg-black/40 backdrop-blur-md border border-[var(--gold)]/40 rounded-xl shadow-2xl"
           >
             <p className="text-sm md:text-base text-white tracking-wider" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-              Animation non-stop par <strong className="text-[var(--gold)]">Laurent Folies Musical Band</strong> × <strong className="text-[var(--gold)]">Yonni Chemla DJ Live</strong>
+              {hero.animation_text || 'Animation non-stop par Laurent Folies Musical Band × Yonni Chemla DJ Live'}
             </p>
           </motion.div>
         </div>

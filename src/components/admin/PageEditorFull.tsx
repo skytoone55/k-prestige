@@ -419,7 +419,13 @@ export function PageEditorFull({ pageId }: PageEditorFullProps) {
       // Sauvegarder dans Supabase
       const supabase = (await import('@/lib/supabase/client')).createClient();
 
-      const { error } = await supabase
+      console.log('[PageEditorFull] Saving to Supabase...', {
+        pageId,
+        dataKeys: Object.keys(data),
+        heroTitle: data?.hero?.title
+      });
+
+      const { data: upsertResult, error } = await supabase
         .from('page_content')
         .upsert(
           {
@@ -428,20 +434,39 @@ export function PageEditorFull({ pageId }: PageEditorFullProps) {
             updated_at: new Date().toISOString()
           },
           { onConflict: 'page_id' }
-        );
+        )
+        .select();
+
+      console.log('[PageEditorFull] Supabase upsert result:', {
+        result: upsertResult,
+        error: error?.message || null
+      });
 
       if (error) {
-        console.error('Erreur Supabase:', error);
+        console.error('[PageEditorFull] Erreur Supabase:', error);
         // Fallback localStorage
         localStorage.setItem(`page_content_full_${pageId}`, JSON.stringify(data));
         alert('⚠️ Sauvegarde locale uniquement (erreur Supabase: ' + error.message + ')');
       } else {
+        // Vérifier que la sauvegarde a bien fonctionné en relisant
+        const { data: verifyData, error: verifyError } = await supabase
+          .from('page_content')
+          .select('content')
+          .eq('page_id', pageId)
+          .single();
+
+        console.log('[PageEditorFull] Verification read:', {
+          success: !verifyError,
+          heroTitle: verifyData?.content?.hero?.title,
+          error: verifyError?.message || null
+        });
+
         // Aussi sauvegarder en localStorage pour le cache
         localStorage.setItem(`page_content_full_${pageId}`, JSON.stringify(data));
-        alert('✅ Contenu sauvegardé avec succès !');
+        alert('✅ Contenu sauvegardé avec succès dans Supabase !');
       }
     } catch (error) {
-      console.error('Erreur:', error);
+      console.error('[PageEditorFull] Erreur:', error);
       // Fallback localStorage
       localStorage.setItem(`page_content_full_${pageId}`, JSON.stringify(data));
       alert('⚠️ Sauvegarde locale uniquement (erreur de connexion)');
