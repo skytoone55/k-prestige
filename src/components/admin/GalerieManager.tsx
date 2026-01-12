@@ -34,13 +34,44 @@ export function GalerieManager() {
     loadData();
   }, []);
 
-  const loadData = () => {
-    // Charger depuis localStorage (solution simple qui fonctionne)
+  const loadData = async () => {
+    try {
+      // Charger depuis Supabase
+      const { createClient } = await import('@/lib/supabase/client');
+      const supabase = createClient();
+
+      const { data: galerieData, error } = await supabase
+        .from('galerie_content')
+        .select('categories, images')
+        .eq('id', '00000000-0000-0000-0000-000000000001')
+        .single();
+
+      if (!error && galerieData) {
+        console.log('[GalerieManager] Loaded from Supabase:', {
+          categories: galerieData.categories?.length || 0,
+          images: galerieData.images?.length || 0
+        });
+        setCategories(galerieData.categories || []);
+        setImages(galerieData.images || []);
+        // Cache en localStorage
+        localStorage.setItem('galerie_categories', JSON.stringify(galerieData.categories || []));
+        localStorage.setItem('galerie_images', JSON.stringify(galerieData.images || []));
+        return;
+      }
+
+      if (error) {
+        console.warn('[GalerieManager] Supabase error:', error.message);
+      }
+    } catch (error) {
+      console.error('[GalerieManager] Error loading from Supabase:', error);
+    }
+
+    // Fallback localStorage
     const savedCategories = localStorage.getItem('galerie_categories');
     if (savedCategories) {
       setCategories(JSON.parse(savedCategories));
     }
-    
+
     const savedImages = localStorage.getItem('galerie_images');
     if (savedImages) {
       setImages(JSON.parse(savedImages));
@@ -189,14 +220,44 @@ export function GalerieManager() {
     ? images.filter(img => img.category_id === selectedCategory)
     : [];
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setLoading(true);
-    // Les données sont déjà sauvegardées automatiquement via saveCategories et saveImages
-    // On simule juste un délai pour le feedback
-    setTimeout(() => {
-      setLoading(false);
-      alert('✅ Galerie sauvegardée avec succès !');
-    }, 500);
+
+    try {
+      // Sauvegarder dans Supabase
+      const { createClient } = await import('@/lib/supabase/client');
+      const supabase = createClient();
+
+      console.log('[GalerieManager] Saving to Supabase...', {
+        categories: categories.length,
+        images: images.length
+      });
+
+      const { error } = await supabase
+        .from('galerie_content')
+        .update({
+          categories,
+          images,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', '00000000-0000-0000-0000-000000000001');
+
+      if (error) {
+        console.error('[GalerieManager] Supabase error:', error);
+        alert('⚠️ Erreur lors de la sauvegarde Supabase: ' + error.message);
+      } else {
+        console.log('[GalerieManager] ✅ Saved to Supabase');
+        // Aussi sauvegarder en localStorage pour le cache
+        localStorage.setItem('galerie_categories', JSON.stringify(categories));
+        localStorage.setItem('galerie_images', JSON.stringify(images));
+        alert('✅ Galerie sauvegardée avec succès dans Supabase !');
+      }
+    } catch (error) {
+      console.error('[GalerieManager] Error:', error);
+      alert('⚠️ Erreur de connexion');
+    }
+
+    setLoading(false);
   };
 
   return (

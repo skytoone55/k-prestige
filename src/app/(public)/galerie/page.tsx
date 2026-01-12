@@ -13,21 +13,60 @@ export default function GaleriePage() {
   const [images, setImages] = useState<Array<{ id: string; src: string; alt: string; category_id: string }>>([]);
 
   useEffect(() => {
-    // Charger les catégories et images depuis localStorage
-    const savedCategories = localStorage.getItem('galerie_categories');
-    const savedImages = localStorage.getItem('galerie_images');
-    
-    if (savedCategories) {
-      const cats = JSON.parse(savedCategories);
-      setCategories(cats);
-      if (cats.length > 0 && !activeCategory) {
-        setActiveCategory(cats[0].id);
+    const loadGalerie = async () => {
+      try {
+        // Charger depuis Supabase
+        const { createClient } = await import('@/lib/supabase/client');
+        const supabase = createClient();
+
+        const { data: galerieData, error } = await supabase
+          .from('galerie_content')
+          .select('categories, images')
+          .eq('id', '00000000-0000-0000-0000-000000000001')
+          .single();
+
+        if (!error && galerieData) {
+          console.log('[Galerie] Loaded from Supabase:', {
+            categories: galerieData.categories?.length || 0,
+            images: galerieData.images?.length || 0
+          });
+          const cats = galerieData.categories || [];
+          setCategories(cats);
+          setImages(galerieData.images || []);
+          if (cats.length > 0) {
+            setActiveCategory(cats[0].id);
+          }
+          // Cache en localStorage
+          localStorage.setItem('galerie_categories', JSON.stringify(cats));
+          localStorage.setItem('galerie_images', JSON.stringify(galerieData.images || []));
+          return;
+        }
+
+        if (error) {
+          console.warn('[Galerie] Supabase error:', error.message);
+        }
+      } catch (error) {
+        console.error('[Galerie] Error loading from Supabase:', error);
       }
-    }
-    
-    if (savedImages) {
-      setImages(JSON.parse(savedImages));
-    }
+
+      // Fallback localStorage
+      const savedCategories = localStorage.getItem('galerie_categories');
+      const savedImages = localStorage.getItem('galerie_images');
+
+      if (savedCategories) {
+        const cats = JSON.parse(savedCategories);
+        setCategories(cats);
+        if (cats.length > 0) {
+          setActiveCategory(cats[0].id);
+        }
+      }
+
+      if (savedImages) {
+        setImages(JSON.parse(savedImages));
+      }
+    };
+
+    loadGalerie();
   }, []);
 
   const allImages = images;
