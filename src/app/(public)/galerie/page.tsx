@@ -14,32 +14,41 @@ export default function GaleriePage() {
 
   useEffect(() => {
     const loadGalerie = async () => {
-      // Toujours charger depuis Supabase en priorité (pas de cache)
+      // Fetch direct avec no-store pour éviter tout cache
       try {
-        const { createClient } = await import('@/lib/supabase/client');
-        const supabase = createClient();
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-        const { data: galerieData, error } = await supabase
-          .from('galerie_content')
-          .select('categories, images')
-          .eq('id', '00000000-0000-0000-0000-000000000001')
-          .single();
-
-        if (!error && galerieData) {
-          console.log('[Galerie] Loaded from Supabase:', {
-            categories: galerieData.categories?.length || 0,
-            images: galerieData.images?.length || 0
-          });
-          const cats = galerieData.categories || [];
-          setCategories(cats);
-          setImages(galerieData.images || []);
-          if (cats.length > 0) {
-            setActiveCategory(cats[0].id);
+        const response = await fetch(
+          `${supabaseUrl}/rest/v1/galerie_content?id=eq.00000000-0000-0000-0000-000000000001&select=categories,images`,
+          {
+            headers: {
+              'apikey': supabaseKey!,
+              'Authorization': `Bearer ${supabaseKey}`,
+            },
+            cache: 'no-store', // Force pas de cache
           }
-          return; // Succès - ne pas utiliser localStorage
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data[0]) {
+            const galerieData = data[0];
+            console.log('[Galerie] Loaded from Supabase (no-cache):', {
+              categories: galerieData.categories?.length || 0,
+              images: galerieData.images?.length || 0
+            });
+            const cats = galerieData.categories || [];
+            setCategories(cats);
+            setImages(galerieData.images || []);
+            if (cats.length > 0) {
+              setActiveCategory(cats[0].id);
+            }
+            return;
+          }
         }
 
-        console.warn('[Galerie] Supabase error:', error?.message);
+        console.warn('[Galerie] Fetch error:', response.status);
       } catch (error) {
         console.error('[Galerie] Error loading from Supabase:', error);
       }
