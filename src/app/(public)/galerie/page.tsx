@@ -14,8 +14,8 @@ export default function GaleriePage() {
 
   useEffect(() => {
     const loadGalerie = async () => {
+      // Toujours charger depuis Supabase en priorité (pas de cache)
       try {
-        // Charger depuis Supabase
         const { createClient } = await import('@/lib/supabase/client');
         const supabase = createClient();
 
@@ -36,20 +36,16 @@ export default function GaleriePage() {
           if (cats.length > 0) {
             setActiveCategory(cats[0].id);
           }
-          // Cache en localStorage
-          localStorage.setItem('galerie_categories', JSON.stringify(cats));
-          localStorage.setItem('galerie_images', JSON.stringify(galerieData.images || []));
-          return;
+          return; // Succès - ne pas utiliser localStorage
         }
 
-        if (error) {
-          console.warn('[Galerie] Supabase error:', error.message);
-        }
+        console.warn('[Galerie] Supabase error:', error?.message);
       } catch (error) {
         console.error('[Galerie] Error loading from Supabase:', error);
       }
 
-      // Fallback localStorage
+      // Fallback localStorage uniquement si Supabase échoue
+      console.log('[Galerie] Using localStorage fallback');
       const savedCategories = localStorage.getItem('galerie_categories');
       const savedImages = localStorage.getItem('galerie_images');
 
