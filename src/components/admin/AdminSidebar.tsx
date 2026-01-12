@@ -2,21 +2,23 @@
 
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { 
-  Home, 
-  Calendar, 
-  Hotel, 
-  UtensilsCrossed, 
-  MapPin, 
-  Heart, 
-  Leaf, 
+import {
+  Home,
+  Calendar,
+  Hotel,
+  UtensilsCrossed,
+  MapPin,
+  Heart,
+  Leaf,
   Mail,
   ChevronRight,
   ChevronDown,
   Image as ImageIcon,
   Globe,
   Settings,
+  Wrench,
 } from 'lucide-react';
+import Link from 'next/link';
 
 interface MenuCategory {
   id: string;
@@ -238,7 +240,14 @@ export function AdminSidebar({ selectedPage, onSelectPage }: AdminSidebarProps) 
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-200 bg-white">
+      <div className="p-4 border-t border-gray-200 bg-white space-y-2">
+        <Link
+          href="/admin/setup"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 transition-colors"
+        >
+          <Wrench className="w-4 h-4" />
+          <span>Configuration Supabase</span>
+        </Link>
         <div className="text-xs text-gray-500 text-center">
           <p>Version 1.0</p>
         </div>
