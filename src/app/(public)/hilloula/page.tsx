@@ -24,15 +24,25 @@ export default function HilloulaPage() {
   const main = data?.main || {
     title: 'Voyages Organisés',
     description: 'K Prestige organise des voyages pour pèlerinages sur tombes de Tsadikim plusieurs fois par an, vers différentes destinations.',
-    features: [
-      'Pension complète',
-      'Transferts organisés',
-      'Kashrout certifié',
-      'Programme complet',
-    ],
     note: 'Les prix sont affichés pour chaque événement. Le contenu change fréquemment, consultez régulièrement les nouvelles dates.',
     image: placeholderImages.pilgrimage,
   };
+
+  // Features peut être soit dans main.features (ancien format) soit en section séparée (nouveau format backoffice)
+  const features = data?.features || main.features || [
+    { text: 'Pension complète' },
+    { text: 'Transferts organisés' },
+    { text: 'Kashrout certifié' },
+    { text: 'Programme complet' },
+  ];
+
+  // Gallery dynamique depuis le backoffice
+  const gallery = data?.gallery || [
+    { image: placeholderImages.candles, alt: 'Bougies' },
+    { image: placeholderImages.synagogue, alt: 'Synagogue' },
+    { image: placeholderImages.prayer, alt: 'Prière' },
+    { image: placeholderImages.pilgrimage, alt: 'Pèlerinage' },
+  ];
 
   const event = data?.event || {
     title: 'Prochain Événement',
@@ -119,10 +129,10 @@ export default function HilloulaPage() {
                   {main.description}
                 </p>
                 <ul className="space-y-3 text-gray-600 mb-8" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  {(main.features || []).map((feature: string, idx: number) => (
+                  {(features || []).map((feature: any, idx: number) => (
                     <li key={idx} className="flex items-center gap-3">
                       <span className="text-[var(--gold)] text-xl">✓</span>
-                      <span>{feature}</span>
+                      <span>{typeof feature === 'string' ? feature : feature.text}</span>
                     </li>
                   ))}
                 </ul>
@@ -207,12 +217,7 @@ export default function HilloulaPage() {
           {/* Bande d'images décoratives */}
           <section className="mb-16">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                placeholderImages.candles,
-                placeholderImages.synagogue,
-                placeholderImages.prayer,
-                placeholderImages.pilgrimage,
-              ].map((img, idx) => (
+              {(gallery || []).map((item: any, idx: number) => (
                 <motion.div
                   key={idx}
                   initial={{ opacity: 0, scale: 0.9 }}
@@ -222,8 +227,8 @@ export default function HilloulaPage() {
                   className="relative h-48 md:h-64 rounded-xl overflow-hidden group cursor-pointer"
                 >
                   <Image
-                    src={img}
-                    alt={`Hilloula ${idx + 1}`}
+                    src={item.image || placeholderImages.candles}
+                    alt={item.alt || `Hilloula ${idx + 1}`}
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-110"
                   />

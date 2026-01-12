@@ -40,6 +40,14 @@ export default function MarbellaPage() {
     button1_text: 'Nous contacter',
     button2_text: 'WhatsApp',
   };
+
+  // Features dynamiques depuis le backoffice
+  const features = data?.features || [
+    { text: 'Glatt Kosher Laméhadrine' },
+    { text: '70 couverts' },
+    { text: 'Proximité Beth Habad de Marbella' },
+    { text: 'Réservations tables' },
+  ];
   return (
     <>
       <PublicNavigation />
@@ -103,22 +111,12 @@ export default function MarbellaPage() {
                   {main.description}
                 </p>
                 <ul className="space-y-3 text-gray-600 mb-8" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  <li className="flex items-center gap-3">
-                    <span className="text-[var(--gold)] text-xl">✓</span>
-                    <span>Glatt Kosher Laméhadrine</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <span className="text-[var(--gold)] text-xl">✓</span>
-                    <span>70 couverts</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <span className="text-[var(--gold)] text-xl">✓</span>
-                    <span>Proximité Beth Habad de Marbella</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <span className="text-[var(--gold)] text-xl">✓</span>
-                    <span>Réservations tables</span>
-                  </li>
+                  {(features || []).map((feature: any, idx: number) => (
+                    <li key={idx} className="flex items-center gap-3">
+                      <span className="text-[var(--gold)] text-xl">✓</span>
+                      <span>{typeof feature === 'string' ? feature : feature.text}</span>
+                    </li>
+                  ))}
                 </ul>
                 <div className="bg-[var(--gold-pale)] p-4 rounded-lg mb-6">
                   <p className="text-sm text-gray-700" style={{ fontFamily: 'var(--font-dm-sans)' }}>

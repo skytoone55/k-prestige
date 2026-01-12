@@ -24,11 +24,17 @@ export default function ContactPage() {
     image: placeholderImages.hotelExterior,
   };
 
-  const coordonnees = data?.coordonnees || {
-    title: 'Nos coordonnées',
-    phones: ['06 99 95 19 63', '06 51 70 19 78'],
-    email: 'k-prestige@outlook.fr',
-    address: {
+  // Coordonnées avec gestion des deux formats (phones[] ou phone1/phone2)
+  const rawCoordonnees = data?.coordonnees || {};
+  const coordonnees = {
+    title: rawCoordonnees.title || 'Nos coordonnées',
+    // Supporte soit phones[] soit phone1/phone2
+    phones: rawCoordonnees.phones || [
+      rawCoordonnees.phone1 || '06 99 95 19 63',
+      rawCoordonnees.phone2 || '06 51 70 19 78',
+    ].filter(Boolean),
+    email: rawCoordonnees.email || 'k-prestige@outlook.fr',
+    address: rawCoordonnees.address || {
       name: 'K PRESTIGE EVENT',
       street: '33 Avenue Philippe Auguste',
       city: '75011 Paris, France',
