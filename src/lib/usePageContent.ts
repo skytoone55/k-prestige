@@ -6,20 +6,47 @@ export function usePageContent(pageId: string) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Charger depuis localStorage ou utiliser les valeurs par défaut
-    const saved = localStorage.getItem(`page_content_full_${pageId}`);
-    if (saved) {
+    const loadContent = async () => {
       try {
-        setData(JSON.parse(saved));
-      } catch (e) {
-        // En cas d'erreur, utiliser les valeurs par défaut
-        setData(fullPageContent[pageId] || null);
+        // 1. Essayer de charger depuis Supabase
+        const { createClient } = await import('@/lib/supabase/client');
+        const supabase = createClient();
+
+        const { data: supabaseData, error } = await supabase
+          .from('page_content')
+          .select('content')
+          .eq('page_id', pageId)
+          .single();
+
+        if (!error && supabaseData?.content) {
+          setData(supabaseData.content);
+          // Mettre en cache localStorage
+          localStorage.setItem(`page_content_full_${pageId}`, JSON.stringify(supabaseData.content));
+          setLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.error('Erreur Supabase:', error);
       }
-    } else {
-      // Utiliser les valeurs par défaut
+
+      // 2. Fallback localStorage
+      const saved = localStorage.getItem(`page_content_full_${pageId}`);
+      if (saved) {
+        try {
+          setData(JSON.parse(saved));
+          setLoading(false);
+          return;
+        } catch (e) {
+          console.error('Erreur parsing localStorage:', e);
+        }
+      }
+
+      // 3. Valeurs par défaut
       setData(fullPageContent[pageId] || null);
-    }
-    setLoading(false);
+      setLoading(false);
+    };
+
+    loadContent();
   }, [pageId]);
 
   return { data, loading };

@@ -7,6 +7,10 @@ import { TestimonialsSection } from '@/components/sections/TestimonialsSection';
 import { CTASection } from '@/components/sections/CTASection';
 import { SectionTitle } from '@/components/ui/SectionTitle';
 
+// Désactiver le cache pour cette page (contenu dynamique depuis Supabase)
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default function Home() {
   return (
     <>

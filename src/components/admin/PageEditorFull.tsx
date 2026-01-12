@@ -412,13 +412,42 @@ export function PageEditorFull({ pageId }: PageEditorFullProps) {
     );
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setLoading(true);
-    localStorage.setItem(`page_content_full_${pageId}`, JSON.stringify(data));
-    setTimeout(() => {
-      setLoading(false);
-      alert('✅ Contenu sauvegardé avec succès !');
-    }, 500);
+
+    try {
+      // Sauvegarder dans Supabase
+      const supabase = (await import('@/lib/supabase/client')).createClient();
+
+      const { error } = await supabase
+        .from('page_content')
+        .upsert(
+          {
+            page_id: pageId,
+            content: data,
+            updated_at: new Date().toISOString()
+          },
+          { onConflict: 'page_id' }
+        );
+
+      if (error) {
+        console.error('Erreur Supabase:', error);
+        // Fallback localStorage
+        localStorage.setItem(`page_content_full_${pageId}`, JSON.stringify(data));
+        alert('⚠️ Sauvegarde locale uniquement (erreur Supabase: ' + error.message + ')');
+      } else {
+        // Aussi sauvegarder en localStorage pour le cache
+        localStorage.setItem(`page_content_full_${pageId}`, JSON.stringify(data));
+        alert('✅ Contenu sauvegardé avec succès !');
+      }
+    } catch (error) {
+      console.error('Erreur:', error);
+      // Fallback localStorage
+      localStorage.setItem(`page_content_full_${pageId}`, JSON.stringify(data));
+      alert('⚠️ Sauvegarde locale uniquement (erreur de connexion)');
+    }
+
+    setLoading(false);
   };
 
   const updateNestedValue = (path: string, value: any) => {
