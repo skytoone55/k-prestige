@@ -19,7 +19,8 @@ export default function PessahHotelPage() {
   const hero = data?.hero || {
     subtitle: 'Hôtel 5 Étoiles',
     title: "L'Hôtel",
-    description: 'Cabogata Beach Hotel 5★ • El Toyo - Retamar, Almería'
+    description: 'Cabogata Beach Hotel 5★ • El Toyo - Retamar, Almería',
+    image: '/images/hotel/FAÇADE.jpg'
   };
 
   const hotel = data?.hotel || {
@@ -70,7 +71,7 @@ export default function PessahHotelPage() {
         <section className="relative h-[70vh] overflow-hidden">
           <div className="absolute inset-0">
             <Image
-              src="/images/hotel/FAÇADE.jpg"
+              src={hero.image || '/images/hotel/FAÇADE.jpg'}
               alt="Cabogata Beach Hotel 5★"
               fill
               className="object-cover scale-110 animate-slow-zoom"

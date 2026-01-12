@@ -21,7 +21,8 @@ export default function PessahSejourPage() {
   const hero = data?.hero || {
     subtitle: 'Séjour Premium',
     title: 'Le Séjour',
-    description: 'Pessah 2026 • Cabogata Beach Hotel 5★'
+    description: 'Pessah 2026 • Cabogata Beach Hotel 5★',
+    image: '/images/hero/PANORAMIC VIEW.jpg'
   };
 
   const dates = data?.dates || {
@@ -71,7 +72,7 @@ export default function PessahSejourPage() {
         <section className="relative h-[70vh] overflow-hidden">
           <div className="absolute inset-0">
             <Image
-              src="/images/hero/PANORAMIC VIEW.jpg"
+              src={hero.image || '/images/hero/PANORAMIC VIEW.jpg'}
               alt="Pessah 2026"
               fill
               className="object-cover scale-110 animate-slow-zoom"
