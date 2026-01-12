@@ -130,23 +130,32 @@ export default function AdminSetupPage() {
       newStatus.galerieContentWrite = 'success';
       setStatus({ ...newStatus });
 
-      // Test 5: Storage bucket 'galerie'
+      // Test 5: Storage bucket 'galerie' - test by trying to list files
       newStatus.storageGalerie = 'loading';
       setStatus({ ...newStatus });
 
-      const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
+      // Try to list files in bucket (works even without listBuckets permission)
+      const { error: galerieListError } = await supabase.storage
+        .from('galerie')
+        .list('', { limit: 1 });
 
-      const galerieExists = buckets?.some(b => b.name === 'galerie');
-      const pagesExists = buckets?.some(b => b.name === 'pages');
+      newStatus.storageGalerie = galerieListError ? 'error' : 'success';
 
-      newStatus.storageGalerie = galerieExists ? 'success' : 'error';
-      newStatus.storagePages = pagesExists ? 'success' : 'error';
+      // Test 6: Storage bucket 'pages'
+      newStatus.storagePages = 'loading';
+      setStatus({ ...newStatus });
 
-      if (!galerieExists || !pagesExists) {
-        const missing = [];
-        if (!galerieExists) missing.push('galerie');
-        if (!pagesExists) missing.push('pages');
-        newStatus.error = `Buckets manquants: ${missing.join(', ')}\n\nSolution: Créez ces buckets dans Supabase Dashboard > Storage > New bucket (Public = true)`;
+      const { error: pagesListError } = await supabase.storage
+        .from('pages')
+        .list('', { limit: 1 });
+
+      newStatus.storagePages = pagesListError ? 'error' : 'success';
+
+      if (galerieListError || pagesListError) {
+        const errors = [];
+        if (galerieListError) errors.push(`galerie: ${galerieListError.message}`);
+        if (pagesListError) errors.push(`pages: ${pagesListError.message}`);
+        newStatus.error = `Erreur Storage: ${errors.join(', ')}\n\nSolution: Vérifiez que les buckets existent et sont publics dans Supabase Dashboard > Storage`;
       }
 
       setStatus({ ...newStatus });
