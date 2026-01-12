@@ -11,41 +11,51 @@ export function usePageContent(pageId: string) {
       console.log(`[usePageContent] Loading content for page: ${pageId}`);
 
       try {
-        // 1. Essayer de charger depuis Supabase
-        const { createClient } = await import('@/lib/supabase/client');
-        const supabase = createClient();
+        // 1. Charger directement depuis Supabase via fetch (sans cache)
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-        console.log(`[usePageContent] Fetching from Supabase...`);
+        if (supabaseUrl && supabaseKey) {
+          // Ajouter timestamp pour éviter tout cache navigateur
+          const timestamp = Date.now();
+          const response = await fetch(
+            `${supabaseUrl}/rest/v1/page_content?page_id=eq.${pageId}&select=content&_t=${timestamp}`,
+            {
+              headers: {
+                'apikey': supabaseKey,
+                'Authorization': `Bearer ${supabaseKey}`,
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+              },
+              cache: 'no-store',
+            }
+          );
 
-        const { data: supabaseData, error } = await supabase
-          .from('page_content')
-          .select('content')
-          .eq('page_id', pageId)
-          .single();
+          console.log(`[usePageContent] Fetch response status: ${response.status}`);
 
-        console.log(`[usePageContent] Supabase response:`, {
-          hasData: !!supabaseData,
-          hasContent: !!supabaseData?.content,
-          error: error?.message || null
-        });
+          if (response.ok) {
+            const result = await response.json();
+            console.log(`[usePageContent] Supabase response:`, {
+              hasData: result && result.length > 0,
+              hasContent: result?.[0]?.content ? true : false,
+            });
 
-        if (!error && supabaseData?.content) {
-          console.log(`[usePageContent] ✅ Using Supabase data`);
-          setData(supabaseData.content);
-          setSource('supabase');
-          // Mettre en cache localStorage
-          try {
-            localStorage.setItem(`page_content_full_${pageId}`, JSON.stringify(supabaseData.content));
-          } catch (e) {
-            console.warn('[usePageContent] Could not save to localStorage:', e);
+            if (result && result[0]?.content) {
+              console.log(`[usePageContent] ✅ Using Supabase data (no-cache)`);
+              setData(result[0].content);
+              setSource('supabase');
+              // Mettre en cache localStorage
+              try {
+                localStorage.setItem(`page_content_full_${pageId}`, JSON.stringify(result[0].content));
+              } catch (e) {
+                console.warn('[usePageContent] Could not save to localStorage:', e);
+              }
+              setLoading(false);
+              return;
+            }
+          } else {
+            console.warn(`[usePageContent] Supabase fetch error: ${response.status}`);
           }
-          setLoading(false);
-          return;
-        }
-
-        // Si erreur Supabase, log et continue vers fallback
-        if (error) {
-          console.warn(`[usePageContent] Supabase error: ${error.message}`);
         }
       } catch (error) {
         console.error('[usePageContent] Erreur Supabase:', error);

@@ -36,37 +36,51 @@ export function GalerieManager() {
 
   const loadData = async () => {
     try {
-      // Charger depuis Supabase
-      const { createClient } = await import('@/lib/supabase/client');
-      const supabase = createClient();
+      // Charger directement depuis Supabase via fetch (sans cache)
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-      const { data: galerieData, error } = await supabase
-        .from('galerie_content')
-        .select('categories, images')
-        .eq('id', '00000000-0000-0000-0000-000000000001')
-        .single();
+      if (supabaseUrl && supabaseKey) {
+        // Ajouter timestamp pour éviter tout cache navigateur
+        const timestamp = Date.now();
+        const response = await fetch(
+          `${supabaseUrl}/rest/v1/galerie_content?id=eq.00000000-0000-0000-0000-000000000001&select=categories,images&_t=${timestamp}`,
+          {
+            headers: {
+              'apikey': supabaseKey,
+              'Authorization': `Bearer ${supabaseKey}`,
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache',
+            },
+            cache: 'no-store',
+          }
+        );
 
-      if (!error && galerieData) {
-        console.log('[GalerieManager] Loaded from Supabase:', {
-          categories: galerieData.categories?.length || 0,
-          images: galerieData.images?.length || 0
-        });
-        setCategories(galerieData.categories || []);
-        setImages(galerieData.images || []);
-        // Cache en localStorage
-        localStorage.setItem('galerie_categories', JSON.stringify(galerieData.categories || []));
-        localStorage.setItem('galerie_images', JSON.stringify(galerieData.images || []));
-        return;
-      }
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data[0]) {
+            const galerieData = data[0];
+            console.log('[GalerieManager] Loaded from Supabase (no-cache):', {
+              categories: galerieData.categories?.length || 0,
+              images: galerieData.images?.length || 0
+            });
+            setCategories(galerieData.categories || []);
+            setImages(galerieData.images || []);
+            // Cache en localStorage
+            localStorage.setItem('galerie_categories', JSON.stringify(galerieData.categories || []));
+            localStorage.setItem('galerie_images', JSON.stringify(galerieData.images || []));
+            return;
+          }
+        }
 
-      if (error) {
-        console.warn('[GalerieManager] Supabase error:', error.message);
+        console.warn('[GalerieManager] Fetch error:', response.status);
       }
     } catch (error) {
       console.error('[GalerieManager] Error loading from Supabase:', error);
     }
 
     // Fallback localStorage
+    console.log('[GalerieManager] Using localStorage fallback');
     const savedCategories = localStorage.getItem('galerie_categories');
     if (savedCategories) {
       setCategories(JSON.parse(savedCategories));

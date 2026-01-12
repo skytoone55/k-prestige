@@ -27,7 +27,8 @@ export default function PessahHotelPage() {
     subtitle: 'Notre Écrin de Luxe',
     title: 'Cabogata Beach Hotel 5★',
     description: 'Notre écrin de luxe au bord de la Méditerranée pour Pessah 2026',
-    location: 'El Toyo - Retamar, Almería, Espagne'
+    location: 'El Toyo - Retamar, Almería, Espagne',
+    image: '/images/hotel/FAÇADE.jpg'
   };
 
   const chambres = data?.chambres || [
@@ -119,7 +120,7 @@ export default function PessahHotelPage() {
                 </div>
                 <div className="relative h-[500px] rounded-2xl overflow-hidden shadow-2xl">
                   <Image
-                    src="/images/hotel/FAÇADE.jpg"
+                    src={hotel.image || '/images/hotel/FAÇADE.jpg'}
                     alt="Cabogata Beach Hotel 5★"
                     fill
                     className="object-cover"

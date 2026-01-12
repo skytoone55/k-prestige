@@ -51,71 +51,57 @@ export default function PessahGaleriePage() {
 
   const loadGalleryData = async () => {
     try {
-      const supabase = (await import('@/lib/supabase/client')).createClient();
-      
-      // Charger les catégories depuis Supabase
-      const { data: categoriesData, error: catError } = await supabase
-        .from('galerie_categories')
-        .select('*')
-        .order('created_at', { ascending: true });
-      
-      if (!catError && categoriesData) {
-        setCategories(categoriesData);
-        
-        // Charger les images par catégorie depuis Supabase
-        const allImages: GalleryImage[] = [];
-        for (const cat of categoriesData) {
-          const { data: imagesData, error: imgError } = await supabase
-            .from('galerie_images')
-            .select('images')
-            .eq('id', `category_${cat.id}`)
-            .single();
-          
-          if (!imgError && imagesData?.images) {
-            allImages.push(...imagesData.images);
-          } else {
-            // Fallback localStorage
-            const savedImages = localStorage.getItem(`galerie_images_${cat.id}`);
-            if (savedImages) {
-              allImages.push(...JSON.parse(savedImages));
-            }
+      // Charger directement depuis Supabase via fetch (sans cache)
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+      if (supabaseUrl && supabaseKey) {
+        // Ajouter timestamp pour éviter tout cache navigateur
+        const timestamp = Date.now();
+        const response = await fetch(
+          `${supabaseUrl}/rest/v1/galerie_content?id=eq.00000000-0000-0000-0000-000000000001&select=categories,images&_t=${timestamp}`,
+          {
+            headers: {
+              'apikey': supabaseKey,
+              'Authorization': `Bearer ${supabaseKey}`,
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache',
+            },
+            cache: 'no-store',
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data[0]) {
+            const galerieData = data[0];
+            console.log('[PessahGalerie] Loaded from Supabase (no-cache):', {
+              categories: galerieData.categories?.length || 0,
+              images: galerieData.images?.length || 0
+            });
+            const cats = galerieData.categories || [];
+            setCategories(cats);
+            setImages(galerieData.images || []);
+            return;
           }
         }
-        setImages(allImages);
-      } else {
-        // Fallback localStorage
-        const savedCategories = localStorage.getItem('galerie_categories');
-        if (savedCategories) {
-          const parsedCategories: Category[] = JSON.parse(savedCategories);
-          setCategories(parsedCategories);
-          
-          const allImages: GalleryImage[] = [];
-          parsedCategories.forEach((cat: Category) => {
-            const savedImages = localStorage.getItem(`galerie_images_${cat.id}`);
-            if (savedImages) {
-              allImages.push(...JSON.parse(savedImages));
-            }
-          });
-          setImages(allImages);
-        }
+
+        console.warn('[PessahGalerie] Fetch error:', response.status);
       }
     } catch (error) {
-      console.error('Erreur lors du chargement:', error);
-      // Fallback localStorage
-      const savedCategories = localStorage.getItem('galerie_categories');
-      if (savedCategories) {
-        const parsedCategories: Category[] = JSON.parse(savedCategories);
-        setCategories(parsedCategories);
-        
-        const allImages: GalleryImage[] = [];
-        parsedCategories.forEach((cat: Category) => {
-          const savedImages = localStorage.getItem(`galerie_images_${cat.id}`);
-          if (savedImages) {
-            allImages.push(...JSON.parse(savedImages));
-          }
-        });
-        setImages(allImages);
-      }
+      console.error('[PessahGalerie] Erreur lors du chargement:', error);
+    }
+
+    // Fallback localStorage
+    console.log('[PessahGalerie] Using localStorage fallback');
+    const savedCategories = localStorage.getItem('galerie_categories');
+    if (savedCategories) {
+      const parsedCategories: Category[] = JSON.parse(savedCategories);
+      setCategories(parsedCategories);
+    }
+    const savedImages = localStorage.getItem('galerie_images');
+    if (savedImages) {
+      setImages(JSON.parse(savedImages));
     }
   };
   
