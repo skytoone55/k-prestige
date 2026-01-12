@@ -17,6 +17,7 @@ import {
   Globe,
   Settings,
   Wrench,
+  RefreshCw,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -99,6 +100,33 @@ interface AdminSidebarProps {
 export function AdminSidebar({ selectedPage, onSelectPage }: AdminSidebarProps) {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['site-internet']));
   const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set(['pessah']));
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const handleResync = async () => {
+    setIsSyncing(true);
+
+    // Supprimer toutes les entrées localStorage liées aux données du site
+    const keysToRemove = Object.keys(localStorage).filter(
+      key => key.includes('page_content') ||
+             key.includes('galerie') ||
+             key.includes('pessah') ||
+             key.includes('hotel') ||
+             key.includes('sejour')
+    );
+
+    keysToRemove.forEach(key => {
+      console.log('[Resync] Suppression localStorage:', key);
+      localStorage.removeItem(key);
+    });
+
+    console.log('[Resync] Cache local vidé, rechargement...');
+
+    // Petit délai pour le feedback visuel
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Recharger la page pour forcer le rechargement depuis Supabase
+    window.location.reload();
+  };
 
   const toggleCategory = (categoryId: string) => {
     const newExpanded = new Set(expandedCategories);
@@ -241,6 +269,19 @@ export function AdminSidebar({ selectedPage, onSelectPage }: AdminSidebarProps) 
 
       {/* Footer */}
       <div className="p-4 border-t border-gray-200 bg-white space-y-2">
+        <button
+          onClick={handleResync}
+          disabled={isSyncing}
+          className={cn(
+            'w-full flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors',
+            isSyncing
+              ? 'bg-[var(--gold)]/20 text-[var(--gold)] cursor-wait'
+              : 'text-gray-600 hover:bg-[var(--gold)]/10 hover:text-[var(--gold)]'
+          )}
+        >
+          <RefreshCw className={cn('w-4 h-4', isSyncing && 'animate-spin')} />
+          <span>{isSyncing ? 'Synchronisation...' : 'Resynchroniser depuis Supabase'}</span>
+        </button>
         <Link
           href="/admin/setup"
           className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 transition-colors"
