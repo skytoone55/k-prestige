@@ -63,14 +63,6 @@ export function PessahDevisForm() {
 
       setSuccess(true);
       form.reset();
-
-      // Redirection WhatsApp si demandé
-      if (values.whatsapp) {
-        const message = encodeURIComponent(
-          `Bonjour, j'ai fait une demande de devis pour Pessah 2026. Composition: ${values.nb_adultes} adulte(s), ${values.nb_bebes} bébé(s), ${values.nb_enfants_2_3ans + values.nb_enfants_4_6ans + values.nb_enfants_7_11ans} enfant(s).`
-        );
-        window.open(`https://wa.me/33699951963?text=${message}`, '_blank');
-      }
     } catch (error) {
       console.error('Erreur:', error);
       alert('Une erreur est survenue. Veuillez réessayer ou nous contacter directement.');
