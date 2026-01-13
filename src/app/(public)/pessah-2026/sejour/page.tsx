@@ -103,14 +103,15 @@ export default function PessahSejourPage() {
         </section>
 
         <div className="max-w-7xl mx-auto px-6 py-16">
-          {/* Dates */}
+          {/* Dates + Supervision - 3 colonnes */}
           <section className="mb-16">
             <SectionTitle title="Dates du Séjour" />
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-3 gap-6">
+              {/* Séjour Principal */}
               <ScrollReveal delay={0}>
-                <motion.div whileHover={{ y: -4 }}>
-                  <Card className="border border-[var(--gold)]/30 hover:shadow-xl transition-all bg-white">
-                    <CardContent className="p-8 text-center">
+                <motion.div whileHover={{ y: -4 }} className="h-full">
+                  <Card className="border border-[var(--gold)]/30 hover:shadow-xl transition-all bg-white h-full">
+                    <CardContent className="p-8 text-center flex flex-col justify-center h-full">
                       <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--gold)]/10 flex items-center justify-center">
                         <span className="text-2xl">📅</span>
                       </div>
@@ -127,10 +128,12 @@ export default function PessahSejourPage() {
                   </Card>
                 </motion.div>
               </ScrollReveal>
+
+              {/* Weekend Prolongé */}
               <ScrollReveal delay={0.1}>
-                <motion.div whileHover={{ y: -4 }}>
-                  <Card className="border border-[var(--blue-mediterranean)]/30 hover:shadow-xl transition-all bg-white">
-                    <CardContent className="p-8 text-center">
+                <motion.div whileHover={{ y: -4 }} className="h-full">
+                  <Card className="border border-[var(--blue-mediterranean)]/30 hover:shadow-xl transition-all bg-white h-full">
+                    <CardContent className="p-8 text-center flex flex-col justify-center h-full">
                       <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--blue-mediterranean)]/10 flex items-center justify-center">
                         <span className="text-2xl">✨</span>
                       </div>
@@ -147,43 +150,29 @@ export default function PessahSejourPage() {
                   </Card>
                 </motion.div>
               </ScrollReveal>
-            </div>
-          </section>
 
-          {/* Supervision Religieuse */}
-          <section className="mb-16">
-            <ScrollReveal>
-              <Card className="border border-[var(--gold)]/30 bg-gradient-to-br from-[var(--gold-pale)]/10 to-white hover:shadow-xl transition-all">
-                <CardContent className="p-12">
-                  <div className="text-center mb-8">
-                    <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[var(--gold)]/10 flex items-center justify-center">
-                      <span className="text-4xl">✡️</span>
-                    </div>
-                    <h2
-                      className="text-3xl md:text-4xl mb-4 text-gray-800"
-                      style={{ fontFamily: 'var(--font-cormorant)' }}
-                    >
-                      {supervision.title}
-                    </h2>
-                  </div>
-                  <div className="max-w-2xl mx-auto space-y-4">
-                    <div className="text-center">
+              {/* Supervision Religieuse */}
+              <ScrollReveal delay={0.2}>
+                <motion.div whileHover={{ y: -4 }} className="h-full">
+                  <Card className="border border-[var(--gold)]/30 bg-gradient-to-br from-[var(--gold-pale)]/10 to-white hover:shadow-xl transition-all h-full">
+                    <CardContent className="p-8 text-center flex flex-col justify-center h-full">
+                      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--gold)]/10 flex items-center justify-center">
+                        <span className="text-2xl">✡️</span>
+                      </div>
+                      <h3 className="text-2xl mb-4 text-[var(--gold)]" style={{ fontFamily: 'var(--font-cormorant)' }}>
+                        {supervision.title}
+                      </h3>
                       <p className="text-lg text-gray-600 mb-2" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                        Sous la surveillance du
-                      </p>
-                      <p className="text-2xl font-semibold text-[var(--gold)]" style={{ fontFamily: 'var(--font-cormorant)' }}>
                         {supervision.rav}
                       </p>
-                    </div>
-                    <div className="border-t border-gray-200 pt-4 text-center">
                       <p className="text-sm text-gray-500" style={{ fontFamily: 'var(--font-dm-sans)' }}>
                         {supervision.viandes}
                       </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </ScrollReveal>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </ScrollReveal>
+            </div>
           </section>
 
           {/* Animation */}
