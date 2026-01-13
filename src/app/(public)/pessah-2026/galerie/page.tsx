@@ -8,6 +8,9 @@ import { Card } from '@/components/ui/Card';
 import Image from 'next/image';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { placeholderImages } from '@/lib/images';
+import { PessahDevisForm } from '@/components/public/PessahDevisForm';
+import { SectionTitle } from '@/components/ui/SectionTitle';
+import { CardContent } from '@/components/ui/Card';
 
 // Constantes Supabase hardcodées pour éviter les problèmes d'env
 const SUPABASE_URL = 'https://htemxbrbxazzatmjerij.supabase.co';
@@ -125,7 +128,7 @@ export default function PessahGaleriePage() {
       <PublicNavigation />
       <main className="min-h-screen bg-white pt-20 pb-12">
         <div className="max-w-7xl mx-auto px-6">
-          <h1 
+          <h1
             className="text-5xl md:text-6xl mb-4 text-[var(--gold)] text-center"
             style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}
           >
@@ -195,6 +198,18 @@ export default function PessahGaleriePage() {
               })}
             </AnimatePresence>
           </motion.div>
+
+          {/* Formulaire Devis */}
+          <section id="devis-form" className="mt-16">
+            <SectionTitle title="Demande de Devis" subtitle="Contactez-nous" />
+            <div className="max-w-xl mx-auto">
+              <Card className="border border-[var(--gold)]/20 shadow-lg bg-white">
+                <CardContent className="p-6">
+                  <PessahDevisForm />
+                </CardContent>
+              </Card>
+            </div>
+          </section>
         </div>
       </main>
 

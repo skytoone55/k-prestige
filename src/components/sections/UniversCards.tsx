@@ -107,12 +107,16 @@ function UniversCard({ item, index }: { item: any; index: number }) {
 
 export function UniversCards() {
   const { data } = usePageContent('accueil');
-  const univers = data?.univers || defaultUnivers;
+  const allUnivers = data?.univers || defaultUnivers;
+  // Filtrer les éléments masqués
+  const univers = allUnivers.filter((item: any) => !item.hidden);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+    <div className="flex flex-wrap gap-6">
       {univers.map((item: any, index: number) => (
-        <UniversCard key={item.href || index} item={item} index={index} />
+        <div key={item.href || index} className="flex-1 min-w-[200px] max-w-[350px]">
+          <UniversCard item={item} index={index} />
+        </div>
       ))}
     </div>
   );

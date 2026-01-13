@@ -11,6 +11,7 @@ import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { SectionTitle } from '@/components/ui/SectionTitle';
 import { placeholderImages } from '@/lib/images';
 import { usePageContent } from '@/lib/usePageContent';
+import { PessahDevisForm } from '@/components/public/PessahDevisForm';
 
 export default function PessahHotelPage() {
   const { data, loading } = usePageContent('pessah-hotel');
@@ -31,7 +32,7 @@ export default function PessahHotelPage() {
     image: '/images/hotel/FAÇADE.jpg'
   };
 
-  const chambres = data?.chambres || [
+  const allChambres = data?.chambres || [
     { code: 'S', nom: 'Superior', nombre: 98, surface: '27m²', vue: 'Jardins/Montagnes' },
     { code: 'P', nom: 'Premium Vue Mer', nombre: 79, surface: '27m²', vue: 'Mer' },
     { code: 'EC', nom: 'Exclusive Communicantes', nombre: 28, surface: '35m²', vue: 'Montagnes', special: 'Communicante' },
@@ -42,8 +43,10 @@ export default function PessahHotelPage() {
     { code: 'TSU', nom: 'Terrace Suite', nombre: 7, surface: '43-70m²', vue: 'Mer', special: 'Suite, Terrasse' },
     { code: 'MED', nom: 'Mediterranean Suite', nombre: 13, surface: '66-84m²', vue: 'Mer', special: 'Suite Premium' },
   ];
+  // Filtrer les éléments masqués
+  const chambres = allChambres.filter((item: any) => !item.hidden);
 
-  const services = data?.services || [
+  const allServices = data?.services || [
     { image: placeholderImages.beachAccess, title: 'Pied dans l\'eau', desc: 'Accès direct plage' },
     { image: placeholderImages.pool, title: '3 Piscines', desc: 'Dont une chauffée' },
     { image: placeholderImages.spa, title: 'SPA Luxueux', desc: 'Centre bien-être complet' },
@@ -51,6 +54,8 @@ export default function PessahHotelPage() {
     { image: placeholderImages.fitness, title: 'Sport & Fitness', desc: 'Salle équipée, coach' },
     { image: placeholderImages.kidsClub, title: 'Clubs Enfants', desc: 'Baby, Mini, Kids Club' },
   ];
+  // Filtrer les éléments masqués
+  const services = allServices.filter((item: any) => !item.hidden);
 
   if (loading) {
     return (
@@ -83,8 +88,8 @@ export default function PessahHotelPage() {
           </div>
 
           <div className="relative z-10 h-full flex flex-col justify-end pb-16 px-6">
-            <div className="max-w-7xl mx-auto w-full">
-              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
+            <div className="max-w-7xl mx-auto w-full flex flex-col md:flex-row md:items-end gap-6 md:gap-8">
+              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl">
                 <span className="text-[var(--gold)] uppercase tracking-[0.2em] text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
                   {hero.subtitle}
                 </span>
@@ -97,6 +102,14 @@ export default function PessahHotelPage() {
                 <p className="text-white/80 text-xl mt-4 max-w-xl" style={{ fontFamily: 'var(--font-dm-sans)' }}>
                   {hero.description}
                 </p>
+              </motion.div>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+                <button
+                  onClick={() => document.getElementById('devis-form')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="btn-gold-primary px-8 py-3 text-base whitespace-nowrap"
+                >
+                  Demander un devis
+                </button>
               </motion.div>
             </div>
           </div>
@@ -163,38 +176,54 @@ export default function PessahHotelPage() {
           {/* Services */}
           <section className="mb-16">
             <SectionTitle title="Services & Équipements" />
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="flex flex-wrap justify-center gap-6">
               {services.map((service: any, idx: number) => (
                 <ScrollReveal key={idx} delay={idx * 0.1}>
-                  <motion.div
-                    whileHover={{ y: -8 }}
-                    className="group relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500"
-                  >
-                    <div className="relative h-48 overflow-hidden">
-                      <Image
-                        src={service.image || placeholderImages.beachAccess}
-                        alt={service.title}
-                        fill
-                        className="object-cover transition-transform duration-700 group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
-                    </div>
-                    <CardContent className="p-6">
-                      <div className="w-12 h-[2px] bg-[var(--gold)] mb-4 transition-all duration-500 group-hover:w-20" />
-                      <h3
-                        className="text-lg font-cormorant font-semibold mb-2 group-hover:text-[var(--gold)] transition-colors"
-                        style={{ fontFamily: 'var(--font-cormorant)' }}
-                      >
-                        {service.title}
-                      </h3>
-                      <p className="text-gray-600 text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                        {service.desc}
-                      </p>
-                    </CardContent>
-                  </motion.div>
+                  <div className="w-[calc(33.333%-1rem)] min-w-[300px] max-w-[380px]">
+                    <motion.div
+                      whileHover={{ y: -8 }}
+                      className="group relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500"
+                    >
+                      <div className="relative h-48 overflow-hidden">
+                        <Image
+                          src={service.image || placeholderImages.beachAccess}
+                          alt={service.title}
+                          fill
+                          className="object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+                      </div>
+                      <CardContent className="p-6">
+                        <div className="w-12 h-[2px] bg-[var(--gold)] mb-4 transition-all duration-500 group-hover:w-20" />
+                        <h3
+                          className="text-lg font-cormorant font-semibold mb-2 group-hover:text-[var(--gold)] transition-colors"
+                          style={{ fontFamily: 'var(--font-cormorant)' }}
+                        >
+                          {service.title}
+                        </h3>
+                        <p className="text-gray-600 text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                          {service.desc}
+                        </p>
+                      </CardContent>
+                    </motion.div>
+                  </div>
                 </ScrollReveal>
               ))}
             </div>
+          </section>
+
+          {/* Formulaire Devis */}
+          <section id="devis-form" className="mb-16 pt-4 scroll-mt-24">
+            <SectionTitle title="Demande de Devis" subtitle="Contactez-nous" />
+            <ScrollReveal>
+              <div className="max-w-xl mx-auto">
+                <Card className="border border-[var(--gold)]/20 shadow-lg bg-white">
+                  <CardContent className="p-6">
+                    <PessahDevisForm />
+                  </CardContent>
+                </Card>
+              </div>
+            </ScrollReveal>
           </section>
 
           {/* Navigation */}
@@ -207,11 +236,6 @@ export default function PessahHotelPage() {
             <Link href="/pessah-2026/galerie">
               <Button className="btn-gold-outline">
                 Voir la galerie
-              </Button>
-            </Link>
-            <Link href="/contact">
-              <Button className="btn-gold-primary">
-                Demander un devis
               </Button>
             </Link>
           </div>

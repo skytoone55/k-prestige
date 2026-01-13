@@ -29,20 +29,24 @@ export default function HilloulaPage() {
   };
 
   // Features peut être soit dans main.features (ancien format) soit en section séparée (nouveau format backoffice)
-  const features = data?.features || main.features || [
+  const allFeatures = data?.features || main.features || [
     { text: 'Pension complète' },
     { text: 'Transferts organisés' },
     { text: 'Kashrout certifié' },
     { text: 'Programme complet' },
   ];
+  // Filtrer les éléments masqués
+  const features = allFeatures.filter((item: any) => !item.hidden);
 
   // Gallery dynamique depuis le backoffice
-  const gallery = data?.gallery || [
+  const allGallery = data?.gallery || [
     { image: placeholderImages.candles, alt: 'Bougies' },
     { image: placeholderImages.synagogue, alt: 'Synagogue' },
     { image: placeholderImages.prayer, alt: 'Prière' },
     { image: placeholderImages.pilgrimage, alt: 'Pèlerinage' },
   ];
+  // Filtrer les éléments masqués
+  const gallery = allGallery.filter((item: any) => !item.hidden);
 
   const event = data?.event || {
     title: 'Prochain Événement',
@@ -216,7 +220,7 @@ export default function HilloulaPage() {
 
           {/* Bande d'images décoratives */}
           <section className="mb-16">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="flex flex-wrap justify-center gap-4">
               {(gallery || []).map((item: any, idx: number) => (
                 <motion.div
                   key={idx}
@@ -224,7 +228,7 @@ export default function HilloulaPage() {
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ delay: idx * 0.1 }}
-                  className="relative h-48 md:h-64 rounded-xl overflow-hidden group cursor-pointer"
+                  className="w-[calc(50%-0.5rem)] md:w-[calc(25%-0.75rem)] min-w-[150px] max-w-[280px] relative h-48 md:h-64 rounded-xl overflow-hidden group cursor-pointer"
                 >
                   <Image
                     src={item.image || placeholderImages.candles}

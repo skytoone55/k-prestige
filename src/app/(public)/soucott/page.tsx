@@ -28,19 +28,23 @@ export default function SoucottPage() {
     description: 'Vente en ligne de kits Arba Minim pour la fête de Souccot. Période : Avant Souccot (septembre-octobre)',
   };
 
-  const especes = data?.especes || [
+  const allEspeces = data?.especes || [
     { image: placeholderImages.palm, name: 'Loulav', desc: 'Branche de palmier' },
     { image: placeholderImages.nature, name: 'Etrog', desc: 'Cédrat' },
     { image: placeholderImages.plants, name: 'Hadassim', desc: '3 branches de myrte' },
     { image: placeholderImages.loulav, name: 'Aravot', desc: '2 branches de saule' },
   ];
+  // Filtrer les éléments masqués
+  const especes = allEspeces.filter((item: any) => !item.hidden);
 
-  const kits = data?.kits || [
+  const allKits = data?.kits || [
     { level: 'א', name: 'Standard / Kosher', nameHe: 'א', description: 'Valide halakhiquement', price: '~50€', available: true },
     { level: 'אא', name: 'Méhoudar', nameHe: 'אא', description: 'Qualité améliorée', price: '~70-80€', available: true },
     { level: 'ב', name: 'Méhoudar min haméhoudar', nameHe: 'ב', description: 'Très haute qualité', price: '~100-120€', available: true },
     { level: 'ג', name: 'Premium / Luxe', nameHe: 'ג', description: 'Qualité exceptionnelle', price: '150€+', available: true },
   ];
+  // Filtrer les éléments masqués
+  const kits = allKits.filter((item: any) => !item.hidden);
 
   const livraison = data?.livraison || {
     title: 'Livraison',
@@ -55,6 +59,16 @@ export default function SoucottPage() {
     button1_text: 'Nous contacter',
     button2_text: 'Commander par WhatsApp',
   };
+
+  // Gallery dynamique depuis le backoffice
+  const allGallery = data?.gallery || [
+    { image: placeholderImages.loulav, alt: 'Loulav' },
+    { image: placeholderImages.palm, alt: 'Palmier' },
+    { image: placeholderImages.nature, alt: 'Nature' },
+    { image: placeholderImages.plants, alt: 'Plantes' },
+  ];
+  // Filtrer les éléments masqués
+  const gallery = allGallery.filter((item: any) => !item.hidden);
 
   if (loading) {
     return (
@@ -119,38 +133,40 @@ export default function SoucottPage() {
               <p className="text-lg text-gray-700 mb-8" style={{ fontFamily: 'var(--font-dm-sans)' }}>
                 {main.description}
               </p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+              <div className="flex flex-wrap justify-center gap-6 mb-12">
                 {especes.map((espece: any, idx: number) => (
                   <ScrollReveal key={idx} delay={idx * 0.1}>
-                    <motion.div
-                      whileHover={{ y: -8 }}
-                      className="group relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500"
-                    >
-                      {/* Image avec overlay au hover */}
-                      <div className="relative h-48 overflow-hidden">
-                        <Image
-                          src={espece.image}
-                          alt={espece.name}
-                          fill
-                          className="object-cover transition-transform duration-700 group-hover:scale-110"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
-                      </div>
-                      
-                      {/* Contenu */}
-                      <CardContent className="p-4 text-center">
-                        <div className="w-12 h-[2px] bg-[var(--gold)] mb-3 mx-auto transition-all duration-500 group-hover:w-20" />
-                        <h3 
-                          className="font-semibold text-[var(--gold)] mb-1 group-hover:text-[var(--gold-shine)] transition-colors"
-                          style={{ fontFamily: 'var(--font-cormorant)' }}
-                        >
-                          {espece.name}
-                        </h3>
-                        <p className="text-xs text-gray-600" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                          {espece.desc}
-                        </p>
-                      </CardContent>
-                    </motion.div>
+                    <div className="flex-1 min-w-[200px] max-w-[290px]">
+                      <motion.div
+                        whileHover={{ y: -8 }}
+                        className="group relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500"
+                      >
+                        {/* Image avec overlay au hover */}
+                        <div className="relative h-48 overflow-hidden">
+                          <Image
+                            src={espece.image}
+                            alt={espece.name}
+                            fill
+                            className="object-cover transition-transform duration-700 group-hover:scale-110"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+                        </div>
+
+                        {/* Contenu */}
+                        <CardContent className="p-4 text-center">
+                          <div className="w-12 h-[2px] bg-[var(--gold)] mb-3 mx-auto transition-all duration-500 group-hover:w-20" />
+                          <h3
+                            className="font-semibold text-[var(--gold)] mb-1 group-hover:text-[var(--gold-shine)] transition-colors"
+                            style={{ fontFamily: 'var(--font-cormorant)' }}
+                          >
+                            {espece.name}
+                          </h3>
+                          <p className="text-xs text-gray-600" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                            {espece.desc}
+                          </p>
+                        </CardContent>
+                      </motion.div>
+                    </div>
                   </ScrollReveal>
                 ))}
               </div>
@@ -165,28 +181,30 @@ export default function SoucottPage() {
             >
               Niveaux de Qualité
             </h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="flex flex-wrap justify-center gap-6">
               {kits.map((kit: any, idx: number) => (
-                <Card key={idx} className="p-6 text-center hover:shadow-xl transition-shadow border-2 border-[var(--gold)]/20">
-                  <div className="text-5xl mb-4 font-bold text-[var(--gold)]" style={{ fontFamily: 'var(--font-cormorant)' }}>
-                    {kit.nameHe}
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2 text-gray-800" style={{ fontFamily: 'var(--font-cormorant)' }}>
-                    {kit.name}
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-4" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                    {kit.description}
-                  </p>
-                  <div className="text-2xl font-bold text-[var(--gold)] mb-6" style={{ fontFamily: 'var(--font-cormorant)' }}>
-                    {kit.price}
-                  </div>
-                  <Button 
-                    className="btn-gold-primary w-full"
-                    disabled={!kit.available}
-                  >
-                    {kit.available ? 'Ajouter au panier' : 'Bientôt disponible'}
-                  </Button>
-                </Card>
+                <div key={idx} className="w-full md:w-[calc(50%-0.75rem)] lg:w-[calc(25%-1.125rem)] min-w-[220px] max-w-[280px]">
+                  <Card className="p-6 text-center hover:shadow-xl transition-shadow border-2 border-[var(--gold)]/20 h-full">
+                    <div className="text-5xl mb-4 font-bold text-[var(--gold)]" style={{ fontFamily: 'var(--font-cormorant)' }}>
+                      {kit.nameHe}
+                    </div>
+                    <h3 className="text-xl font-semibold mb-2 text-gray-800" style={{ fontFamily: 'var(--font-cormorant)' }}>
+                      {kit.name}
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-4" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                      {kit.description}
+                    </p>
+                    <div className="text-2xl font-bold text-[var(--gold)] mb-6" style={{ fontFamily: 'var(--font-cormorant)' }}>
+                      {kit.price}
+                    </div>
+                    <Button
+                      className="btn-gold-primary w-full"
+                      disabled={!kit.available}
+                    >
+                      {kit.available ? 'Ajouter au panier' : 'Bientôt disponible'}
+                    </Button>
+                  </Card>
+                </div>
               ))}
             </div>
           </section>
@@ -211,6 +229,30 @@ export default function SoucottPage() {
                 </div>
               </CardContent>
             </Card>
+          </section>
+
+          {/* Galerie photos */}
+          <section className="mb-16">
+            <div className="flex flex-wrap justify-center gap-4">
+              {(gallery || []).map((item: any, idx: number) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="w-[calc(50%-0.5rem)] md:w-[calc(25%-0.75rem)] min-w-[150px] max-w-[280px] relative h-48 md:h-64 rounded-xl overflow-hidden group cursor-pointer"
+                >
+                  <Image
+                    src={item.image || placeholderImages.loulav}
+                    alt={item.alt || `Souccot ${idx + 1}`}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </motion.div>
+              ))}
+            </div>
           </section>
 
           {/* CTA */}

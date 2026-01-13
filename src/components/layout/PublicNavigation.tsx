@@ -8,14 +8,58 @@ import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import { Menu, X, ChevronDown, MessageCircle } from 'lucide-react';
 
+// Constantes Supabase
+const SUPABASE_URL = 'https://htemxbrbxazzatmjerij.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh0ZW14YnJieGF6emF0bWplcmlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4MDI0MjQsImV4cCI6MjA4MzM3ODQyNH0.6RiC65zsSb9INtYpRC7PLurvoHmbb_LX3NkPBM4wodw';
+
+// Mapping des page_id vers les href
+const PAGE_ID_TO_HREF: Record<string, string> = {
+  'marbella': '/marbella',
+  'marrakech': '/marrakech',
+  'hilloula': '/hilloula',
+  'souccot': '/soucott',
+  'pessah-sejour': '/pessah-2026/sejour',
+  'pessah-hotel': '/pessah-2026/hotel',
+  'galerie': '/pessah-2026/galerie',
+};
+
 export function PublicNavigation() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [pessahDropdownOpen, setPessahDropdownOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [disabledPages, setDisabledPages] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     setMounted(true);
+
+    // Charger les pages désactivées
+    const loadDisabledPages = async () => {
+      try {
+        const response = await fetch(
+          `${SUPABASE_URL}/rest/v1/page_settings?select=*`,
+          {
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            },
+          }
+        );
+        if (response.ok) {
+          const data = await response.json();
+          const disabledHrefs = new Set<string>();
+          data.forEach((item: any) => {
+            if (item.disabled && PAGE_ID_TO_HREF[item.page_id]) {
+              disabledHrefs.add(PAGE_ID_TO_HREF[item.page_id]);
+            }
+          });
+          setDisabledPages(disabledHrefs);
+        }
+      } catch (error) {
+        console.error('Erreur chargement page_settings:', error);
+      }
+    };
+    loadDisabledPages();
   }, []);
 
   // Logique isActive corrigée : pour Accueil, vérifier exactement '/', pour les autres utiliser startsWith
@@ -45,7 +89,7 @@ export function PublicNavigation() {
       dropdown: [
         { name: 'Le Séjour', href: '/pessah-2026/sejour' },
         { name: 'L\'Hôtel', href: '/pessah-2026/hotel' },
-        { name: 'Galerie', href: '/pessah-2026/galerie' },
+        { name: 'Galerie photos', href: '/pessah-2026/galerie' },
       ],
     },
     { name: 'Marbella', href: '/marbella' },
@@ -74,8 +118,12 @@ export function PublicNavigation() {
 
             {/* Desktop Navigation - centré */}
             <nav className="hidden lg:flex items-center justify-center flex-1 gap-1">
-              {navigation.map((item) => {
+              {navigation.filter(item => !disabledPages.has(item.href)).map((item) => {
                 if (item.dropdown) {
+                  // Filtrer les sous-éléments désactivés
+                  const visibleDropdown = item.dropdown.filter(sub => !disabledPages.has(sub.href));
+                  if (visibleDropdown.length === 0) return null;
+
                   return (
                     <div
                       key={item.name}
@@ -96,12 +144,12 @@ export function PublicNavigation() {
                           pessahDropdownOpen && 'rotate-180'
                         )} />
                       </button>
-                      
+
                       {/* Dropdown Menu avec padding-top invisible pour combler le gap */}
                       {pessahDropdownOpen && (
                         <div className="absolute top-full left-0 pt-2">
                           <div className="w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-2">
-                            {item.dropdown.map((subItem) => (
+                            {visibleDropdown.map((subItem) => (
                               <Link
                                 key={subItem.href}
                                 href={subItem.href}
@@ -122,7 +170,7 @@ export function PublicNavigation() {
                     </div>
                   );
                 }
-                
+
                 return (
                   <Link
                     key={item.href}
@@ -166,8 +214,12 @@ export function PublicNavigation() {
         {mobileMenuOpen && (
           <div className="lg:hidden border-t bg-white shadow-lg">
             <nav className="px-4 py-4 space-y-1">
-              {navigation.map((item) => {
+              {navigation.filter(item => !disabledPages.has(item.href)).map((item) => {
                 if (item.dropdown) {
+                  // Filtrer les sous-éléments désactivés
+                  const visibleDropdown = item.dropdown.filter(sub => !disabledPages.has(sub.href));
+                  if (visibleDropdown.length === 0) return null;
+
                   return (
                     <div key={item.name}>
                       <button
@@ -188,7 +240,7 @@ export function PublicNavigation() {
                       </button>
                       {pessahDropdownOpen && (
                         <div className="pl-4 mt-1 space-y-1">
-                          {item.dropdown.map((subItem) => (
+                          {visibleDropdown.map((subItem) => (
                             <Link
                               key={subItem.href}
                               href={subItem.href}
@@ -212,7 +264,7 @@ export function PublicNavigation() {
                     </div>
                   );
                 }
-                
+
                 return (
                   <Link
                     key={item.href}

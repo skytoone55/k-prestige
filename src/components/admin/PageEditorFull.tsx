@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Save, Upload, X, Plus, Trash2, Edit3, Image as ImageIcon, Type, Hash, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Save, Upload, X, Plus, Trash2, Edit3, Image as ImageIcon, Type, Hash, ChevronLeft, ChevronRight, Eye, EyeOff } from 'lucide-react';
 import Image from 'next/image';
 import { Textarea } from '@/components/ui/Textarea';
 import { fullPageContent } from '@/lib/page-content-full';
@@ -464,6 +464,16 @@ const pageConfigs: Record<string, any> = {
         ],
       },
       {
+        id: 'gallery',
+        title: 'Galerie Photos',
+        icon: '🖼️',
+        type: 'array',
+        itemFields: [
+          { id: 'image', label: 'Image', type: 'image' },
+          { id: 'alt', label: 'Description', type: 'text' },
+        ],
+      },
+      {
         id: 'cta',
         title: 'Section CTA',
         icon: '📞',
@@ -734,15 +744,41 @@ export function PageEditorFull({ pageId }: PageEditorFullProps) {
   };
 
   const removeArrayItem = (sectionId: string, index: number) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cet élément ?')) {
+    console.log('[removeArrayItem] Called with sectionId:', sectionId, 'index:', index);
+    const shouldDelete = window.confirm('Êtes-vous sûr de vouloir supprimer cet élément ?');
+    console.log('[removeArrayItem] User confirmed:', shouldDelete);
+    if (shouldDelete) {
       setData((prev: any) => {
         const newData = { ...prev };
         if (newData[sectionId] && Array.isArray(newData[sectionId])) {
-          newData[sectionId] = newData[sectionId].filter((_: any, i: number) => i !== index);
+          // Créer un nouveau tableau sans l'élément supprimé
+          const newArray = newData[sectionId].filter((_: any, i: number) => i !== index);
+          newData[sectionId] = newArray;
+          console.log('[removeArrayItem] New array length:', newArray.length);
         }
         return newData;
       });
     }
+  };
+
+  // Masquer/afficher un élément du tableau
+  const toggleArrayItemVisibility = (sectionId: string, index: number) => {
+    console.log('[toggleArrayItemVisibility] sectionId:', sectionId, 'index:', index);
+    setData((prev: any) => {
+      const newData = { ...prev };
+      if (newData[sectionId] && Array.isArray(newData[sectionId]) && newData[sectionId][index]) {
+        // Créer une copie du tableau
+        const newArray = [...newData[sectionId]];
+        // Modifier l'élément avec toggle hidden
+        newArray[index] = {
+          ...newArray[index],
+          hidden: !newArray[index].hidden
+        };
+        newData[sectionId] = newArray;
+        console.log('[toggleArrayItemVisibility] New hidden value:', newArray[index].hidden);
+      }
+      return newData;
+    });
   };
 
   const renderField = (sectionId: string, field: any, value: any, index?: number) => {
@@ -1030,27 +1066,51 @@ export function PageEditorFull({ pageId }: PageEditorFullProps) {
               <div className="space-y-4">
                 {/* Grille sur plusieurs lignes */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {(data[activeSection.id] || []).map((item: any, index: number) => (
-                    <Card key={index} className="border-2 border-gray-200 shadow-lg">
-                      <CardHeader className="flex flex-row items-center justify-between bg-gradient-to-r from-gray-50 to-white pb-3">
-                        <CardTitle className="text-base flex items-center gap-2">
-                          <Edit3 className="w-4 h-4 text-[var(--gold)]" />
-                          Élément {index + 1}
-                        </CardTitle>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => removeArrayItem(activeSection.id, index)}
-                          className="h-7 w-7 p-0"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      </CardHeader>
-                      <CardContent className="space-y-4 pt-4 max-h-[500px] overflow-y-auto">
-                        {activeSection.itemFields.map((field: any) => renderField(activeSection.id, field, item, index))}
-                      </CardContent>
-                    </Card>
-                  ))}
+                  {(data[activeSection.id] || []).map((item: any, index: number) => {
+                    const isHidden = item?.hidden === true;
+                    return (
+                      <Card key={index} className={`border-2 shadow-lg transition-all ${isHidden ? 'border-red-300 bg-red-50/30 opacity-60' : 'border-gray-200'}`}>
+                        <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-50 to-white border-b">
+                          <div className="flex items-center gap-2">
+                            <Edit3 className="w-4 h-4 text-[var(--gold)]" />
+                            <span className="text-base font-semibold">Élément {index + 1}</span>
+                            {isHidden && <span className="text-xs text-red-500 font-normal">(masqué)</span>}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {/* Bouton Masquer/Afficher */}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                toggleArrayItemVisibility(activeSection.id, index);
+                              }}
+                              className={`h-8 w-8 rounded-md flex items-center justify-center transition-colors ${isHidden ? 'bg-red-100 text-red-600 hover:bg-red-200' : 'bg-green-100 text-green-600 hover:bg-green-200'}`}
+                              title={isHidden ? 'Afficher cet élément' : 'Masquer cet élément'}
+                            >
+                              {isHidden ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                            {/* Bouton Supprimer */}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                removeArrayItem(activeSection.id, index);
+                              }}
+                              className="h-8 w-8 rounded-md flex items-center justify-center bg-red-500 text-white hover:bg-red-600 transition-colors"
+                              title="Supprimer cet élément"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                        <CardContent className="space-y-4 pt-4 max-h-[500px] overflow-y-auto">
+                          {activeSection.itemFields.map((field: any) => renderField(activeSection.id, field, item, index))}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                   
                   {/* Bouton ajouter */}
                   <Card className="border-2 border-dashed border-[var(--gold)]/30 flex items-center justify-center hover:border-[var(--gold)] transition-all cursor-pointer bg-gray-50 min-h-[200px]">

@@ -46,7 +46,9 @@ function AnimatedNumber({ value, suffix }: { value: number; suffix: string }) {
 
 export function StatsSection() {
   const { data } = usePageContent('accueil');
-  const stats = data?.stats || defaultStats;
+  const allStats = data?.stats || defaultStats;
+  // Filtrer les éléments masqués
+  const stats = allStats.filter((item: any) => !item.hidden);
 
   return (
     <section className="py-24 bg-[var(--dark-bg)] relative overflow-hidden">
@@ -58,9 +60,9 @@ export function StatsSection() {
       </div>
       
       <div className="max-w-7xl mx-auto px-6 relative z-10">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+        <div className="flex flex-wrap justify-center gap-8 md:gap-12">
           {stats.map((stat: any, i: number) => (
-            <div key={i} className="text-center">
+            <div key={i} className="text-center w-[calc(50%-1rem)] md:w-auto md:min-w-[150px]">
               <AnimatedNumber value={stat.value} suffix={stat.suffix} />
               <p className="text-white/60 mt-2 text-sm uppercase tracking-wider" style={{ fontFamily: 'var(--font-dm-sans)' }}>
                 {stat.label}

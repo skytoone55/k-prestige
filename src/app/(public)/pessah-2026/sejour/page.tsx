@@ -36,14 +36,16 @@ export default function PessahSejourPage() {
     viandes: 'Viandes sous surveillance Rav Ephraïm Cremisi'
   };
 
-  const animations = data?.animations || [
+  const allAnimations = data?.animations || [
     { image: placeholderImages.musicBand, name: 'Laurent Folies Musical Band', description: '@laurentfolies', instagram: 'https://www.instagram.com/laurentfolies' },
     { image: placeholderImages.dj, name: 'Yonni Chemla DJ Live', description: '@yonnichemla', instagram: 'https://www.instagram.com/yonnichemla' },
     { image: placeholderImages.singer, name: 'Avi Ohayon', description: 'Rabbin & Paytan', instagram: null },
     { image: placeholderImages.kidsAnimation, name: 'Gueoula Animation', description: 'Animation Enfants', instagram: 'https://www.instagram.com/gueoula_animation' },
   ];
+  // Filtrer les éléments masqués
+  const animations = allAnimations.filter((item: any) => !item.hidden);
 
-  const services = data?.services || [
+  const allServices = data?.services || [
     { image: placeholderImages.beachAccess, title: 'Pied dans l\'eau', desc: 'Accès direct plage' },
     { image: placeholderImages.pool, title: '3 Piscines', desc: 'Dont une chauffée' },
     { image: placeholderImages.spa, title: 'SPA Luxueux', desc: 'Centre bien-être complet' },
@@ -51,6 +53,8 @@ export default function PessahSejourPage() {
     { image: placeholderImages.kidsClub, title: 'Clubs Enfants', desc: 'Baby, Mini, Kids Club' },
     { image: placeholderImages.fitness, title: 'Sport & Fitness', desc: 'Salle équipée, coach' },
   ];
+  // Filtrer les éléments masqués
+  const services = allServices.filter((item: any) => !item.hidden);
 
   if (loading) {
     return (
@@ -83,8 +87,8 @@ export default function PessahSejourPage() {
           </div>
 
           <div className="relative z-10 h-full flex flex-col justify-end pb-16 px-6">
-            <div className="max-w-7xl mx-auto w-full">
-              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
+            <div className="max-w-7xl mx-auto w-full flex flex-col md:flex-row md:items-end gap-6 md:gap-8">
+              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl">
                 <span className="text-[var(--gold)] uppercase tracking-[0.2em] text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
                   {hero.subtitle}
                 </span>
@@ -97,6 +101,14 @@ export default function PessahSejourPage() {
                 <p className="text-white/80 text-xl mt-4 max-w-xl" style={{ fontFamily: 'var(--font-dm-sans)' }}>
                   {hero.description}
                 </p>
+              </motion.div>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+                <button
+                  onClick={() => document.getElementById('devis-form')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="btn-gold-primary px-8 py-3 text-base whitespace-nowrap"
+                >
+                  Demander un devis
+                </button>
               </motion.div>
             </div>
           </div>
@@ -178,50 +190,52 @@ export default function PessahSejourPage() {
           {/* Animation */}
           <section className="mb-16">
             <SectionTitle title="Animation Non-Stop" />
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="flex flex-wrap justify-center gap-6">
               {animations.map((anim: any, idx: number) => (
                 <ScrollReveal key={idx} delay={idx * 0.1}>
-                  <motion.div
-                    whileHover={{ y: -8 }}
-                    className="group relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500"
-                  >
-                    <div className="relative h-64 overflow-hidden">
-                      <Image
-                        src={anim.image || placeholderImages.musicBand}
-                        alt={anim.title || 'Animation'}
-                        fill
-                        className="object-cover transition-transform duration-700 group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
-                      <div className="absolute top-4 right-4 bg-[var(--gold)]/90 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full font-medium" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                        Premium
+                  <div className="w-full md:w-[calc(50%-0.75rem)] lg:w-[calc(25%-1.125rem)] min-w-[250px] max-w-[300px]">
+                    <motion.div
+                      whileHover={{ y: -8 }}
+                      className="group relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500"
+                    >
+                      <div className="relative h-64 overflow-hidden">
+                        <Image
+                          src={anim.image || placeholderImages.musicBand}
+                          alt={anim.title || 'Animation'}
+                          fill
+                          className="object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+                        <div className="absolute top-4 right-4 bg-[var(--gold)]/90 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full font-medium" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                          Premium
+                        </div>
                       </div>
-                    </div>
-                    <CardContent className="p-6">
-                      <div className="w-12 h-[2px] bg-[var(--gold)] mb-4 transition-all duration-500 group-hover:w-20" />
-                      <h3
-                        className="text-xl font-cormorant font-semibold mb-2 group-hover:text-[var(--gold)] transition-colors"
-                        style={{ fontFamily: 'var(--font-cormorant)' }}
-                      >
-                        {anim.title || anim.name}
-                      </h3>
-                      <p className="text-gray-600 text-sm mb-4" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                        {anim.desc || anim.description}
-                      </p>
-                      {anim.instagram && (
-                        <a
-                          href={anim.instagram}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center text-[var(--gold)] text-sm font-medium group-hover:gap-2 transition-all"
-                          style={{ fontFamily: 'var(--font-dm-sans)' }}
+                      <CardContent className="p-6">
+                        <div className="w-12 h-[2px] bg-[var(--gold)] mb-4 transition-all duration-500 group-hover:w-20" />
+                        <h3
+                          className="text-xl font-cormorant font-semibold mb-2 group-hover:text-[var(--gold)] transition-colors"
+                          style={{ fontFamily: 'var(--font-cormorant)' }}
                         >
-                          Voir Instagram
-                          <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-2" />
-                        </a>
-                      )}
-                    </CardContent>
-                  </motion.div>
+                          {anim.title || anim.name}
+                        </h3>
+                        <p className="text-gray-600 text-sm mb-4" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                          {anim.desc || anim.description}
+                        </p>
+                        {anim.instagram && (
+                          <a
+                            href={anim.instagram}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center text-[var(--gold)] text-sm font-medium group-hover:gap-2 transition-all"
+                            style={{ fontFamily: 'var(--font-dm-sans)' }}
+                          >
+                            Voir Instagram
+                            <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-2" />
+                          </a>
+                        )}
+                      </CardContent>
+                    </motion.div>
+                  </div>
                 </ScrollReveal>
               ))}
             </div>
@@ -230,47 +244,49 @@ export default function PessahSejourPage() {
           {/* Services */}
           <section className="mb-16">
             <SectionTitle title="Services Inclus" />
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="flex flex-wrap justify-center gap-6">
               {services.map((service: any, idx: number) => (
                 <ScrollReveal key={idx} delay={idx * 0.1}>
-                  <motion.div
-                    whileHover={{ y: -8 }}
-                    className="group relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500"
-                  >
-                    <div className="relative h-48 overflow-hidden">
-                      <Image
-                        src={service.image || placeholderImages.beachAccess}
-                        alt={service.title || 'Service'}
-                        fill
-                        className="object-cover transition-transform duration-700 group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
-                    </div>
-                    <CardContent className="p-6">
-                      <div className="w-12 h-[2px] bg-[var(--gold)] mb-4 transition-all duration-500 group-hover:w-20" />
-                      <h3
-                        className="text-lg font-cormorant font-semibold mb-2 group-hover:text-[var(--gold)] transition-colors"
-                        style={{ fontFamily: 'var(--font-cormorant)' }}
-                      >
-                        {service.title}
-                      </h3>
-                      <p className="text-gray-600 text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                        {service.desc}
-                      </p>
-                    </CardContent>
-                  </motion.div>
+                  <div className="w-full md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] min-w-[280px] max-w-[380px]">
+                    <motion.div
+                      whileHover={{ y: -8 }}
+                      className="group relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500"
+                    >
+                      <div className="relative h-48 overflow-hidden">
+                        <Image
+                          src={service.image || placeholderImages.beachAccess}
+                          alt={service.title || 'Service'}
+                          fill
+                          className="object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+                      </div>
+                      <CardContent className="p-6">
+                        <div className="w-12 h-[2px] bg-[var(--gold)] mb-4 transition-all duration-500 group-hover:w-20" />
+                        <h3
+                          className="text-lg font-cormorant font-semibold mb-2 group-hover:text-[var(--gold)] transition-colors"
+                          style={{ fontFamily: 'var(--font-cormorant)' }}
+                        >
+                          {service.title}
+                        </h3>
+                        <p className="text-gray-600 text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                          {service.desc}
+                        </p>
+                      </CardContent>
+                    </motion.div>
+                  </div>
                 </ScrollReveal>
               ))}
             </div>
           </section>
 
           {/* Formulaire Devis */}
-          <section className="mb-16">
+          <section id="devis-form" className="mb-16 pt-4 scroll-mt-24">
             <SectionTitle title="Demande de Devis" subtitle="Contactez-nous" />
             <ScrollReveal>
-              <div className="max-w-3xl mx-auto">
-                <Card className="border border-[var(--gold)]/30 shadow-xl bg-white">
-                  <CardContent className="p-8 md:p-12">
+              <div className="max-w-xl mx-auto">
+                <Card className="border border-[var(--gold)]/20 shadow-lg bg-white">
+                  <CardContent className="p-6">
                     <PessahDevisForm />
                   </CardContent>
                 </Card>

@@ -28,7 +28,7 @@ export default function MarrakechPage() {
     description2: 'Nous proposons une cuisine casher de qualité pour tous vos événements importants, partout au Maroc.'
   };
 
-  const events = data?.events || [
+  const allEvents = data?.events || [
     { image: placeholderImages.weddingMorocco, title: 'Mariages', desc: 'Organisation complète' },
     { image: placeholderImages.eventMorocco, title: 'Bar-mitzvahs', desc: 'Cérémonies et réceptions' },
     { image: placeholderImages.candles, title: 'Hilloula', desc: 'Pèlerinages et célébrations' },
@@ -38,6 +38,8 @@ export default function MarrakechPage() {
     { image: placeholderImages.moroccanDecor, title: 'Événements corporatifs', desc: 'Séminaires et conférences' },
     { image: placeholderImages.eventMorocco, title: 'Autres', desc: 'Sur demande' },
   ];
+  // Filtrer les éléments masqués
+  const events = allEvents.filter((item: any) => !item.hidden);
 
   const cta = data?.cta || {
     title: 'Organisons votre événement ensemble',
@@ -126,35 +128,37 @@ export default function MarrakechPage() {
           {/* Types d'événements */}
           <section className="mb-16">
             <SectionTitle title="Types d'Événements" />
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="flex flex-wrap gap-6">
               {events.map((event: any, idx: number) => (
                 <ScrollReveal key={idx} delay={idx * 0.05}>
-                  <motion.div
-                    whileHover={{ y: -8 }}
-                    className="group relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500"
-                  >
-                    <div className="relative h-48 overflow-hidden">
-                      <Image
-                        src={event.image || placeholderImages.eventMorocco}
-                        alt={event.title}
-                        fill
-                        className="object-cover transition-transform duration-700 group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
-                    </div>
-                    <CardContent className="p-6">
-                      <div className="w-12 h-[2px] bg-[var(--gold)] mb-4 transition-all duration-500 group-hover:w-20" />
-                      <h3
-                        className="text-lg font-cormorant font-semibold mb-2 group-hover:text-[var(--gold)] transition-colors"
-                        style={{ fontFamily: 'var(--font-cormorant)' }}
-                      >
-                        {event.title}
-                      </h3>
-                      <p className="text-gray-600 text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                        {event.desc}
-                      </p>
-                    </CardContent>
-                  </motion.div>
+                  <div className="flex-1 min-w-[280px] max-w-[380px]">
+                    <motion.div
+                      whileHover={{ y: -8 }}
+                      className="group relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500"
+                    >
+                      <div className="relative h-48 overflow-hidden">
+                        <Image
+                          src={event.image || placeholderImages.eventMorocco}
+                          alt={event.title}
+                          fill
+                          className="object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+                      </div>
+                      <CardContent className="p-6">
+                        <div className="w-12 h-[2px] bg-[var(--gold)] mb-4 transition-all duration-500 group-hover:w-20" />
+                        <h3
+                          className="text-lg font-cormorant font-semibold mb-2 group-hover:text-[var(--gold)] transition-colors"
+                          style={{ fontFamily: 'var(--font-cormorant)' }}
+                        >
+                          {event.title}
+                        </h3>
+                        <p className="text-gray-600 text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                          {event.desc}
+                        </p>
+                      </CardContent>
+                    </motion.div>
+                  </div>
                 </ScrollReveal>
               ))}
             </div>

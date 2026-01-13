@@ -95,11 +95,12 @@ export function HeroHome() {
             transition={{ delay: 0.5 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6"
           >
-            <Link href="/contact">
-              <Button className="btn-gold-primary text-lg px-8 py-4 shadow-xl">
-                Demander un devis
-              </Button>
-            </Link>
+            <Button
+              onClick={() => document.getElementById('devis-form')?.scrollIntoView({ behavior: 'smooth' })}
+              className="btn-gold-primary text-lg px-8 py-4 shadow-xl"
+            >
+              Demander un devis
+            </Button>
             <Link href="/pessah-2026/sejour">
               <Button className="btn-gold-outline border-white text-white hover:bg-white hover:text-[var(--dark-bg)] text-lg px-8 py-4 shadow-xl">
                 Découvrir le séjour

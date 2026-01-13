@@ -1,9 +1,10 @@
+'use client';
+
 import Image from 'next/image';
 import { PublicNavigation } from '@/components/layout/PublicNavigation';
 import { Footer } from '@/components/layout/Footer';
 import { Card, CardContent } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import Link from 'next/link';
+import { PessahDevisForm } from '@/components/public/PessahDevisForm';
 
 export default function Pessah2026Page() {
   return (
@@ -20,7 +21,7 @@ export default function Pessah2026Page() {
           />
           <div className="absolute inset-0 bg-black/40" />
           <div className="relative z-10 text-center text-white">
-            <h1 
+            <h1
               className="text-6xl md:text-8xl mb-4 text-[var(--gold)]"
               style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}
             >
@@ -29,9 +30,15 @@ export default function Pessah2026Page() {
             <p className="text-xl md:text-2xl mb-2" style={{ fontFamily: 'var(--font-dm-sans)' }}>
               Cabogata Beach Hotel 5★ • Espagne
             </p>
-            <p className="text-lg text-[var(--gold)]" style={{ fontFamily: 'var(--font-cormorant)' }}>
+            <p className="text-lg text-[var(--gold)] mb-6" style={{ fontFamily: 'var(--font-cormorant)' }}>
               31 Mars - 10 Avril 2026
             </p>
+            <button
+              onClick={() => document.getElementById('devis-form')?.scrollIntoView({ behavior: 'smooth' })}
+              className="btn-gold-primary px-8 py-3 text-base"
+            >
+              Demander un devis
+            </button>
           </div>
         </section>
 
@@ -230,19 +237,17 @@ export default function Pessah2026Page() {
             </div>
           </div>
 
-          {/* CTA Final */}
-          <section className="text-center py-16 bg-gradient-to-br from-[#D4AF37]/10 to-[#0077B6]/10 rounded-lg">
-            <h2 
-              className="text-3xl md:text-4xl mb-6 text-foreground"
-              style={{ fontFamily: 'var(--font-cormorant)' }}
-            >
-              Prêt à vivre un Pessah inoubliable ?
-            </h2>
-            <Link href="/contact">
-              <Button variant="gold" size="lg">
-                Demander un devis
-              </Button>
-            </Link>
+          {/* Formulaire de devis */}
+          <section id="devis-form" className="py-10 px-6 bg-gradient-to-br from-[#D4AF37]/10 to-[#0077B6]/10 rounded-lg">
+            <div className="max-w-xl mx-auto">
+              <h2
+                className="text-2xl md:text-3xl mb-6 text-center text-foreground"
+                style={{ fontFamily: 'var(--font-cormorant)' }}
+              >
+                Prêt à vivre un Pessah inoubliable ?
+              </h2>
+              <PessahDevisForm />
+            </div>
           </section>
         </div>
       </main>

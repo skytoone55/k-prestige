@@ -22,6 +22,7 @@ export function ContactForm() {
     setLoading(true);
 
     try {
+      // Enregistrer dans Supabase
       const { error } = await supabase
         .from('demandes_devis')
         .insert({
@@ -38,6 +39,16 @@ export function ContactForm() {
         });
 
       if (error) throw error;
+
+      // Envoyer l'email de notification
+      await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'contact',
+          data: formData,
+        }),
+      });
 
       setSuccess(true);
       setFormData({ prenom: '', nom: '', email: '', telephone: '', message: '' });

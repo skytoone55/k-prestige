@@ -28,7 +28,9 @@ const defaultTestimonials = [
 
 export function TestimonialsSection() {
   const { data } = usePageContent('accueil');
-  const testimonials = data?.testimonials || defaultTestimonials;
+  const allTestimonials = data?.testimonials || defaultTestimonials;
+  // Filtrer les éléments masqués
+  const testimonials = allTestimonials.filter((item: any) => !item.hidden);
   return (
     <section className="py-24 px-6 bg-white">
       <div className="max-w-7xl mx-auto">
@@ -44,30 +46,32 @@ export function TestimonialsSection() {
           </div>
         </ScrollReveal>
         
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {testimonials.map((testimonial: any, index: number) => (
             <ScrollReveal key={index} delay={index * 0.1}>
-              <Card className="p-6 h-full hover:shadow-xl transition-shadow">
-                <Quote className="w-8 h-8 text-[var(--gold)] mb-4" />
-                <p className="text-gray-700 mb-6 italic" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  &quot;{testimonial.text}&quot;
-                </p>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-[var(--dark-bg)]" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                      {testimonial.name}
-                    </p>
-                    <p className="text-sm text-gray-500" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                      {testimonial.location}
-                    </p>
+              <div className="w-full">
+                <Card className="p-6 h-full hover:shadow-xl transition-shadow">
+                  <Quote className="w-8 h-8 text-[var(--gold)] mb-4" />
+                  <p className="text-gray-700 mb-6 italic" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                    &quot;{testimonial.text}&quot;
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-[var(--dark-bg)]" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                        {testimonial.name}
+                      </p>
+                      <p className="text-sm text-gray-500" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                        {testimonial.location}
+                      </p>
+                    </div>
+                    <div className="flex gap-1">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <span key={i} className="text-[var(--gold)]">★</span>
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex gap-1">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <span key={i} className="text-[var(--gold)]">★</span>
-                    ))}
-                  </div>
-                </div>
-              </Card>
+                </Card>
+              </div>
             </ScrollReveal>
           ))}
         </div>

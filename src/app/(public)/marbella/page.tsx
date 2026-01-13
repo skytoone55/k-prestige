@@ -89,11 +89,13 @@ export default function MarbellaPage() {
     phone: '06 99 95 19 63',
     image: placeholderImages.restaurantInterior,
   };
-  const services = data?.services || [
+  const allServices = data?.services || [
     { title: 'Restaurant', desc: 'Réservations de tables pour déjeuner et dîner', image: placeholderImages.restaurantFood },
     { title: 'Traiteur Événementiel', desc: 'Mariages, Bar-mitzvahs, Shabbat, Hilloula, Réceptions', image: placeholderImages.eventMorocco },
     { title: 'Privatisation', desc: 'Privatisation complète du restaurant pour vos événements', image: placeholderImages.restaurantInterior },
   ];
+  // Filtrer les éléments masqués
+  const services = allServices.filter((item: any) => !item.hidden);
   const cta = data?.cta || {
     title: 'Intéressé par nos services ?',
     description: 'Contactez-nous pour une réservation ou un devis personnalisé',
@@ -102,12 +104,14 @@ export default function MarbellaPage() {
   };
 
   // Features dynamiques depuis le backoffice
-  const features = data?.features || [
+  const allFeatures = data?.features || [
     { text: 'Glatt Kosher Laméhadrine' },
     { text: '70 couverts' },
     { text: 'Proximité Beth Habad de Marbella' },
     { text: 'Réservations tables' },
   ];
+  // Filtrer les éléments masqués
+  const features = allFeatures.filter((item: any) => !item.hidden);
   return (
     <>
       <PublicNavigation />
@@ -309,38 +313,40 @@ export default function MarbellaPage() {
           {/* Services */}
           <section className="mb-16">
             <SectionTitle title="Nos Services" />
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="flex flex-wrap gap-6">
               {services.map((service: any, idx: number) => (
                 <ScrollReveal key={idx} delay={idx * 0.1}>
-                  <motion.div
-                    whileHover={{ y: -8 }}
-                    className="group relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500"
-                  >
-                    {/* Image avec overlay au hover */}
-                    <div className="relative h-48 overflow-hidden">
-                      <Image
-                        src={service.image || placeholderImages.restaurantFood}
-                        alt={service.title}
-                        fill
-                        className="object-cover transition-transform duration-700 group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
-                    </div>
-                    
-                    {/* Contenu */}
-                    <CardContent className="p-6">
-                      <div className="w-12 h-[2px] bg-[var(--gold)] mb-4 transition-all duration-500 group-hover:w-20" />
-                      <h3 
-                        className="text-xl font-cormorant font-semibold mb-3 group-hover:text-[var(--gold)] transition-colors"
-                        style={{ fontFamily: 'var(--font-cormorant)' }}
-                      >
-                        {service.title}
-                      </h3>
-                      <p className="text-gray-600 text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                        {service.desc || service.description}
-                      </p>
-                    </CardContent>
-                  </motion.div>
+                  <div className="flex-1 min-w-[280px] max-w-[400px]">
+                    <motion.div
+                      whileHover={{ y: -8 }}
+                      className="group relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500"
+                    >
+                      {/* Image avec overlay au hover */}
+                      <div className="relative h-48 overflow-hidden">
+                        <Image
+                          src={service.image || placeholderImages.restaurantFood}
+                          alt={service.title}
+                          fill
+                          className="object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+                      </div>
+
+                      {/* Contenu */}
+                      <CardContent className="p-6">
+                        <div className="w-12 h-[2px] bg-[var(--gold)] mb-4 transition-all duration-500 group-hover:w-20" />
+                        <h3
+                          className="text-xl font-cormorant font-semibold mb-3 group-hover:text-[var(--gold)] transition-colors"
+                          style={{ fontFamily: 'var(--font-cormorant)' }}
+                        >
+                          {service.title}
+                        </h3>
+                        <p className="text-gray-600 text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                          {service.desc || service.description}
+                        </p>
+                      </CardContent>
+                    </motion.div>
+                  </div>
                 </ScrollReveal>
               ))}
             </div>

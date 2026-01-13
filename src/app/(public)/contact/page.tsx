@@ -24,15 +24,33 @@ export default function ContactPage() {
     image: placeholderImages.hotelExterior,
   };
 
+  // Fonction pour formater un numéro de téléphone en +33 6 XX XX XX XX
+  const formatPhoneDisplay = (phone: string): string => {
+    const cleaned = phone.replace(/\s/g, '');
+    // Si déjà au format +33, reformater proprement
+    if (cleaned.startsWith('+33')) {
+      const digits = cleaned.slice(3); // enlève +33
+      return '+33 ' + digits.replace(/(.{1})(.{2})(.{2})(.{2})(.{2})/, '$1 $2 $3 $4 $5');
+    }
+    // Si format 06/07, convertir en +33
+    if (cleaned.startsWith('0')) {
+      const digits = cleaned.slice(1); // enlève le 0
+      return '+33 ' + digits.replace(/(.{1})(.{2})(.{2})(.{2})(.{2})/, '$1 $2 $3 $4 $5');
+    }
+    return phone;
+  };
+
   // Coordonnées avec gestion des deux formats (phones[] ou phone1/phone2)
   const rawCoordonnees = data?.coordonnees || {};
+  const rawPhones = rawCoordonnees.phones || [
+    rawCoordonnees.phone1 || '+33 6 99 95 19 63',
+    rawCoordonnees.phone2 || '+33 6 51 70 19 78',
+  ].filter(Boolean);
+
   const coordonnees = {
     title: rawCoordonnees.title || 'Nos coordonnées',
-    // Supporte soit phones[] soit phone1/phone2
-    phones: rawCoordonnees.phones || [
-      rawCoordonnees.phone1 || '+33 6 99 95 19 63',
-      rawCoordonnees.phone2 || '+33 6 51 70 19 78',
-    ].filter(Boolean),
+    // Transformer tous les numéros au format +33
+    phones: rawPhones.map(formatPhoneDisplay),
     email: rawCoordonnees.email || 'k-prestige@outlook.fr',
     address: rawCoordonnees.address || {
       name: 'K PRESTIGE EVENT',

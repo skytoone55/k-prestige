@@ -1,3 +1,5 @@
+'use client';
+
 import { PublicNavigation } from '@/components/layout/PublicNavigation';
 import { Footer } from '@/components/layout/Footer';
 import { HeroHome } from '@/components/sections/HeroHome';
@@ -6,10 +8,7 @@ import { StatsSection } from '@/components/sections/StatsSection';
 import { TestimonialsSection } from '@/components/sections/TestimonialsSection';
 import { CTASection } from '@/components/sections/CTASection';
 import { SectionTitle } from '@/components/ui/SectionTitle';
-
-// Désactiver le cache pour cette page (contenu dynamique depuis Supabase)
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+import { PessahDevisForm } from '@/components/public/PessahDevisForm';
 
 export default function Home() {
   return (
@@ -33,7 +32,15 @@ export default function Home() {
         {/* 5. SECTION TÉMOIGNAGES */}
         <TestimonialsSection />
 
-        {/* 6. SECTION CTA PREMIUM */}
+        {/* 6. SECTION DEVIS PESSAH */}
+        <section id="devis-form" className="py-12 px-6 bg-[var(--cream)]">
+          <div className="max-w-xl mx-auto">
+            <SectionTitle subtitle="Pessah 2026" title="Demander un devis" />
+            <PessahDevisForm />
+          </div>
+        </section>
+
+        {/* 7. SECTION CTA PREMIUM */}
         <CTASection />
       </main>
       <Footer />

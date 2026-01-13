@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import {
   Home,
@@ -14,7 +14,13 @@ import {
   ChevronDown,
   Globe,
   Settings,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
+
+// Constantes Supabase
+const SUPABASE_URL = 'https://htemxbrbxazzatmjerij.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh0ZW14YnJieGF6emF0bWplcmlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4MDI0MjQsImV4cCI6MjA4MzM3ODQyNH0.6RiC65zsSb9INtYpRC7PLurvoHmbb_LX3NkPBM4wodw';
 
 interface MenuCategory {
   id: string;
@@ -48,7 +54,7 @@ const menuCategories: MenuCategory[] = [
         children: [
           { id: 'pessah-sejour', name: 'Le Séjour' },
           { id: 'pessah-hotel', name: 'L\'Hôtel' },
-          { id: 'galerie', name: 'Galerie' },
+          { id: 'galerie', name: 'Galerie photos' },
         ],
       },
       {
@@ -92,9 +98,88 @@ interface AdminSidebarProps {
   onSelectPage: (pageId: string) => void;
 }
 
+// Pages qui peuvent être désactivées (pas accueil ni contact)
+const TOGGLEABLE_PAGES = ['marbella', 'marrakech', 'hilloula', 'souccot', 'pessah-sejour', 'pessah-hotel', 'galerie'];
+
 export function AdminSidebar({ selectedPage, onSelectPage }: AdminSidebarProps) {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['site-internet']));
   const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set(['pessah']));
+  const [disabledPages, setDisabledPages] = useState<Set<string>>(new Set());
+  const [loadingToggle, setLoadingToggle] = useState<string | null>(null);
+
+  // Charger l'état des pages désactivées depuis Supabase
+  useEffect(() => {
+    const loadDisabledPages = async () => {
+      try {
+        const response = await fetch(
+          `${SUPABASE_URL}/rest/v1/page_settings?select=*`,
+          {
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            },
+          }
+        );
+        if (response.ok) {
+          const data = await response.json();
+          const disabled = new Set<string>();
+          data.forEach((item: any) => {
+            if (item.disabled) {
+              disabled.add(item.page_id);
+            }
+          });
+          setDisabledPages(disabled);
+        }
+      } catch (error) {
+        console.error('Erreur chargement page_settings:', error);
+      }
+    };
+    loadDisabledPages();
+  }, []);
+
+  // Toggle une page activée/désactivée
+  const togglePageVisibility = async (pageId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setLoadingToggle(pageId);
+
+    const isCurrentlyDisabled = disabledPages.has(pageId);
+    const newDisabled = !isCurrentlyDisabled;
+
+    try {
+      // Upsert dans Supabase
+      const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/page_settings`,
+        {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'resolution=merge-duplicates',
+          },
+          body: JSON.stringify({
+            page_id: pageId,
+            disabled: newDisabled,
+            updated_at: new Date().toISOString(),
+          }),
+        }
+      );
+
+      if (response.ok) {
+        const newSet = new Set(disabledPages);
+        if (newDisabled) {
+          newSet.add(pageId);
+        } else {
+          newSet.delete(pageId);
+        }
+        setDisabledPages(newSet);
+      }
+    } catch (error) {
+      console.error('Erreur toggle page:', error);
+    }
+
+    setLoadingToggle(null);
+  };
 
   const toggleCategory = (categoryId: string) => {
     const newExpanded = new Set(expandedCategories);
@@ -194,36 +279,75 @@ export function AdminSidebar({ selectedPage, onSelectPage }: AdminSidebarProps) 
                             </button>
                             {isExpanded && (
                               <div className="ml-6 mt-1 space-y-1">
-                                {item.children?.map((child) => (
-                                  <button
-                                    key={child.id}
-                                    onClick={() => onSelectPage(child.id)}
-                                    className={cn(
-                                      'w-full text-left px-4 py-2 rounded-lg text-sm transition-all',
-                                      selectedPage === child.id
-                                        ? 'bg-[var(--gold)]/15 text-[var(--gold)] font-semibold border-l-2 border-[var(--gold)]'
-                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                                    )}
-                                  >
-                                    {child.name}
-                                  </button>
-                                ))}
+                                {item.children?.map((child) => {
+                                  const isChildDisabled = disabledPages.has(child.id);
+                                  const canToggle = TOGGLEABLE_PAGES.includes(child.id);
+                                  return (
+                                    <div key={child.id} className="flex items-center gap-1">
+                                      <button
+                                        onClick={() => onSelectPage(child.id)}
+                                        className={cn(
+                                          'flex-1 text-left px-4 py-2 rounded-lg text-sm transition-all',
+                                          selectedPage === child.id
+                                            ? 'bg-[var(--gold)]/15 text-[var(--gold)] font-semibold border-l-2 border-[var(--gold)]'
+                                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
+                                          isChildDisabled && 'opacity-50'
+                                        )}
+                                      >
+                                        {child.name}
+                                      </button>
+                                      {canToggle && (
+                                        <button
+                                          onClick={(e) => togglePageVisibility(child.id, e)}
+                                          className={cn(
+                                            'p-1.5 rounded-md transition-all',
+                                            isChildDisabled
+                                              ? 'text-red-400 hover:bg-red-50'
+                                              : 'text-green-500 hover:bg-green-50',
+                                            loadingToggle === child.id && 'animate-pulse'
+                                          )}
+                                          title={isChildDisabled ? 'Page désactivée - Cliquer pour activer' : 'Page active - Cliquer pour désactiver'}
+                                        >
+                                          {isChildDisabled ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                        </button>
+                                      )}
+                                    </div>
+                                  );
+                                })}
                               </div>
                             )}
                           </>
                         ) : (
-                          <button
-                            onClick={() => onSelectPage(item.id)}
-                            className={cn(
-                              'w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all',
-                              selectedPage === item.id
-                                ? 'bg-[var(--gold)]/10 text-[var(--gold)] border border-[var(--gold)]/20'
-                                : 'text-gray-700 hover:bg-gray-100'
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => onSelectPage(item.id)}
+                              className={cn(
+                                'flex-1 flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all',
+                                selectedPage === item.id
+                                  ? 'bg-[var(--gold)]/10 text-[var(--gold)] border border-[var(--gold)]/20'
+                                  : 'text-gray-700 hover:bg-gray-100',
+                                disabledPages.has(item.id) && 'opacity-50'
+                              )}
+                            >
+                              <Icon className="w-4 h-4" />
+                              <span>{item.name}</span>
+                            </button>
+                            {TOGGLEABLE_PAGES.includes(item.id) && (
+                              <button
+                                onClick={(e) => togglePageVisibility(item.id, e)}
+                                className={cn(
+                                  'p-1.5 rounded-md transition-all',
+                                  disabledPages.has(item.id)
+                                    ? 'text-red-400 hover:bg-red-50'
+                                    : 'text-green-500 hover:bg-green-50',
+                                  loadingToggle === item.id && 'animate-pulse'
+                                )}
+                                title={disabledPages.has(item.id) ? 'Page désactivée - Cliquer pour activer' : 'Page active - Cliquer pour désactiver'}
+                              >
+                                {disabledPages.has(item.id) ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                              </button>
                             )}
-                          >
-                            <Icon className="w-4 h-4" />
-                            <span>{item.name}</span>
-                          </button>
+                          </div>
                         )}
                       </div>
                     );
