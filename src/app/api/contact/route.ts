@@ -1,8 +1,6 @@
 import { Resend } from 'resend';
 import { NextRequest, NextResponse } from 'next/server';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 // Email destination - configurable via environment variable
 const TO_EMAIL = process.env.CONTACT_EMAIL || 'contact@kprestige.com';
 // Email expéditeur - utilisez onboarding@resend.dev pour tester, puis votre domaine vérifié
@@ -31,6 +29,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Vérifier si la clé API est configurée
+    if (!process.env.RESEND_API_KEY) {
+      console.warn('RESEND_API_KEY non configurée - email non envoyé');
+      return NextResponse.json({ success: true, warning: 'Email non envoyé (API key manquante)' });
+    }
+
+    const resend = new Resend(process.env.RESEND_API_KEY);
     const { data: emailData, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: [TO_EMAIL],
