@@ -59,21 +59,21 @@ export function PublicNavigation() {
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-14">
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 z-10">
+          <div className="flex items-center h-16">
+            {/* Logo - à gauche */}
+            <Link href="/" className="flex items-center gap-2 z-10 flex-shrink-0">
               <Image
                 src="/K PRESTIGE NOIR.png"
                 alt="K PRESTIGE"
-                width={140}
-                height={50}
-                className="h-12 w-auto"
+                width={160}
+                height={56}
+                className="h-14 w-auto"
                 priority
               />
             </Link>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-1">
+            {/* Desktop Navigation - centré */}
+            <nav className="hidden lg:flex items-center justify-center flex-1 gap-1">
               {navigation.map((item) => {
                 if (item.dropdown) {
                   return (
@@ -85,7 +85,7 @@ export function PublicNavigation() {
                     >
                       <button
                         className={cn(
-                          'flex items-center gap-1 px-4 py-2 text-sm font-medium transition-colors rounded-lg',
+                          'flex items-center gap-1 px-4 py-2 text-[15px] font-medium transition-colors rounded-lg',
                           getTextClasses(isActive(item.href))
                         )}
                         style={{ fontFamily: 'var(--font-dm-sans)' }}
@@ -128,7 +128,7 @@ export function PublicNavigation() {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      'px-4 py-2 text-sm font-medium transition-colors rounded-lg',
+                      'px-4 py-2 text-[15px] font-medium transition-colors rounded-lg',
                       getTextClasses(isActive(item.href))
                     )}
                     style={{ fontFamily: 'var(--font-dm-sans)' }}
@@ -137,17 +137,20 @@ export function PublicNavigation() {
                   </Link>
                 );
               })}
+            </nav>
 
-              <Link href="/login" className="ml-4">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+            {/* Bouton Connexion - à droite */}
+            <div className="hidden lg:block flex-shrink-0">
+              <Link href="/login">
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="border-[var(--gold)] text-[var(--gold)] hover:bg-[var(--gold)] hover:text-white"
                 >
                   Connexion
                 </Button>
               </Link>
-            </nav>
+            </div>
 
             {/* Mobile Menu Button */}
             <button
