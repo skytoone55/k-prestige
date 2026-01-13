@@ -18,7 +18,7 @@ export default function Pessah2026Page() {
             fill
             className="object-cover"
           />
-          <div className="absolute inset-0 bg-black/50" />
+          <div className="absolute inset-0 bg-black/40" />
           <div className="relative z-10 text-center text-white">
             <h1 
               className="text-6xl md:text-8xl mb-4 text-[var(--gold)]"

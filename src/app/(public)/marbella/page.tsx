@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/Button';
 import Image from 'next/image';
 import Link from 'next/link';
 import { placeholderImages } from '@/lib/images';
-import { MapPin, Star, X, ZoomIn } from 'lucide-react';
+import { MapPin, Star, X, ZoomIn, Plus, Minus, RotateCcw } from 'lucide-react';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { SectionTitle } from '@/components/ui/SectionTitle';
 import { usePageContent } from '@/lib/usePageContent';
@@ -17,6 +17,64 @@ import { usePageContent } from '@/lib/usePageContent';
 export default function MarbellaPage() {
   const { data } = usePageContent('marbella');
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  // Fonctions de zoom
+  const handleZoomIn = () => {
+    setZoomLevel(prev => Math.min(prev + 0.5, 4));
+  };
+
+  const handleZoomOut = () => {
+    setZoomLevel(prev => {
+      const newZoom = Math.max(prev - 0.5, 1);
+      if (newZoom === 1) setPosition({ x: 0, y: 0 });
+      return newZoom;
+    });
+  };
+
+  const handleResetZoom = () => {
+    setZoomLevel(1);
+    setPosition({ x: 0, y: 0 });
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    if (e.deltaY < 0) {
+      handleZoomIn();
+    } else {
+      handleZoomOut();
+    }
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (zoomLevel > 1) {
+      setIsDragging(true);
+      setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging && zoomLevel > 1) {
+      setPosition({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y,
+      });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const closeLightbox = () => {
+    setLightboxOpen(false);
+    setZoomLevel(1);
+    setPosition({ x: 0, y: 0 });
+  };
+
   const hero = data?.hero || {
     subtitle: 'Restaurant Casher',
     title: 'El Dorado',
@@ -64,7 +122,7 @@ export default function MarbellaPage() {
               className="object-cover scale-110 animate-slow-zoom"
               priority
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
             <div className="absolute inset-0 bg-gradient-to-r from-[var(--gold)]/20 to-transparent" />
           </div>
           
@@ -155,47 +213,95 @@ export default function MarbellaPage() {
             </div>
           </section>
 
-          {/* Lightbox */}
+          {/* Lightbox avec Zoom */}
           <AnimatePresence>
             {lightboxOpen && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
-                onClick={() => setLightboxOpen(false)}
+                className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
+                onClick={closeLightbox}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
               >
                 {/* Bouton fermer */}
                 <button
                   className="absolute top-4 right-4 z-50 bg-white/10 hover:bg-white/20 rounded-full p-3 transition-colors"
-                  onClick={() => setLightboxOpen(false)}
+                  onClick={closeLightbox}
                 >
                   <X className="w-8 h-8 text-white" />
                 </button>
 
-                {/* Image en grand */}
+                {/* Contrôles de zoom */}
+                <div className="absolute top-4 left-4 z-50 flex flex-col gap-2">
+                  <button
+                    className="bg-white/10 hover:bg-white/20 rounded-full p-3 transition-colors"
+                    onClick={(e) => { e.stopPropagation(); handleZoomIn(); }}
+                    title="Zoomer (+)"
+                  >
+                    <Plus className="w-6 h-6 text-white" />
+                  </button>
+                  <button
+                    className="bg-white/10 hover:bg-white/20 rounded-full p-3 transition-colors"
+                    onClick={(e) => { e.stopPropagation(); handleZoomOut(); }}
+                    title="Dézoomer (-)"
+                  >
+                    <Minus className="w-6 h-6 text-white" />
+                  </button>
+                  <button
+                    className="bg-white/10 hover:bg-white/20 rounded-full p-3 transition-colors"
+                    onClick={(e) => { e.stopPropagation(); handleResetZoom(); }}
+                    title="Réinitialiser"
+                  >
+                    <RotateCcw className="w-6 h-6 text-white" />
+                  </button>
+                  {/* Indicateur de zoom */}
+                  <div className="bg-white/10 rounded-full px-3 py-2 text-white text-sm text-center">
+                    {Math.round(zoomLevel * 100)}%
+                  </div>
+                </div>
+
+                {/* Image avec zoom */}
                 <motion.div
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0.8, opacity: 0 }}
                   transition={{ type: 'spring', damping: 25 }}
-                  className="relative w-full h-full max-w-6xl max-h-[90vh]"
+                  className="relative w-full h-full max-w-6xl max-h-[90vh] overflow-hidden"
                   onClick={(e) => e.stopPropagation()}
+                  onWheel={handleWheel}
                 >
-                  <Image
-                    src={main.image || placeholderImages.restaurantInterior}
-                    alt="Menu El Dorado Marbella"
-                    fill
-                    className="object-contain"
-                    sizes="100vw"
-                    priority
-                  />
+                  <div
+                    className={`relative w-full h-full ${zoomLevel > 1 ? (isDragging ? 'cursor-grabbing' : 'cursor-grab') : 'cursor-default'}`}
+                    onMouseDown={handleMouseDown}
+                    style={{
+                      transform: `scale(${zoomLevel}) translate(${position.x / zoomLevel}px, ${position.y / zoomLevel}px)`,
+                      transition: isDragging ? 'none' : 'transform 0.2s ease-out',
+                    }}
+                  >
+                    <Image
+                      src={main.image || placeholderImages.restaurantInterior}
+                      alt="Menu El Dorado Marbella"
+                      fill
+                      className="object-contain select-none"
+                      sizes="100vw"
+                      priority
+                      draggable={false}
+                    />
+                  </div>
                 </motion.div>
 
                 {/* Instructions */}
-                <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/60 text-sm">
-                  Cliquez n&apos;importe où pour fermer
-                </p>
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-center">
+                  <p className="text-white/60 text-sm mb-1">
+                    Utilisez les boutons ou la molette pour zoomer
+                  </p>
+                  <p className="text-white/40 text-xs">
+                    {zoomLevel > 1 ? 'Cliquez et glissez pour déplacer l\'image' : 'Cliquez n\'importe où pour fermer'}
+                  </p>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

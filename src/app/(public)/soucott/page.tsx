@@ -82,7 +82,7 @@ export default function SoucottPage() {
               className="object-cover scale-110 animate-slow-zoom"
               priority
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
             <div className="absolute inset-0 bg-gradient-to-r from-[var(--gold)]/20 to-transparent" />
           </div>
 

@@ -77,7 +77,7 @@ export default async function HilloulaEventPage({ params }: PageProps) {
               </p>
             </div>
           </div>
-          <div className="absolute inset-0 bg-black/30" />
+          <div className="absolute inset-0 bg-black/20" />
           <div className="relative z-10 text-center text-white">
             <h1 
               className="text-4xl md:text-6xl mb-4 text-[var(--gold)]"
