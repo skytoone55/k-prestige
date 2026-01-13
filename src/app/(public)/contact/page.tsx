@@ -30,8 +30,8 @@ export default function ContactPage() {
     title: rawCoordonnees.title || 'Nos coordonnées',
     // Supporte soit phones[] soit phone1/phone2
     phones: rawCoordonnees.phones || [
-      rawCoordonnees.phone1 || '06 99 95 19 63',
-      rawCoordonnees.phone2 || '06 51 70 19 78',
+      rawCoordonnees.phone1 || '+33 6 99 95 19 63',
+      rawCoordonnees.phone2 || '+33 6 51 70 19 78',
     ].filter(Boolean),
     email: rawCoordonnees.email || 'k-prestige@outlook.fr',
     address: rawCoordonnees.address || {
@@ -166,28 +166,25 @@ export default function ContactPage() {
                     </div>
                   </div>
 
-                  {/* Autres moyens de contact - intégré sous les coordonnées */}
+                  {/* Autres moyens de contact - sur la même ligne */}
                   <div className="border-t border-gray-200 pt-8 mt-auto">
-                    <h3 className="text-xl font-cormorant text-gray-800 mb-6" style={{ fontFamily: 'var(--font-cormorant)' }}>
-                      {quickContact.title}
-                    </h3>
-                    <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
                       <Card className="border border-gray-200 hover:border-[var(--gold)]/50 transition-colors">
-                        <CardContent className="p-5">
-                          <div className="flex items-center gap-4">
-                            <div className="w-11 h-11 rounded-full bg-[#25D366]/10 flex items-center justify-center flex-shrink-0">
+                        <CardContent className="p-4">
+                          <div className="flex flex-col items-center text-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-[#25D366]/10 flex items-center justify-center">
                               <MessageCircle className="w-5 h-5 text-[#25D366]" />
                             </div>
-                            <div className="flex-1">
+                            <div>
                               <h4 className="font-semibold text-gray-800 text-sm mb-1" style={{ fontFamily: 'var(--font-cormorant)' }}>
                                 {quickContact.whatsapp?.title}
                               </h4>
-                              <p className="text-xs text-gray-600 mb-2" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                              <p className="text-xs text-gray-600" style={{ fontFamily: 'var(--font-dm-sans)' }}>
                                 {quickContact.whatsapp?.description}
                               </p>
                             </div>
-                            <a href="https://wa.me/33699951963" target="_blank" rel="noopener noreferrer">
-                              <Button variant="outline" size="sm" className="border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white text-xs px-4">
+                            <a href="https://wa.me/33699951963" target="_blank" rel="noopener noreferrer" className="w-full">
+                              <Button variant="outline" size="sm" className="w-full border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white text-xs">
                                 {quickContact.whatsapp?.button}
                               </Button>
                             </a>
@@ -196,20 +193,20 @@ export default function ContactPage() {
                       </Card>
 
                       <Card className="border border-gray-200 hover:border-[var(--gold)]/50 transition-colors">
-                        <CardContent className="p-5">
-                          <div className="flex items-center gap-4">
-                            <div className="w-11 h-11 rounded-full bg-[var(--gold)]/10 flex items-center justify-center flex-shrink-0">
+                        <CardContent className="p-4">
+                          <div className="flex flex-col items-center text-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-[var(--gold)]/10 flex items-center justify-center">
                               <Phone className="w-5 h-5 text-[var(--gold)]" />
                             </div>
-                            <div className="flex-1">
+                            <div>
                               <h4 className="font-semibold text-gray-800 text-sm mb-1" style={{ fontFamily: 'var(--font-cormorant)' }}>
                                 {quickContact.callback?.title}
                               </h4>
-                              <p className="text-xs text-gray-600 mb-2" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                              <p className="text-xs text-gray-600" style={{ fontFamily: 'var(--font-dm-sans)' }}>
                                 {quickContact.callback?.description}
                               </p>
                             </div>
-                            <Button variant="outline" size="sm" className="border-[var(--gold)] text-[var(--gold)] hover:bg-[var(--gold)] hover:text-white text-xs px-4">
+                            <Button variant="outline" size="sm" className="w-full border-[var(--gold)] text-[var(--gold)] hover:bg-[var(--gold)] hover:text-white text-xs">
                               {quickContact.callback?.button}
                             </Button>
                           </div>
