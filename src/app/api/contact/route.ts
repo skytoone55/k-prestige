@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 
 // Email destination - configurable via environment variable
 const TO_EMAIL = process.env.CONTACT_EMAIL || 'contact@kprestige.com';
@@ -14,14 +15,61 @@ export async function POST(request: NextRequest) {
     let subject = '';
     let htmlContent = '';
 
+    // Insérer dans Supabase (table clients)
+    const supabase = await createClient();
+
     if (type === 'contact') {
       // Formulaire de contact simple
       subject = `Nouveau message de contact - ${data.prenom} ${data.nom}`;
       htmlContent = generateContactEmail(data);
+
+      // Table clients : pas de colonne "prenom", on met prénom + nom dans "nom"
+      const { error: dbError } = await supabase
+        .from('clients')
+        .insert({
+          nom: `${data.prenom} ${data.nom}`,
+          email: data.email,
+          telephone: data.telephone,
+          info: data.message || '',
+          statut: 'NOUVEAU',
+        });
+
+      if (dbError) {
+        console.error('Supabase error (contact):', dbError);
+        return NextResponse.json(
+          { error: 'Erreur lors de l\'enregistrement' },
+          { status: 500 }
+        );
+      }
     } else if (type === 'devis') {
       // Demande de devis Pessah
       subject = `Nouvelle demande de devis Pessah - ${data.prenom} ${data.nom}`;
       htmlContent = generateDevisEmail(data);
+
+      // Table clients : pas de colonne "prenom", on met prénom + nom dans "nom"
+      // nb_enfants_2_3ans existe, nb_enfants_3ans aussi (legacy)
+      const { error: dbError } = await supabase
+        .from('clients')
+        .insert({
+          nom: `${data.prenom} ${data.nom}`,
+          email: data.email,
+          telephone: data.telephone,
+          nb_adultes: data.nb_adultes || 2,
+          nb_bebes: data.nb_bebes || 0,
+          nb_enfants_2_3ans: data.nb_enfants_2_3ans || 0,
+          nb_enfants_4_6ans: data.nb_enfants_4_6ans || 0,
+          nb_enfants_7_11ans: data.nb_enfants_7_11ans || 0,
+          statut: 'NOUVEAU',
+          info: [data.message, data.whatsapp ? 'Souhaite être recontacté par WhatsApp' : ''].filter(Boolean).join(' | '),
+        });
+
+      if (dbError) {
+        console.error('Supabase error (devis):', dbError);
+        return NextResponse.json(
+          { error: 'Erreur lors de l\'enregistrement' },
+          { status: 500 }
+        );
+      }
     } else {
       return NextResponse.json(
         { error: 'Type de formulaire invalide' },
@@ -29,30 +77,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Vérifier si la clé API est configurée
-    if (!process.env.RESEND_API_KEY) {
-      console.warn('RESEND_API_KEY non configurée - email non envoyé');
-      return NextResponse.json({ success: true, warning: 'Email non envoyé (API key manquante)' });
+    // Envoyer l'email (non bloquant si pas de clé API)
+    if (process.env.RESEND_API_KEY) {
+      try {
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        await resend.emails.send({
+          from: FROM_EMAIL,
+          to: [TO_EMAIL],
+          subject,
+          html: htmlContent,
+          replyTo: data.email,
+        });
+      } catch (emailError) {
+        console.error('Resend error (non bloquant):', emailError);
+      }
     }
 
-    const resend = new Resend(process.env.RESEND_API_KEY);
-    const { data: emailData, error } = await resend.emails.send({
-      from: FROM_EMAIL,
-      to: [TO_EMAIL],
-      subject,
-      html: htmlContent,
-      replyTo: data.email,
-    });
-
-    if (error) {
-      console.error('Resend error:', error);
-      return NextResponse.json(
-        { error: 'Erreur lors de l\'envoi de l\'email' },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ success: true, id: emailData?.id });
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('API error:', error);
     return NextResponse.json(

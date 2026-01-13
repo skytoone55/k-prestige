@@ -5,7 +5,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/Button';
-import { createClient } from '@/lib/supabase/client';
 
 const formSchema = z.object({
   nom: z.string().min(2, { message: 'Le nom est requis.' }),
@@ -26,7 +25,6 @@ type PessahDevisFormValues = z.infer<typeof formSchema>;
 export function PessahDevisForm() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const supabase = createClient();
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -48,29 +46,8 @@ export function PessahDevisForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
     try {
-      // Enregistrer dans Supabase
-      const { error } = await supabase.from('clients').insert([
-        {
-          nom: values.nom,
-          prenom: values.prenom,
-          telephone: values.telephone,
-          email: values.email,
-          nb_adultes: values.nb_adultes,
-          nb_bebes: values.nb_bebes,
-          nb_enfants_2_3ans: values.nb_enfants_2_3ans,
-          nb_enfants_4_6ans: values.nb_enfants_4_6ans,
-          nb_enfants_7_11ans: values.nb_enfants_7_11ans,
-          statut: 'NOUVEAU',
-          montant_du: null,
-          info: [values.message, values.whatsapp ? 'Souhaite être recontacté par WhatsApp' : ''].filter(Boolean).join(' | '),
-          created_at: new Date().toISOString(),
-        },
-      ]);
-
-      if (error) throw error;
-
-      // Envoyer l'email de notification
-      await fetch('/api/contact', {
+      // Envoyer à l'API qui gère Supabase + email
+      const response = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -78,6 +55,11 @@ export function PessahDevisForm() {
           data: values,
         }),
       });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Erreur lors de l\'envoi');
+      }
 
       setSuccess(true);
       form.reset();

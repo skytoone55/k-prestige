@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { createClient } from '@/lib/supabase/client';
 
 export function ContactForm() {
   const [formData, setFormData] = useState({
@@ -15,33 +14,13 @@ export function ContactForm() {
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const supabase = createClient();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Enregistrer dans Supabase
-      const { error } = await supabase
-        .from('demandes_devis')
-        .insert({
-          prenom: formData.prenom,
-          nom: formData.nom,
-          email: formData.email,
-          telephone: formData.telephone,
-          message: formData.message,
-          nb_adultes: 2,
-          nb_bebes: 0,
-          nb_enfants_2_3ans: 0,
-          nb_enfants_4_6ans: 0,
-          nb_enfants_7_11ans: 0,
-        });
-
-      if (error) throw error;
-
-      // Envoyer l'email de notification
-      await fetch('/api/contact', {
+      const response = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -49,6 +28,11 @@ export function ContactForm() {
           data: formData,
         }),
       });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Erreur lors de l\'envoi');
+      }
 
       setSuccess(true);
       setFormData({ prenom: '', nom: '', email: '', telephone: '', message: '' });
@@ -111,4 +95,3 @@ export function ContactForm() {
     </form>
   );
 }
-
