@@ -44,12 +44,12 @@ export function Footer() {
             <div className="space-y-3 text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
               <p>
                 <a href="tel:+33699951963" className="text-white/80 hover:text-[var(--gold)] transition-colors">
-                  06 99 95 19 63
+                  +33 6 99 95 19 63
                 </a>
               </p>
               <p>
                 <a href="tel:+33651701978" className="text-white/80 hover:text-[var(--gold)] transition-colors">
-                  06 51 70 19 78
+                  +33 6 51 70 19 78
                 </a>
               </p>
               <p>

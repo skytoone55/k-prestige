@@ -129,11 +129,18 @@ export default function ContactPage() {
                         </h3>
                       </div>
                       <div className="pl-8 space-y-2">
-                        {(coordonnees.phones || []).map((phone: string, idx: number) => (
-                          <a key={idx} href={`tel:+33${phone.replace(/\s/g, '').replace(/^0/, '')}`} className="block text-gray-700 hover:text-[var(--gold)] transition-colors" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                            {phone}
-                          </a>
-                        ))}
+                        {(coordonnees.phones || []).map((phone: string, idx: number) => {
+                          // Nettoie le numéro pour le lien tel:
+                          const cleanPhone = phone.replace(/\s/g, '');
+                          const telHref = cleanPhone.startsWith('+')
+                            ? `tel:${cleanPhone}`
+                            : `tel:+33${cleanPhone.replace(/^0/, '')}`;
+                          return (
+                            <a key={idx} href={telHref} className="block text-gray-700 hover:text-[var(--gold)] transition-colors" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                              {phone}
+                            </a>
+                          );
+                        })}
                       </div>
                     </div>
 
