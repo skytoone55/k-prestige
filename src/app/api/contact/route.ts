@@ -80,17 +80,25 @@ export async function POST(request: NextRequest) {
     // Envoyer l'email (non bloquant si pas de clé API)
     if (process.env.RESEND_API_KEY) {
       try {
+        console.log('Tentative envoi email à:', TO_EMAIL);
         const resend = new Resend(process.env.RESEND_API_KEY);
-        await resend.emails.send({
+        const { data: emailResult, error: emailError } = await resend.emails.send({
           from: FROM_EMAIL,
           to: [TO_EMAIL],
           subject,
           html: htmlContent,
           replyTo: data.email,
         });
+        if (emailError) {
+          console.error('Resend API error:', emailError);
+        } else {
+          console.log('Email envoyé avec succès, ID:', emailResult?.id);
+        }
       } catch (emailError) {
-        console.error('Resend error (non bloquant):', emailError);
+        console.error('Resend error (exception):', emailError);
       }
+    } else {
+      console.log('RESEND_API_KEY non configurée');
     }
 
     return NextResponse.json({ success: true });
