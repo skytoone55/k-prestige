@@ -1,6 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { PublicNavigation } from '@/components/layout/PublicNavigation';
 import { Footer } from '@/components/layout/Footer';
 import { Card, CardContent } from '@/components/ui/Card';
@@ -8,13 +9,14 @@ import { Button } from '@/components/ui/Button';
 import Image from 'next/image';
 import Link from 'next/link';
 import { placeholderImages } from '@/lib/images';
-import { MapPin, Star } from 'lucide-react';
+import { MapPin, Star, X, ZoomIn } from 'lucide-react';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { SectionTitle } from '@/components/ui/SectionTitle';
 import { usePageContent } from '@/lib/usePageContent';
 
 export default function MarbellaPage() {
   const { data } = usePageContent('marbella');
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const hero = data?.hero || {
     subtitle: 'Restaurant Casher',
     title: 'El Dorado',
@@ -129,16 +131,74 @@ export default function MarbellaPage() {
                   )}
                 </div>
               </div>
-              <div className="relative h-[500px] rounded-2xl overflow-hidden shadow-2xl">
+              <div
+                className="relative h-[500px] rounded-2xl overflow-hidden shadow-2xl cursor-pointer group"
+                onClick={() => setLightboxOpen(true)}
+              >
                 <Image
                   src={main.image || placeholderImages.restaurantInterior}
-                  alt="El Dorado Marbella - Intérieur"
+                  alt="El Dorado Marbella - Menu"
                   fill
-                  className="object-cover"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
+                {/* Overlay au hover */}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center">
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 rounded-full p-4">
+                    <ZoomIn className="w-8 h-8 text-[var(--gold)]" />
+                  </div>
+                </div>
+                {/* Badge */}
+                <div className="absolute bottom-4 right-4 bg-[var(--gold)]/90 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full font-medium">
+                  Cliquez pour agrandir
+                </div>
               </div>
             </div>
           </section>
+
+          {/* Lightbox */}
+          <AnimatePresence>
+            {lightboxOpen && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
+                onClick={() => setLightboxOpen(false)}
+              >
+                {/* Bouton fermer */}
+                <button
+                  className="absolute top-4 right-4 z-50 bg-white/10 hover:bg-white/20 rounded-full p-3 transition-colors"
+                  onClick={() => setLightboxOpen(false)}
+                >
+                  <X className="w-8 h-8 text-white" />
+                </button>
+
+                {/* Image en grand */}
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.8, opacity: 0 }}
+                  transition={{ type: 'spring', damping: 25 }}
+                  className="relative w-full h-full max-w-6xl max-h-[90vh]"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Image
+                    src={main.image || placeholderImages.restaurantInterior}
+                    alt="Menu El Dorado Marbella"
+                    fill
+                    className="object-contain"
+                    sizes="100vw"
+                    priority
+                  />
+                </motion.div>
+
+                {/* Instructions */}
+                <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/60 text-sm">
+                  Cliquez n&apos;importe où pour fermer
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Services */}
           <section className="mb-16">
