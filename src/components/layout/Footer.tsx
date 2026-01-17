@@ -1,11 +1,18 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
+import { useLanguage, useTranslation } from '@/lib/LanguageContext';
+import { cn } from '@/lib/utils';
 
 export function Footer() {
+  const { dir } = useLanguage();
+  const { t } = useTranslation();
+
   return (
-    <footer className="bg-[var(--dark-bg)] text-white py-16 px-6">
+    <footer className="bg-[var(--dark-bg)] text-white py-16 px-6" dir={dir}>
       <div className="max-w-7xl mx-auto">
-        <div className="grid md:grid-cols-4 gap-8 mb-12">
+        <div className={cn("grid md:grid-cols-4 gap-8 mb-12", dir === 'rtl' && 'text-right')}>
           {/* Logo & Description */}
           <div className="md:col-span-1">
             <div className="mb-6">
@@ -18,17 +25,20 @@ export function Footer() {
               />
             </div>
             <p className="text-sm text-white/70 mb-2" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-              K PRESTIGE EVENT
+              {t('footer.companyName')}
             </p>
             <p className="text-sm text-white/60" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-              Société d&apos;événementiel complète
+              {t('footer.companyDesc')}
             </p>
             <div className="mt-4">
               <a
                 href="https://www.instagram.com/k_prestige__events"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-[var(--gold)] hover:text-[var(--gold-shine)] transition-colors"
+                className={cn(
+                  "inline-flex items-center gap-2 text-[var(--gold)] hover:text-[var(--gold-shine)] transition-colors",
+                  dir === 'rtl' && 'flex-row-reverse'
+                )}
                 style={{ fontFamily: 'var(--font-dm-sans)' }}
               >
                 <svg
@@ -47,11 +57,11 @@ export function Footer() {
               </a>
             </div>
           </div>
-          
+
           {/* Contact */}
           <div>
             <h3 className="text-xl mb-6 text-[var(--gold)] font-semibold" style={{ fontFamily: 'var(--font-cormorant)' }}>
-              Contact
+              {t('footer.contactTitle')}
             </h3>
             <div className="space-y-3 text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
               <p>
@@ -71,11 +81,11 @@ export function Footer() {
               </p>
             </div>
           </div>
-          
+
           {/* Informations Légales */}
           <div>
             <h3 className="text-xl mb-6 text-[var(--gold)] font-semibold" style={{ fontFamily: 'var(--font-cormorant)' }}>
-              Informations
+              {t('footer.infoTitle')}
             </h3>
             <div className="space-y-3 text-sm text-white/80" style={{ fontFamily: 'var(--font-dm-sans)' }}>
               <p>33 Avenue Philippe Auguste</p>
@@ -84,38 +94,38 @@ export function Footer() {
               <p>R.C.S. Paris</p>
             </div>
           </div>
-          
+
           {/* Navigation Rapide */}
           <div>
             <h3 className="text-xl mb-6 text-[var(--gold)] font-semibold" style={{ fontFamily: 'var(--font-cormorant)' }}>
-              Navigation
+              {t('footer.navigationTitle')}
             </h3>
             <div className="space-y-3 text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
               <Link href="/pessah-2026" className="block text-white/80 hover:text-[var(--gold)] transition-colors">
-                Pessah 2026
+                {t('navigation.pessah2026')}
               </Link>
               <Link href="/marbella" className="block text-white/80 hover:text-[var(--gold)] transition-colors">
-                Marbella
+                {t('navigation.marbella')}
               </Link>
               <Link href="/marrakech" className="block text-white/80 hover:text-[var(--gold)] transition-colors">
-                Marrakech
+                {t('navigation.marrakech')}
               </Link>
               <Link href="/hilloula" className="block text-white/80 hover:text-[var(--gold)] transition-colors">
-                Hilloula
+                {t('navigation.hilloula')}
               </Link>
               <Link href="/soucott" className="block text-white/80 hover:text-[var(--gold)] transition-colors">
-                Soucott
+                {t('navigation.souccot')}
               </Link>
               <Link href="/contact" className="block text-white/80 hover:text-[var(--gold)] transition-colors">
-                Contact
+                {t('navigation.contact')}
               </Link>
             </div>
           </div>
         </div>
-        
+
         <div className="border-t border-white/10 pt-8 text-center">
           <p className="text-sm text-white/50" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-            © 2026 K PRESTIGE EVENT. Tous droits réservés.
+            {t('footer.allRightsReserved')}
           </p>
         </div>
       </div>

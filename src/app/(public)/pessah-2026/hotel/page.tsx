@@ -10,25 +10,28 @@ import Link from 'next/link';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { SectionTitle } from '@/components/ui/SectionTitle';
 import { placeholderImages } from '@/lib/images';
-import { usePageContent } from '@/lib/usePageContent';
+import { usePageContentWithLang } from '@/lib/usePageContent';
+import { useTranslation, useLanguage } from '@/lib/LanguageContext';
 import { PessahDevisForm } from '@/components/public/PessahDevisForm';
 
 export default function PessahHotelPage() {
-  const { data, loading } = usePageContent('pessah-hotel');
+  const { data, loading } = usePageContentWithLang('pessah-hotel');
+  const { t } = useTranslation();
+  const { dir } = useLanguage();
 
   // Données dynamiques avec fallback
   const hero = data?.hero || {
-    subtitle: 'Hôtel 5 Étoiles',
-    title: "L'Hôtel",
-    description: 'Cabogata Beach Hotel 5★ • El Toyo - Retamar, Almería',
+    subtitle: t('hotel.hotel5Etoiles'),
+    title: t('hotel.lHotel'),
+    description: t('hotel.cabogataLocation'),
     image: '/images/hotel/FAÇADE.jpg'
   };
 
   const hotel = data?.hotel || {
-    subtitle: 'Notre Écrin de Luxe',
-    title: 'Cabogata Beach Hotel 5★',
-    description: 'Notre écrin de luxe au bord de la Méditerranée pour Pessah 2026',
-    location: 'El Toyo - Retamar, Almería, Espagne',
+    subtitle: t('hotel.notreEcrinDeLuxe'),
+    title: t('hotel.cabogataTitle'),
+    description: t('pessah.hotelDescription'),
+    location: t('hotel.locationAlmeria'),
     image: '/images/hotel/FAÇADE.jpg'
   };
 
@@ -47,12 +50,12 @@ export default function PessahHotelPage() {
   const chambres = allChambres.filter((item: any) => !item.hidden);
 
   const allServices = data?.services || [
-    { image: placeholderImages.beachAccess, title: 'Pied dans l\'eau', desc: 'Accès direct plage' },
-    { image: placeholderImages.pool, title: '3 Piscines', desc: 'Dont une chauffée' },
-    { image: placeholderImages.spa, title: 'SPA Luxueux', desc: 'Centre bien-être complet' },
-    { image: placeholderImages.restaurant, title: 'Gastronomie', desc: 'Cuisine française et orientale' },
-    { image: placeholderImages.fitness, title: 'Sport & Fitness', desc: 'Salle équipée, coach' },
-    { image: placeholderImages.kidsClub, title: 'Clubs Enfants', desc: 'Baby, Mini, Kids Club' },
+    { image: placeholderImages.beachAccess, title: t('pessah.piedDansLeau'), desc: t('pessah.accesDirectPlage') },
+    { image: placeholderImages.pool, title: t('pessah.piscines'), desc: '' },
+    { image: placeholderImages.spa, title: t('pessah.spaComplet'), desc: '' },
+    { image: placeholderImages.restaurant, title: t('pessah.gastronomie'), desc: '' },
+    { image: placeholderImages.fitness, title: 'Sport & Fitness', desc: '' },
+    { image: placeholderImages.kidsClub, title: t('pessah.animationEnfants'), desc: '' },
   ];
   // Filtrer les éléments masqués
   const services = allServices.filter((item: any) => !item.hidden);
@@ -78,7 +81,7 @@ export default function PessahHotelPage() {
           <div className="absolute inset-0">
             <Image
               src={hero.image || '/images/hotel/FAÇADE.jpg'}
-              alt="Cabogata Beach Hotel 5★"
+              alt={t('hotel.cabogataTitle')}
               fill
               className="object-cover scale-110 animate-slow-zoom"
               priority
@@ -91,16 +94,16 @@ export default function PessahHotelPage() {
             <div className="max-w-7xl mx-auto w-full flex flex-col md:flex-row md:items-end gap-6 md:gap-8">
               <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl">
                 <span className="text-[var(--gold)] uppercase tracking-[0.2em] text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  {hero.subtitle}
+                  {hero.subtitle || t('hotel.hotel5Etoiles')}
                 </span>
                 <h1
                   className="text-6xl md:text-7xl font-cormorant text-white mt-4 mb-4"
                   style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}
                 >
-                  {hero.title}
+                  {hero.title || t('hotel.lHotel')}
                 </h1>
                 <p className="text-white/80 text-xl mt-4 max-w-xl" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  {hero.description}
+                  {hero.description || t('hotel.cabogataLocation')}
                 </p>
               </motion.div>
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
@@ -108,7 +111,7 @@ export default function PessahHotelPage() {
                   onClick={() => document.getElementById('devis-form')?.scrollIntoView({ behavior: 'smooth' })}
                   className="btn-gold-primary px-8 py-3 text-base whitespace-nowrap"
                 >
-                  Demander un devis
+                  {t('pessah.demanderDevis')}
                 </button>
               </motion.div>
             </div>
@@ -121,20 +124,20 @@ export default function PessahHotelPage() {
             <ScrollReveal>
               <div className="grid md:grid-cols-2 gap-12 items-center">
                 <div>
-                  <SectionTitle subtitle={hotel.subtitle} title={hotel.title} centered={false} />
+                  <SectionTitle subtitle={hotel.subtitle || t('hotel.notreEcrinDeLuxe')} title={hotel.title || t('hotel.cabogataTitle')} centered={false} />
                   <p className="text-lg text-gray-700 mb-8" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                    {hotel.description}
+                    {hotel.description || t('pessah.hotelDescription')}
                   </p>
                   <div className="bg-[var(--gold-pale)] p-4 rounded-lg mb-8">
                     <p className="text-sm text-gray-700" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                      <strong>Lieu :</strong> {hotel.location}
+                      <strong>{t('hotel.lieu')} :</strong> {hotel.location || t('hotel.locationAlmeria')}
                     </p>
                   </div>
                 </div>
                 <div className="relative h-[500px] rounded-2xl overflow-hidden shadow-2xl">
                   <Image
                     src={hotel.image || '/images/hotel/FAÇADE.jpg'}
-                    alt="Cabogata Beach Hotel 5★"
+                    alt={t('hotel.cabogataTitle')}
                     fill
                     className="object-cover"
                   />
@@ -145,9 +148,9 @@ export default function PessahHotelPage() {
 
           {/* Types de chambres */}
           <section className="mb-16">
-            <SectionTitle title="Types de Chambres" />
+            <SectionTitle title={t('hotel.typesChambres')} />
             <p className="text-center text-gray-600 mb-8" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-              257 chambres réparties en 9 catégories différentes
+              {t('hotel.chambresReparties')}
             </p>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {chambres.map((chambre: any, idx: number) => (
@@ -159,8 +162,8 @@ export default function PessahHotelPage() {
                     </h3>
                   </div>
                   <div className="space-y-2 text-sm text-gray-600" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                    <p><strong>Surface :</strong> {chambre.surface}</p>
-                    <p><strong>Vue :</strong> {chambre.vue}</p>
+                    <p><strong>{t('hotel.surface')} :</strong> {chambre.surface}</p>
+                    <p><strong>{t('hotel.vue')} :</strong> {chambre.vue}</p>
                     {chambre.special && (
                       <p className="text-[var(--gold)] font-semibold">
                         {chambre.special}
@@ -175,7 +178,7 @@ export default function PessahHotelPage() {
 
           {/* Services */}
           <section className="mb-16">
-            <SectionTitle title="Services & Équipements" />
+            <SectionTitle title={t('hotel.servicesEquipements')} />
             <div className="flex flex-wrap justify-center gap-6">
               {services.map((service: any, idx: number) => (
                 <ScrollReveal key={idx} delay={idx * 0.1}>
@@ -214,7 +217,7 @@ export default function PessahHotelPage() {
 
           {/* Formulaire Devis */}
           <section id="devis-form" className="mb-16 pt-4 scroll-mt-24">
-            <SectionTitle title="Demande de Devis" subtitle="Contactez-nous" />
+            <SectionTitle title={t('pessah.demandeDevis')} subtitle={t('pessah.contactezNous')} />
             <ScrollReveal>
               <div className="max-w-xl mx-auto">
                 <Card className="border border-[var(--gold)]/20 shadow-lg bg-white">
@@ -227,15 +230,15 @@ export default function PessahHotelPage() {
           </section>
 
           {/* Navigation */}
-          <div className="flex justify-center gap-4">
+          <div className={`flex justify-center gap-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
             <Link href="/pessah-2026/sejour">
               <Button className="btn-gold-outline">
-                Voir le séjour
+                {t('hotel.voirSejour')}
               </Button>
             </Link>
             <Link href="/pessah-2026/galerie">
               <Button className="btn-gold-outline">
-                Voir la galerie
+                {t('pessah.voirGalerie')}
               </Button>
             </Link>
           </div>

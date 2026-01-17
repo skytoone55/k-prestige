@@ -1,13 +1,12 @@
+'use client';
+
 import { PublicNavigation } from '@/components/layout/PublicNavigation';
 import { Footer } from '@/components/layout/Footer';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
-
-interface PageProps {
-  params: Promise<{ slug: string }>;
-}
+import { useParams } from 'next/navigation';
+import { useTranslation, useLanguage } from '@/lib/LanguageContext';
 
 // Exemple de données - À remplacer par Supabase plus tard
 const events: Record<string, any> = {
@@ -55,31 +54,43 @@ const events: Record<string, any> = {
   },
 };
 
-export default async function HilloulaEventPage({ params }: PageProps) {
-  const { slug } = await params;
+export default function HilloulaEventPage() {
+  const params = useParams();
+  const slug = params.slug as string;
+  const { t } = useTranslation();
+  const { dir } = useLanguage();
+
   const event = events[slug];
 
   if (!event) {
-    notFound();
+    return (
+      <>
+        <PublicNavigation />
+        <main className="min-h-screen bg-white pt-20 flex items-center justify-center">
+          <p className="text-gray-600">Page non trouvée</p>
+        </main>
+        <Footer />
+      </>
+    );
   }
 
   return (
     <>
       <PublicNavigation />
-      <main className="min-h-screen bg-white pt-20">
+      <main className="min-h-screen bg-white pt-20" dir={dir}>
         {/* Hero */}
         <section className="relative h-[50vh] flex items-center justify-center">
           <div className="absolute inset-0 bg-gradient-to-br from-[var(--gold-pale)] to-[var(--gold-light)] flex items-center justify-center">
             <div className="text-center">
               <div className="text-8xl mb-4">🕯️</div>
               <p className="text-gray-600" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                Photo à venir
+                {t('hilloulaDetail.photoAVenir')}
               </p>
             </div>
           </div>
           <div className="absolute inset-0 bg-black/20" />
           <div className="relative z-10 text-center text-white">
-            <h1 
+            <h1
               className="text-4xl md:text-6xl mb-4 text-[var(--gold)]"
               style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}
             >
@@ -98,7 +109,7 @@ export default async function HilloulaEventPage({ params }: PageProps) {
               <Card className="border-2 border-[var(--gold)]/30">
                 <CardContent className="p-8">
                   <h3 className="text-xl font-semibold mb-4 text-[var(--gold)]" style={{ fontFamily: 'var(--font-cormorant)' }}>
-                    Dates
+                    {t('hilloula.dates')}
                   </h3>
                   <p className="text-2xl font-bold mb-2 text-gray-800" style={{ fontFamily: 'var(--font-dm-sans)' }}>
                     {event.startDate} - {event.endDate}
@@ -111,10 +122,10 @@ export default async function HilloulaEventPage({ params }: PageProps) {
               <Card className="border-2 border-[var(--gold)]/30">
                 <CardContent className="p-8">
                   <h3 className="text-xl font-semibold mb-4 text-[var(--gold)]" style={{ fontFamily: 'var(--font-cormorant)' }}>
-                    Prix
+                    {t('hilloula.prix')}
                   </h3>
                   <p className="text-3xl font-bold mb-2 text-[var(--gold)]" style={{ fontFamily: 'var(--font-cormorant)' }}>
-                    {event.price}€ / personne
+                    {event.price}€ {t('hilloulaDetail.perPersonne')}
                   </p>
                   <p className="text-sm text-gray-600" style={{ fontFamily: 'var(--font-dm-sans)' }}>
                     {event.included}
@@ -126,7 +137,7 @@ export default async function HilloulaEventPage({ params }: PageProps) {
               <Card className="border-2 border-[var(--gold)]/30">
                 <CardContent className="p-8">
                   <h3 className="text-xl font-semibold mb-4 text-[var(--gold)]" style={{ fontFamily: 'var(--font-cormorant)' }}>
-                    Hôtel
+                    {t('hilloulaDetail.hotel')}
                   </h3>
                   <p className="text-lg text-gray-800" style={{ fontFamily: 'var(--font-dm-sans)' }}>
                     {event.hotel}
@@ -136,7 +147,7 @@ export default async function HilloulaEventPage({ params }: PageProps) {
               <Card className="border-2 border-[var(--gold)]/30">
                 <CardContent className="p-8">
                   <h3 className="text-xl font-semibold mb-4 text-[var(--gold)]" style={{ fontFamily: 'var(--font-cormorant)' }}>
-                    Kashrout
+                    {t('hilloula.kashrout')}
                   </h3>
                   <p className="text-lg text-gray-800" style={{ fontFamily: 'var(--font-dm-sans)' }}>
                     {event.kashrut}
@@ -148,11 +159,11 @@ export default async function HilloulaEventPage({ params }: PageProps) {
 
           {/* Programme */}
           <section className="mb-16">
-            <h2 
+            <h2
               className="text-4xl md:text-5xl mb-8 text-center text-[var(--gold)]"
               style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}
             >
-              Programme
+              {t('hilloulaDetail.programme')}
             </h2>
             <div className="space-y-6">
               {event.program.map((day: any, idx: number) => (
@@ -177,19 +188,19 @@ export default async function HilloulaEventPage({ params }: PageProps) {
 
           {/* CTA */}
           <section className="text-center py-16 bg-gradient-to-br from-[var(--gold-pale)]/30 to-transparent rounded-lg">
-            <h2 
+            <h2
               className="text-3xl md:text-4xl mb-6 text-gray-800"
               style={{ fontFamily: 'var(--font-cormorant)' }}
             >
-              Intéressé par ce pèlerinage ?
+              {t('hilloulaDetail.interessePelerinage')}
             </h2>
             <p className="text-lg text-gray-600 mb-8" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-              Contactez-nous pour vous inscrire
+              {t('hilloulaDetail.contactezPourInscrire')}
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/contact">
                 <Button className="btn-gold-primary">
-                  Nous contacter
+                  {t('common.contactUs')}
                 </Button>
               </Link>
               <a href="https://wa.me/33699951963" target="_blank" rel="noopener noreferrer">
@@ -205,4 +216,3 @@ export default async function HilloulaEventPage({ params }: PageProps) {
     </>
   );
 }
-

@@ -3,7 +3,8 @@
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Quote } from 'lucide-react';
-import { usePageContent } from '@/lib/usePageContent';
+import { usePageContentWithLang } from '@/lib/usePageContent';
+import { useTranslation } from '@/lib/LanguageContext';
 
 const defaultTestimonials = [
   {
@@ -27,7 +28,8 @@ const defaultTestimonials = [
 ];
 
 export function TestimonialsSection() {
-  const { data } = usePageContent('accueil');
+  const { data } = usePageContentWithLang('accueil');
+  const { t } = useTranslation();
   const allTestimonials = data?.testimonials || defaultTestimonials;
   // Filtrer les éléments masqués
   const testimonials = allTestimonials.filter((item: any) => !item.hidden);
@@ -37,10 +39,10 @@ export function TestimonialsSection() {
         <ScrollReveal>
           <div className="text-center mb-16">
             <span className="text-[var(--gold)] uppercase tracking-[0.2em] text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-              Témoignages
+              {t('testimonials.title')}
             </span>
             <h2 className="text-4xl md:text-5xl font-cormorant mt-4 text-[var(--dark-bg)]" style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}>
-              Ce que disent nos clients
+              {t('testimonials.subtitle')}
             </h2>
             <div className="w-24 h-[1px] bg-[var(--gold)] mx-auto mt-6" />
           </div>

@@ -11,6 +11,7 @@ import { placeholderImages } from '@/lib/images';
 import { PessahDevisForm } from '@/components/public/PessahDevisForm';
 import { SectionTitle } from '@/components/ui/SectionTitle';
 import { CardContent } from '@/components/ui/Card';
+import { useTranslation, useLanguage } from '@/lib/LanguageContext';
 
 // Constantes Supabase hardcodées pour éviter les problèmes d'env
 const SUPABASE_URL = 'https://htemxbrbxazzatmjerij.supabase.co';
@@ -31,18 +32,20 @@ interface Category {
 }
 
 export default function PessahGaleriePage() {
+  const { t } = useTranslation();
+  const { dir } = useLanguage();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>('');
-  
+
   // Images placeholder si galerie vide
   const placeholderGalleryImages = [
-    { src: placeholderImages.hotelExterior, category: 'Hôtel', alt: 'Hôtel extérieur' },
-    { src: placeholderImages.hotelPool, category: 'Piscines', alt: 'Piscine' },
-    { src: placeholderImages.hotelRoom, category: 'Chambres', alt: 'Chambre' },
-    { src: placeholderImages.hotelBeach, category: 'Plage', alt: 'Plage' },
-    { src: placeholderImages.hotelRestaurant, category: 'Restaurant', alt: 'Restaurant' },
+    { src: placeholderImages.hotelExterior, category: t('gallery.hotel'), alt: t('gallery.hotel') },
+    { src: placeholderImages.hotelPool, category: t('hotel.piscines'), alt: t('hotel.piscines') },
+    { src: placeholderImages.hotelRoom, category: t('gallery.rooms'), alt: t('gallery.rooms') },
+    { src: placeholderImages.hotelBeach, category: t('hotel.plage'), alt: t('hotel.plage') },
+    { src: placeholderImages.hotelRestaurant, category: t('hotel.restaurant'), alt: t('hotel.restaurant') },
   ];
 
   useEffect(() => {
@@ -94,10 +97,10 @@ export default function PessahGaleriePage() {
       // PAS de fallback localStorage
     }
   };
-  
+
   const categoriesList = categories.map(c => c.name);
-  
-  const displayImages = images.length > 0 
+
+  const displayImages = images.length > 0
     ? (activeCategory ? images.filter(img => {
         const cat = categories.find(c => c.id === img.category_id);
         return cat?.name === activeCategory;
@@ -132,10 +135,10 @@ export default function PessahGaleriePage() {
             className="text-5xl md:text-6xl mb-4 text-[var(--gold)] text-center"
             style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}
           >
-            Galerie Photos
+            {t('gallery.title')}
           </h1>
           <p className="text-center text-gray-600 mb-12" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-            Plongez dans l&apos;univers du Cabogata Beach Hotel 5★
+            {t('gallery.plongezUnivers')}
           </p>
 
           {/* Filtres - Centrés */}
@@ -163,14 +166,14 @@ export default function PessahGaleriePage() {
           </div>
 
           {/* Grid - Photos réduites (3-4 colonnes) */}
-          <motion.div 
+          <motion.div
             layout
             className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
           >
             <AnimatePresence>
               {displayImages.map((img: any, i: number) => {
                 const imgSrc = img.src || img;
-                const imgAlt = img.alt || img.category || 'Image galerie';
+                const imgAlt = img.alt || img.category || t('gallery.title');
                 return (
                   <motion.div
                     key={imgSrc}
@@ -190,7 +193,7 @@ export default function PessahGaleriePage() {
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center">
                       <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                        Voir
+                        {t('gallery.voir')}
                       </span>
                     </div>
                   </motion.div>
@@ -201,7 +204,7 @@ export default function PessahGaleriePage() {
 
           {/* Formulaire Devis */}
           <section id="devis-form" className="mt-16">
-            <SectionTitle title="Demande de Devis" subtitle="Contactez-nous" />
+            <SectionTitle title={t('pessah.demandeDevis')} subtitle={t('pessah.contactezNous')} />
             <div className="max-w-xl mx-auto">
               <Card className="border border-[var(--gold)]/20 shadow-lg bg-white">
                 <CardContent className="p-6">
@@ -237,7 +240,7 @@ export default function PessahGaleriePage() {
                 onClick={(e) => e.stopPropagation()}
               />
             </motion.div>
-            
+
             {currentIndex > 0 && (
               <button
                 onClick={(e) => {
@@ -249,7 +252,7 @@ export default function PessahGaleriePage() {
                 <ChevronLeft className="w-12 h-12" />
               </button>
             )}
-            
+
             {currentIndex < allImagesFlat.length - 1 && (
               <button
                 onClick={(e) => {
@@ -261,14 +264,14 @@ export default function PessahGaleriePage() {
                 <ChevronRight className="w-12 h-12" />
               </button>
             )}
-            
+
             <button
               onClick={() => setSelectedImage(null)}
               className="absolute top-6 right-6 text-white/60 hover:text-white transition-colors"
             >
               <X className="w-8 h-8" />
             </button>
-            
+
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
               {currentIndex + 1} / {allImagesFlat.length}
             </div>
@@ -280,4 +283,3 @@ export default function PessahGaleriePage() {
     </>
   );
 }
-

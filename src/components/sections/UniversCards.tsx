@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/Button';
 import { ArrowRight } from 'lucide-react';
 import { placeholderImages } from '@/lib/images';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
-import { usePageContent } from '@/lib/usePageContent';
+import { usePageContentWithLang } from '@/lib/usePageContent';
+import { useTranslation } from '@/lib/LanguageContext';
 
 // Valeurs par défaut
 const defaultUnivers = [
@@ -50,6 +51,7 @@ const defaultUnivers = [
 function UniversCard({ item, index }: { item: any; index: number }) {
   const [imgSrc, setImgSrc] = useState(item.image);
   const [hasError, setHasError] = useState(false);
+  const { t } = useTranslation();
 
   return (
     <ScrollReveal delay={index * 0.1}>
@@ -76,7 +78,7 @@ function UniversCard({ item, index }: { item: any; index: number }) {
             
             {/* Badge flottant */}
             <div className="absolute top-4 right-4 bg-[var(--gold)]/90 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full font-medium" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-              Premium
+              {t('pessah.premium')}
             </div>
           </div>
           
@@ -95,7 +97,7 @@ function UniversCard({ item, index }: { item: any; index: number }) {
             
             {/* Bouton avec animation */}
             <span className="inline-flex items-center text-[var(--gold)] text-sm font-medium group-hover:gap-2 transition-all" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-              Découvrir
+              {t('home.discover')}
               <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-2" />
             </span>
           </CardContent>
@@ -106,7 +108,8 @@ function UniversCard({ item, index }: { item: any; index: number }) {
 }
 
 export function UniversCards() {
-  const { data } = usePageContent('accueil');
+  const { data } = usePageContentWithLang('accueil');
+  const { t } = useTranslation();
   const allUnivers = data?.univers || defaultUnivers;
   // Filtrer les éléments masqués
   const univers = allUnivers.filter((item: any) => !item.hidden);

@@ -11,10 +11,13 @@ import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { SectionTitle } from '@/components/ui/SectionTitle';
 import Image from 'next/image';
 import { placeholderImages } from '@/lib/images';
-import { usePageContent } from '@/lib/usePageContent';
+import { usePageContentWithLang } from '@/lib/usePageContent';
+import { useTranslation, useLanguage } from '@/lib/LanguageContext';
 
 export default function ContactPage() {
-  const { data, loading } = usePageContent('contact');
+  const { data, loading } = usePageContentWithLang('contact');
+  const { t } = useTranslation();
+  const { dir } = useLanguage();
 
   // Données dynamiques avec fallback
   const hero = data?.hero || {
@@ -143,7 +146,7 @@ export default function ContactPage() {
                       <div className="flex items-center gap-3 mb-3">
                         <Phone className="w-5 h-5 text-[var(--gold)]" />
                         <h3 className="text-lg font-semibold text-gray-800" style={{ fontFamily: 'var(--font-cormorant)' }}>
-                          Téléphone
+                          {t('contactPage.phone')}
                         </h3>
                       </div>
                       <div className="pl-8 space-y-2">
@@ -178,7 +181,7 @@ export default function ContactPage() {
 
                     <div>
                       <h3 className="text-lg font-semibold text-gray-800 mb-3" style={{ fontFamily: 'var(--font-cormorant)' }}>
-                        Adresse
+                        {t('contactPage.address')}
                       </h3>
                       <p className="text-gray-700" style={{ fontFamily: 'var(--font-dm-sans)' }}>
                         {coordonnees.address?.name}<br />

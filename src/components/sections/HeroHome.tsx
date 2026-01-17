@@ -5,10 +5,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { ChevronDown } from 'lucide-react';
-import { usePageContent } from '@/lib/usePageContent';
+import { usePageContentWithLang } from '@/lib/usePageContent';
+import { useTranslation } from '@/lib/LanguageContext';
 
 export function HeroHome() {
-  const { data } = usePageContent('accueil');
+  const { data } = usePageContentWithLang('accueil');
+  const { t } = useTranslation();
   const hero = data?.hero || {
     subtitle: 'Expérience Premium',
     title: 'PESSAH 2026',
@@ -99,11 +101,11 @@ export function HeroHome() {
               onClick={() => document.getElementById('devis-form')?.scrollIntoView({ behavior: 'smooth' })}
               className="btn-gold-primary text-lg px-8 py-4 shadow-xl"
             >
-              Demander un devis
+              {t('hero.requestQuote')}
             </Button>
             <Link href="/pessah-2026/sejour">
               <Button className="btn-gold-outline border-white text-white hover:bg-white hover:text-[var(--dark-bg)] text-lg px-8 py-4 shadow-xl">
-                Découvrir le séjour
+                {t('hero.discoverOffer')}
               </Button>
             </Link>
           </motion.div>
@@ -128,7 +130,7 @@ export function HeroHome() {
         className="absolute bottom-8 md:bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-20"
       >
         <span className="text-white/90 text-xs uppercase tracking-wider" style={{ fontFamily: 'var(--font-dm-sans)', textShadow: '0 2px 10px rgba(0,0,0,0.9)' }}>
-          Découvrir
+          {t('home.discover')}
         </span>
         <ChevronDown className="w-7 h-7 text-white/90" style={{ filter: 'drop-shadow(0 2px 10px rgba(0,0,0,0.9))' }} />
       </motion.div>

@@ -12,10 +12,13 @@ import { placeholderImages } from '@/lib/images';
 import { MapPin, Star, X, ZoomIn, Plus, Minus, RotateCcw } from 'lucide-react';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { SectionTitle } from '@/components/ui/SectionTitle';
-import { usePageContent } from '@/lib/usePageContent';
+import { usePageContentWithLang } from '@/lib/usePageContent';
+import { useTranslation, useLanguage } from '@/lib/LanguageContext';
 
 export default function MarbellaPage() {
-  const { data } = usePageContent('marbella');
+  const { data } = usePageContentWithLang('marbella');
+  const { t } = useTranslation();
+  const { dir } = useLanguage();
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -152,7 +155,7 @@ export default function MarbellaPage() {
                   </span>
                   <span className="flex items-center gap-2 text-white/60" style={{ fontFamily: 'var(--font-dm-sans)' }}>
                     <Star className="w-4 h-4 text-[var(--gold)]" />
-                    Glatt Kosher
+                    {t('marbella.glattKosher')}
                   </span>
                 </div>
               </motion.div>
@@ -184,11 +187,11 @@ export default function MarbellaPage() {
                 </ul>
                 <div className="bg-[var(--gold-pale)] p-4 rounded-lg mb-6">
                   <p className="text-sm text-gray-700" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                    <strong>Adresse :</strong> {main.address}
+                    <strong>{t('marbella.adresse')} :</strong> {main.address}
                   </p>
                   {main.phone && (
                     <p className="text-sm text-gray-700 mt-2" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                      <strong>Téléphone :</strong> <a href={`tel:${main.phone.replace(/\s/g, '')}`} className="text-[var(--gold)] hover:underline">{main.phone}</a>
+                      <strong>{t('marbella.telephone')} :</strong> <a href={`tel:${main.phone.replace(/\s/g, '')}`} className="text-[var(--gold)] hover:underline">{main.phone}</a>
                     </p>
                   )}
                 </div>
@@ -211,7 +214,7 @@ export default function MarbellaPage() {
                 </div>
                 {/* Badge */}
                 <div className="absolute bottom-4 right-4 bg-[var(--gold)]/90 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full font-medium">
-                  Cliquez pour agrandir
+                  {t('marbella.cliquezAgrandir')}
                 </div>
               </div>
             </div>
@@ -300,10 +303,10 @@ export default function MarbellaPage() {
                 {/* Instructions */}
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-center">
                   <p className="text-white/60 text-sm mb-1">
-                    Utilisez les boutons ou la molette pour zoomer
+                    {t('marbella.utilisezBoutons')}
                   </p>
                   <p className="text-white/40 text-xs">
-                    {zoomLevel > 1 ? 'Cliquez et glissez pour déplacer l\'image' : 'Cliquez n\'importe où pour fermer'}
+                    {zoomLevel > 1 ? t('marbella.cliquezGlissez') : t('marbella.cliquezFermer')}
                   </p>
                 </div>
               </motion.div>
@@ -312,7 +315,7 @@ export default function MarbellaPage() {
 
           {/* Services */}
           <section className="mb-16">
-            <SectionTitle title="Nos Services" />
+            <SectionTitle title={t('marbella.nosServices')} />
             <div className="flex flex-wrap gap-6">
               {services.map((service: any, idx: number) => (
                 <ScrollReveal key={idx} delay={idx * 0.1}>

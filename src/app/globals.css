@@ -1,7 +1,7 @@
 /* ============================================
    FONTS - IMPORT DOIT ÊTRE EN PREMIER
    ============================================ */
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Lora:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Heebo:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Lora:wght@400;500;600;700&display=swap');
 
 @import "tailwindcss";
 
@@ -10,6 +10,14 @@
   --font-dm-sans: 'DM Sans', sans-serif;
   --font-playfair: 'Playfair Display', serif;
   --font-lora: 'Lora', serif;
+  --font-heebo: 'Heebo', sans-serif;
+}
+
+/* Police Heebo pour l'hébreu (RTL) */
+html[dir="rtl"],
+html[dir="rtl"] body,
+html[dir="rtl"] * {
+  font-family: 'Heebo', var(--font-heebo), sans-serif !important;
 }
 
 /* ============================================
@@ -272,4 +280,112 @@
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;  /* Chrome, Safari and Opera */
+}
+
+/* ============================================
+   RTL SUPPORT - Hebrew Layout
+   ============================================ */
+
+/* Quand le document est en RTL, tout le layout s'inverse */
+html[dir="rtl"] {
+  direction: rtl;
+}
+
+/* Texte aligné à droite par défaut en RTL */
+html[dir="rtl"] body {
+  text-align: right;
+}
+
+/* Inverser les grids en RTL */
+html[dir="rtl"] .grid {
+  direction: rtl;
+}
+
+/* Classe explicite pour inverser flex */
+html[dir="rtl"] .rtl-reverse {
+  flex-direction: row-reverse;
+}
+
+/* Exceptions: ne pas inverser certains éléments */
+html[dir="rtl"] .no-rtl-reverse {
+  flex-direction: row !important;
+  direction: ltr;
+}
+
+/* Inverser les margins et paddings left/right */
+html[dir="rtl"] .ml-auto {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+html[dir="rtl"] .mr-auto {
+  margin-right: 0;
+  margin-left: auto;
+}
+
+/* Inverser les positions absolues left/right */
+html[dir="rtl"] .left-0 {
+  left: auto;
+  right: 0;
+}
+
+html[dir="rtl"] .right-0 {
+  right: auto;
+  left: 0;
+}
+
+html[dir="rtl"] .left-6 {
+  left: auto;
+  right: 1.5rem;
+}
+
+html[dir="rtl"] .right-6 {
+  right: auto;
+  left: 1.5rem;
+}
+
+/* Inverser les bordures */
+html[dir="rtl"] .border-l-2 {
+  border-left-width: 0;
+  border-right-width: 2px;
+}
+
+html[dir="rtl"] .border-r-2 {
+  border-right-width: 0;
+  border-left-width: 2px;
+}
+
+/* Inverser les icônes de chevron */
+html[dir="rtl"] .chevron-right {
+  transform: rotate(180deg);
+}
+
+/* Garder les numéros et dates en LTR */
+html[dir="rtl"] .ltr-numbers {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+/* Téléphones, emails, URLs en LTR */
+html[dir="rtl"] a[href^="tel:"],
+html[dir="rtl"] a[href^="mailto:"],
+html[dir="rtl"] a[href^="http"] {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+/* Navigation horizontale - inverser l'ordre en RTL */
+html[dir="rtl"] header nav,
+html[dir="rtl"] header .flex {
+  flex-direction: row-reverse;
+}
+
+/* Centrer correctement la nav en RTL */
+html[dir="rtl"] header nav.justify-center {
+  flex-direction: row-reverse;
+}
+
+/* Flex items should reverse in RTL header */
+html[dir="rtl"] header > div > div {
+  flex-direction: row-reverse;
 }

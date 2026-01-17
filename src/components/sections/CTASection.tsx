@@ -4,10 +4,10 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
-import { usePageContent } from '@/lib/usePageContent';
+import { usePageContentWithLang } from '@/lib/usePageContent';
 
 export function CTASection() {
-  const { data } = usePageContent('accueil');
+  const { data } = usePageContentWithLang('accueil');
   const cta = data?.cta || {
     subtitle: 'Prêt à vivre l\'expérience K Prestige ?',
     title: 'Contactez-nous dès aujourd\'hui',

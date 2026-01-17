@@ -5,12 +5,15 @@ import Image from 'next/image';
 import { PublicNavigation } from '@/components/layout/PublicNavigation';
 import { Footer } from '@/components/layout/Footer';
 import { Card } from '@/components/ui/Card';
+import { useTranslation, useLanguage } from '@/lib/LanguageContext';
 
 // Constantes Supabase hardcodées pour éviter les problèmes d'env
 const SUPABASE_URL = 'https://htemxbrbxazzatmjerij.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh0ZW14YnJieGF6emF0bWplcmlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4MDI0MjQsImV4cCI6MjA4MzM3ODQyNH0.6RiC65zsSb9INtYpRC7PLurvoHmbb_LX3NkPBM4wodw';
 
 export default function GaleriePage() {
+  const { t } = useTranslation();
+  const { dir } = useLanguage();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [categories, setCategories] = useState<Array<{ id: string; name: string; slug: string }>>([]);
@@ -95,23 +98,23 @@ export default function GaleriePage() {
       <PublicNavigation />
       <main className="min-h-screen bg-white pt-24 pb-12">
         <div className="max-w-7xl mx-auto px-6">
-          <h1 
+          <h1
             className="text-5xl md:text-6xl mb-4 text-foreground text-center"
             style={{ fontFamily: 'var(--font-cormorant)' }}
           >
-            Galerie Photos
+            {t('gallery.title')}
           </h1>
           <p className="text-center text-muted-foreground mb-12" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-            Plongez dans l&apos;univers du Cabogata Beach Hotel 5★
+            {t('gallery.plongezUnivers')}
           </p>
 
           {categories.length === 0 ? (
             <Card className="p-12 text-center">
               <p className="text-muted-foreground mb-4" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                Aucune catégorie n&apos;a été créée.
+                {t('gallery.noCategories')}
               </p>
               <p className="text-sm text-muted-foreground" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                Créez des catégories dans l&apos;espace admin pour commencer.
+                {t('gallery.createCategoriesAdmin')}
               </p>
             </Card>
           ) : (
@@ -138,10 +141,10 @@ export default function GaleriePage() {
               {currentCategoryImages.length === 0 ? (
                 <Card className="p-12 text-center">
                   <p className="text-muted-foreground mb-4" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                    Aucune image dans cette catégorie.
+                    {t('gallery.noImagesInCategory')}
                   </p>
                   <p className="text-sm text-muted-foreground" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                    Ajoutez des images depuis l&apos;espace admin.
+                    {t('gallery.addImagesAdmin')}
                   </p>
                 </Card>
               ) : (

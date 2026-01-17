@@ -10,10 +10,13 @@ import Image from 'next/image';
 import { placeholderImages } from '@/lib/images';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { SectionTitle } from '@/components/ui/SectionTitle';
-import { usePageContent } from '@/lib/usePageContent';
+import { usePageContentWithLang } from '@/lib/usePageContent';
+import { useTranslation, useLanguage } from '@/lib/LanguageContext';
 
 export default function MarrakechPage() {
-  const { data, loading } = usePageContent('marrakech');
+  const { data, loading } = usePageContentWithLang('marrakech');
+  const { t } = useTranslation();
+  const { dir } = useLanguage();
 
   // Données dynamiques avec fallback
   const hero = data?.hero || {
@@ -127,7 +130,7 @@ export default function MarrakechPage() {
 
           {/* Types d'événements */}
           <section className="mb-16">
-            <SectionTitle title="Types d'Événements" />
+            <SectionTitle title={t('marrakech.typeEvenements')} />
             <div className="flex flex-wrap gap-6">
               {events.map((event: any, idx: number) => (
                 <ScrollReveal key={idx} delay={idx * 0.05}>
@@ -178,7 +181,7 @@ export default function MarrakechPage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/contact">
                 <Button className="btn-gold-primary">
-                  Demander une proposition
+                  {t('marrakech.demanderProposition')}
                 </Button>
               </Link>
               <a href="https://wa.me/33699951963" target="_blank" rel="noopener noreferrer">

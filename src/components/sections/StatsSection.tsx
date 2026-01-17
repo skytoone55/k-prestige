@@ -2,7 +2,7 @@
 
 import { useInView } from 'framer-motion';
 import { useRef, useEffect, useState } from 'react';
-import { usePageContent } from '@/lib/usePageContent';
+import { usePageContentWithLang } from '@/lib/usePageContent';
 
 const defaultStats = [
   { value: 7000, suffix: '+', label: 'Familles accompagnées' },
@@ -45,7 +45,7 @@ function AnimatedNumber({ value, suffix }: { value: number; suffix: string }) {
 }
 
 export function StatsSection() {
-  const { data } = usePageContent('accueil');
+  const { data } = usePageContentWithLang('accueil');
   const allStats = data?.stats || defaultStats;
   // Filtrer les éléments masqués
   const stats = allStats.filter((item: any) => !item.hidden);

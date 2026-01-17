@@ -8,10 +8,13 @@ import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { placeholderImages } from '@/lib/images';
-import { usePageContent } from '@/lib/usePageContent';
+import { usePageContentWithLang } from '@/lib/usePageContent';
+import { useTranslation, useLanguage } from '@/lib/LanguageContext';
 
 export default function HilloulaPage() {
-  const { data, loading } = usePageContent('hilloula');
+  const { data, loading } = usePageContentWithLang('hilloula');
+  const { t } = useTranslation();
+  const { dir } = useLanguage();
 
   // Données dynamiques avec fallback
   const hero = data?.hero || {
@@ -141,7 +144,7 @@ export default function HilloulaPage() {
                   ))}
                 </ul>
                 <p className="text-sm text-gray-500" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  <strong>Note :</strong> {main.note}
+                  <strong>{t('hilloula.note')} :</strong> {main.note}
                 </p>
               </div>
               <div className="relative h-[500px] rounded-2xl overflow-hidden shadow-2xl">
@@ -175,26 +178,26 @@ export default function HilloulaPage() {
                     </h3>
                     <div className="grid md:grid-cols-2 gap-4 mb-4">
                       <div>
-                        <p className="text-sm text-gray-500 mb-1" style={{ fontFamily: 'var(--font-dm-sans)' }}>Dates</p>
+                        <p className="text-sm text-gray-500 mb-1" style={{ fontFamily: 'var(--font-dm-sans)' }}>{t('hilloula.dates')}</p>
                         <p className="font-semibold text-gray-800" style={{ fontFamily: 'var(--font-dm-sans)' }}>
                           {event.dates}
                         </p>
                         <p className="text-sm text-gray-600" style={{ fontFamily: 'var(--font-dm-sans)' }}>{event.duration}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500 mb-1" style={{ fontFamily: 'var(--font-dm-sans)' }}>Lieu</p>
+                        <p className="text-sm text-gray-500 mb-1" style={{ fontFamily: 'var(--font-dm-sans)' }}>{t('hilloula.lieu')}</p>
                         <p className="font-semibold text-gray-800" style={{ fontFamily: 'var(--font-dm-sans)' }}>
                           {event.lieu}
                         </p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500 mb-1" style={{ fontFamily: 'var(--font-dm-sans)' }}>Prix</p>
+                        <p className="text-sm text-gray-500 mb-1" style={{ fontFamily: 'var(--font-dm-sans)' }}>{t('hilloula.prix')}</p>
                         <p className="text-2xl font-bold text-[var(--gold)]" style={{ fontFamily: 'var(--font-cormorant)' }}>
                           {event.price}
                         </p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500 mb-1" style={{ fontFamily: 'var(--font-dm-sans)' }}>Kashrout</p>
+                        <p className="text-sm text-gray-500 mb-1" style={{ fontFamily: 'var(--font-dm-sans)' }}>{t('hilloula.kashrout')}</p>
                         <p className="font-semibold text-gray-800" style={{ fontFamily: 'var(--font-dm-sans)' }}>
                           {event.kashrout}
                         </p>
@@ -202,7 +205,7 @@ export default function HilloulaPage() {
                     </div>
                     <div className="border-t pt-4">
                       <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                        <strong>Inclus :</strong> {event.inclus}
+                        <strong>{t('hilloula.inclus')} :</strong> {event.inclus}
                       </p>
                     </div>
                   </div>

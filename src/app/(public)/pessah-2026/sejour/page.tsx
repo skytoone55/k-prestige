@@ -12,10 +12,13 @@ import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { SectionTitle } from '@/components/ui/SectionTitle';
 import { placeholderImages } from '@/lib/images';
 import { ArrowRight } from 'lucide-react';
-import { usePageContent } from '@/lib/usePageContent';
+import { usePageContentWithLang } from '@/lib/usePageContent';
+import { useTranslation, useLanguage } from '@/lib/LanguageContext';
 
 export default function PessahSejourPage() {
-  const { data, loading } = usePageContent('pessah-sejour');
+  const { data, loading } = usePageContentWithLang('pessah-sejour');
+  const { t } = useTranslation();
+  const { dir } = useLanguage();
 
   // Données dynamiques avec fallback
   const hero = data?.hero || {
@@ -107,7 +110,7 @@ export default function PessahSejourPage() {
                   onClick={() => document.getElementById('devis-form')?.scrollIntoView({ behavior: 'smooth' })}
                   className="btn-gold-primary px-8 py-3 text-base whitespace-nowrap"
                 >
-                  Demander un devis
+                  {t('home.requestQuote')}
                 </button>
               </motion.div>
             </div>
@@ -117,7 +120,7 @@ export default function PessahSejourPage() {
         <div className="max-w-7xl mx-auto px-6 py-16">
           {/* Dates + Supervision - 3 colonnes */}
           <section className="mb-16">
-            <SectionTitle title="Dates du Séjour" />
+            <SectionTitle title={t('pessah.datesDuSejour')} />
             <div className="grid md:grid-cols-3 gap-6">
               {/* Séjour Principal */}
               <ScrollReveal delay={0}>
@@ -189,7 +192,7 @@ export default function PessahSejourPage() {
 
           {/* Animation */}
           <section className="mb-16">
-            <SectionTitle title="Animation Non-Stop" />
+            <SectionTitle title={t('pessah.animationNonStop')} />
             <div className="flex flex-wrap justify-center gap-6">
               {animations.map((anim: any, idx: number) => (
                 <ScrollReveal key={idx} delay={idx * 0.1}>
@@ -207,7 +210,7 @@ export default function PessahSejourPage() {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
                         <div className="absolute top-4 right-4 bg-[var(--gold)]/90 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full font-medium" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                          Premium
+                          {t('pessah.premium')}
                         </div>
                       </div>
                       <CardContent className="p-6">
@@ -229,7 +232,7 @@ export default function PessahSejourPage() {
                             className="inline-flex items-center text-[var(--gold)] text-sm font-medium group-hover:gap-2 transition-all"
                             style={{ fontFamily: 'var(--font-dm-sans)' }}
                           >
-                            Voir Instagram
+                            {t('pessah.voirInstagram')}
                             <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-2" />
                           </a>
                         )}
@@ -243,7 +246,7 @@ export default function PessahSejourPage() {
 
           {/* Services */}
           <section className="mb-16">
-            <SectionTitle title="Services Inclus" />
+            <SectionTitle title={t('pessah.servicesInclus')} />
             <div className="flex flex-wrap justify-center gap-6">
               {services.map((service: any, idx: number) => (
                 <ScrollReveal key={idx} delay={idx * 0.1}>
@@ -282,7 +285,7 @@ export default function PessahSejourPage() {
 
           {/* Formulaire Devis */}
           <section id="devis-form" className="mb-16 pt-4 scroll-mt-24">
-            <SectionTitle title="Demande de Devis" subtitle="Contactez-nous" />
+            <SectionTitle title={t('pessah.demandeDevis')} subtitle={t('pessah.contactezNous')} />
             <ScrollReveal>
               <div className="max-w-xl mx-auto">
                 <Card className="border border-[var(--gold)]/20 shadow-lg bg-white">
@@ -295,15 +298,15 @@ export default function PessahSejourPage() {
           </section>
 
           {/* Navigation */}
-          <div className="flex justify-center gap-4">
+          <div className={`flex justify-center gap-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
             <Link href="/pessah-2026/hotel">
               <Button className="btn-gold-outline">
-                Découvrir l&apos;hôtel
+                {t('pessah.decouvrirHotel')}
               </Button>
             </Link>
             <Link href="/pessah-2026/galerie">
               <Button className="btn-gold-outline">
-                Voir la galerie
+                {t('pessah.voirGalerie')}
               </Button>
             </Link>
           </div>

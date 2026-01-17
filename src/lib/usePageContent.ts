@@ -2,12 +2,56 @@
 
 import { useState, useEffect } from 'react';
 import { fullPageContent } from './page-content-full';
+import { useLanguage } from './LanguageContext';
+
+// Fonction pour fusionner profondément deux objets
+// Les valeurs de 'override' écrasent celles de 'base'
+function deepMerge(base: any, override: any): any {
+  if (!override) return base;
+  if (!base) return override;
+
+  // Si ce n'est pas un objet, retourner override
+  if (typeof base !== 'object' || typeof override !== 'object') {
+    return override;
+  }
+
+  // Si c'est un tableau, utiliser override s'il existe
+  if (Array.isArray(base) || Array.isArray(override)) {
+    // Pour les tableaux, on fusionne élément par élément si même longueur
+    if (Array.isArray(base) && Array.isArray(override)) {
+      return override.map((item, index) => {
+        if (index < base.length && typeof item === 'object' && typeof base[index] === 'object') {
+          return deepMerge(base[index], item);
+        }
+        return item;
+      });
+    }
+    return override;
+  }
+
+  // Fusionner les objets
+  const result = { ...base };
+  for (const key of Object.keys(override)) {
+    if (key in base && typeof base[key] === 'object' && typeof override[key] === 'object') {
+      result[key] = deepMerge(base[key], override[key]);
+    } else {
+      result[key] = override[key];
+    }
+  }
+  return result;
+}
 
 // Constantes Supabase (hardcodées pour éviter les problèmes d'env)
 const SUPABASE_URL = 'https://htemxbrbxazzatmjerij.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh0ZW14YnJieGF6emF0bWplcmlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4MDI0MjQsImV4cCI6MjA4MzM3ODQyNH0.6RiC65zsSb9INtYpRC7PLurvoHmbb_LX3NkPBM4wodw';
 
-export function usePageContent(pageId: string) {
+interface UsePageContentOptions {
+  lang?: string;
+}
+
+export function usePageContent(pageId: string, options: UsePageContentOptions = {}) {
+  const { lang = 'fr' } = options;
+
   // Initialiser avec les valeurs par défaut pour éviter le flash
   const [data, setData] = useState<any>(fullPageContent[pageId] || null);
   const [loading, setLoading] = useState(true);
@@ -16,11 +60,11 @@ export function usePageContent(pageId: string) {
 
   useEffect(() => {
     const loadContent = async () => {
-      console.log(`[usePageContent] Loading content for page: ${pageId}`);
+      console.log(`[usePageContent] Loading content for page: ${pageId}, lang: ${lang}`);
 
       try {
-        // Toujours charger depuis Supabase - PAS de localStorage
-        const url = `${SUPABASE_URL}/rest/v1/page_content?page_id=eq.${pageId}&select=content`;
+        // Charger depuis Supabase avec les traductions
+        const url = `${SUPABASE_URL}/rest/v1/page_content?page_id=eq.${pageId}&select=content,translations`;
 
         const response = await fetch(url, {
           method: 'GET',
@@ -35,11 +79,43 @@ export function usePageContent(pageId: string) {
         if (response.ok) {
           const result = await response.json();
 
-          if (result && result.length > 0 && result[0]?.content) {
-            console.log(`[usePageContent] ✅ Données chargées depuis Supabase pour ${pageId}`);
-            setData(result[0].content);
-            setSource('supabase');
-            setError(null);
+          if (result && result.length > 0) {
+            const { content, translations } = result[0];
+
+            // Si on demande le français ou pas de traductions, utiliser le contenu principal
+            if (lang === 'fr' || !translations) {
+              if (content) {
+                console.log(`[usePageContent] ✅ Contenu FR chargé depuis Supabase pour ${pageId}`);
+                setData(content);
+                setSource('supabase-fr');
+                setError(null);
+              } else {
+                console.log(`[usePageContent] ⚠️ Pas de contenu Supabase pour ${pageId}, utilisation des valeurs par défaut`);
+                setSource('default');
+              }
+            } else {
+              // Chercher la traduction demandée
+              const translatedContent = translations[lang];
+
+              if (translatedContent && content) {
+                // FUSIONNER le contenu français avec les traductions
+                // Les traductions écrasent les valeurs françaises là où elles existent
+                const mergedContent = deepMerge(content, translatedContent);
+                console.log(`[usePageContent] ✅ Traduction ${lang.toUpperCase()} fusionnée avec FR pour ${pageId}`);
+                setData(mergedContent);
+                setSource(`supabase-${lang}`);
+                setError(null);
+              } else if (content) {
+                // Pas de traduction, fallback sur le français
+                console.log(`[usePageContent] ⚠️ Pas de traduction ${lang} pour ${pageId}, fallback FR`);
+                setData(content);
+                setSource('supabase-fr-fallback');
+                setError(null);
+              } else {
+                console.log(`[usePageContent] ⚠️ Pas de données pour ${pageId}, utilisation des valeurs par défaut`);
+                setSource('default');
+              }
+            }
           } else {
             // Pas de données dans Supabase = utiliser les valeurs par défaut (déjà initialisées)
             console.log(`[usePageContent] ⚠️ Pas de données Supabase pour ${pageId}, utilisation des valeurs par défaut`);
@@ -63,7 +139,15 @@ export function usePageContent(pageId: string) {
     };
 
     loadContent();
-  }, [pageId]);
+  }, [pageId, lang]);
 
   return { data, loading, source, error };
+}
+
+// Hook pour charger le contenu avec la langue du contexte
+export function usePageContentWithLang(pageId: string) {
+  // Utiliser le contexte de langue global - c'est la source de vérité unique
+  const { lang } = useLanguage();
+
+  return usePageContent(pageId, { lang });
 }

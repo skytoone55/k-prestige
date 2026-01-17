@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, DM_Sans } from "next/font/google";
+import { Cormorant_Garamond, DM_Sans, Heebo } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import { LanguageProvider } from "@/lib/LanguageContext";
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
@@ -14,6 +15,13 @@ const dmSans = DM_Sans({
   variable: "--font-dm-sans",
   subsets: ["latin"],
   weight: ["400", "500", "600"],
+  display: "swap",
+});
+
+const heebo = Heebo({
+  variable: "--font-heebo",
+  subsets: ["latin", "hebrew"],
+  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -56,9 +64,11 @@ export default function RootLayout({
         </Script>
       </head>
       <body
-        className={`${cormorant.variable} ${dmSans.variable} antialiased`}
+        className={`${cormorant.variable} ${dmSans.variable} ${heebo.variable} antialiased`}
       >
-        {children}
+        <LanguageProvider>
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   );

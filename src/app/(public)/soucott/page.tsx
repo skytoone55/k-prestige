@@ -10,10 +10,13 @@ import Image from 'next/image';
 import { placeholderImages } from '@/lib/images';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { SectionTitle } from '@/components/ui/SectionTitle';
-import { usePageContent } from '@/lib/usePageContent';
+import { usePageContentWithLang } from '@/lib/usePageContent';
+import { useTranslation, useLanguage } from '@/lib/LanguageContext';
 
 export default function SoucottPage() {
-  const { data, loading } = usePageContent('souccot');
+  const { data, loading } = usePageContentWithLang('souccot');
+  const { t } = useTranslation();
+  const { dir } = useLanguage();
 
   // Données dynamiques avec fallback
   const hero = data?.hero || {
@@ -179,7 +182,7 @@ export default function SoucottPage() {
               className="text-4xl md:text-5xl mb-8 text-center text-[var(--gold)]"
               style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}
             >
-              Niveaux de Qualité
+              {t('souccot.niveauxQualite')}
             </h2>
             <div className="flex flex-wrap justify-center gap-6">
               {kits.map((kit: any, idx: number) => (
@@ -201,7 +204,7 @@ export default function SoucottPage() {
                       className="btn-gold-primary w-full"
                       disabled={!kit.available}
                     >
-                      {kit.available ? 'Ajouter au panier' : 'Bientôt disponible'}
+                      {kit.available ? t('souccot.ajouterPanier') : t('souccot.bientotDisponible')}
                     </Button>
                   </Card>
                 </div>
@@ -267,7 +270,7 @@ export default function SoucottPage() {
               {cta.description}
             </p>
             <p className="text-sm text-gray-500 mb-8" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-              <strong>Note :</strong> {cta.note}
+              <strong>{t('hilloula.note')} :</strong> {cta.note}
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/contact">

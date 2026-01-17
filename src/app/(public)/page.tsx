@@ -9,19 +9,23 @@ import { TestimonialsSection } from '@/components/sections/TestimonialsSection';
 import { CTASection } from '@/components/sections/CTASection';
 import { SectionTitle } from '@/components/ui/SectionTitle';
 import { PessahDevisForm } from '@/components/public/PessahDevisForm';
+import { useTranslation, useLanguage } from '@/lib/LanguageContext';
 
 export default function Home() {
+  const { t } = useTranslation();
+  const { dir } = useLanguage();
+
   return (
     <>
       <PublicNavigation />
-      <main>
+      <main dir={dir}>
         {/* 1. HERO SLIDER - Pessah 2026 */}
         <HeroHome />
 
         {/* 2. SECTION "NOS ACTIVITÉS" */}
         <section className="py-12 px-6 bg-[var(--cream)]">
           <div className="max-w-7xl mx-auto">
-            <SectionTitle subtitle="Découvrez" title="Nos Univers" />
+            <SectionTitle subtitle={t('home.discover')} title={t('home.ourUniverses')} />
             <UniversCards />
           </div>
         </section>
@@ -35,7 +39,7 @@ export default function Home() {
         {/* 6. SECTION DEVIS PESSAH */}
         <section id="devis-form" className="py-12 px-6 bg-[var(--cream)]">
           <div className="max-w-xl mx-auto">
-            <SectionTitle subtitle="Pessah 2026" title="Demander un devis" />
+            <SectionTitle subtitle="Pessah 2026" title={t('home.requestQuote')} />
             <PessahDevisForm />
           </div>
         </section>
