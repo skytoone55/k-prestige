@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { PhoneInput } from '@/components/ui/PhoneInput';
 import { useLanguage, useTranslation } from '@/lib/LanguageContext';
 import { cn } from '@/lib/utils';
 
@@ -76,13 +77,12 @@ export function ContactForm() {
         required
         className={cn(dir === 'rtl' && 'text-right')}
       />
-      <Input
+      <PhoneInput
         label={`${t('contactForm.phone')} *`}
-        type="tel"
         value={formData.telephone}
-        onChange={(e) => setFormData({ ...formData, telephone: e.target.value })}
+        onChange={(phone) => setFormData({ ...formData, telephone: phone })}
         required
-        className={cn(dir === 'rtl' && 'text-right')}
+        dir={dir}
       />
       <div>
         <label className={cn("text-sm font-medium leading-none mb-2 block", dir === 'rtl' && 'text-right')}>

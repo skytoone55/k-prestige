@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/Button';
+import { PhoneInput } from '@/components/ui/PhoneInput';
 import { useLanguage, useTranslation } from '@/lib/LanguageContext';
 import { cn } from '@/lib/utils';
 
@@ -204,10 +205,11 @@ export function PessahDevisForm() {
             <label className={cn("block text-xs text-gray-500 mb-1", dir === 'rtl' && 'text-right')} style={{ fontFamily: 'var(--font-dm-sans)' }}>
               {t('contactForm.phone')} *
             </label>
-            <input
-              type="tel"
-              {...form.register('telephone')}
-              className={cn("w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--gold)] focus:border-transparent", dir === 'rtl' && 'text-right')}
+            <PhoneInput
+              value={form.watch('telephone')}
+              onChange={(phone) => form.setValue('telephone', phone, { shouldValidate: true })}
+              required
+              dir={dir}
             />
             {form.formState.errors.telephone && (
               <p className={cn("text-xs text-red-500 mt-1", dir === 'rtl' && 'text-right')}>{form.formState.errors.telephone.message}</p>
