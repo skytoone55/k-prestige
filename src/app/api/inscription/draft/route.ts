@@ -12,8 +12,13 @@ const supabase = createClient(
 // Créer un item Monday avec statut "EN COURS"
 async function createMondayDraft(nomPrenom: string, email: string, telephone: string, dossierCode: string) {
   try {
+    console.log('=== createMondayDraft START ===');
+    console.log('Params:', { nomPrenom, email, telephone, dossierCode });
+
     // Lire la clé API directement pour s'assurer qu'elle est disponible
     const mondayApiKey = process.env.MONDAY_API_KEY;
+    console.log('MONDAY_API_KEY présente:', !!mondayApiKey, 'longueur:', mondayApiKey?.length);
+
     if (!mondayApiKey) {
       console.error('MONDAY_API_KEY non configurée');
       return null;
@@ -43,6 +48,8 @@ async function createMondayDraft(nomPrenom: string, email: string, telephone: st
     `;
 
     console.log('Création Monday draft pour:', nomPrenom, 'code:', dossierCode);
+    console.log('Mutation:', mutation.substring(0, 200) + '...');
+    console.log('API URL:', MONDAY_CONFIG.API_URL);
 
     const response = await fetch(MONDAY_CONFIG.API_URL, {
       method: 'POST',
@@ -53,15 +60,19 @@ async function createMondayDraft(nomPrenom: string, email: string, telephone: st
       body: JSON.stringify({ query: mutation }),
     });
 
+    console.log('Response status:', response.status);
     const result = await response.json();
+    console.log('Response body:', JSON.stringify(result).substring(0, 500));
 
     if (result.errors) {
       console.error('Erreur API Monday:', JSON.stringify(result.errors));
       return null;
     }
 
-    console.log('Monday item créé:', result.data?.create_item?.id);
-    return result.data?.create_item?.id || null;
+    const itemId = result.data?.create_item?.id;
+    console.log('Monday item créé:', itemId);
+    console.log('=== createMondayDraft END ===');
+    return itemId || null;
   } catch (error) {
     console.error('Erreur création Monday:', error);
     return null;
@@ -222,9 +233,16 @@ export async function POST(request: NextRequest) {
       }
 
       // Créer l'item Monday avec statut "EN COURS"
+      console.log('=== ACTION CREATE ===');
+      console.log('nomPrenom:', nomPrenom, 'email:', email, 'telephone:', telephone);
+
       let mondayItemId: string | null = null;
       if (nomPrenom && email) {
+        console.log('Appel createMondayDraft...');
         mondayItemId = await createMondayDraft(nomPrenom, email, telephone || '', dossierCode);
+        console.log('Résultat mondayItemId:', mondayItemId);
+      } else {
+        console.log('nomPrenom ou email manquant, skip Monday');
       }
 
       // Insérer le brouillon
