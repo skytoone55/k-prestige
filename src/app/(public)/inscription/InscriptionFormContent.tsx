@@ -262,6 +262,17 @@ export default function InscriptionFormContent() {
     }
   }, [currentStep, dossierCode, saveDossier]);
 
+  // Sauvegarde automatique avec debounce quand formData change (pour sync Monday en temps réel)
+  useEffect(() => {
+    if (!dossierCode || !mondayItemId || currentStep <= 1) return;
+
+    const timeoutId = setTimeout(() => {
+      saveDossier();
+    }, 3000); // Sauvegarde 3 secondes après le dernier changement
+
+    return () => clearTimeout(timeoutId);
+  }, [formData, dossierCode, mondayItemId, currentStep, saveDossier]);
+
   // Reprendre un dossier existant
   const resumeDossier = async () => {
     if (!resumeCode.trim()) {
