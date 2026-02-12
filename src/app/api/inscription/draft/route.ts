@@ -373,6 +373,21 @@ export async function GET(request: NextRequest) {
       }, { status: 400 });
     }
 
+    // Si pas de monday_item_id, créer l'item Monday maintenant
+    let mondayItemId = data.monday_item_id;
+    if (!mondayItemId && data.nom_prenom && data.email) {
+      console.log('Création Monday item pour dossier existant sans monday_item_id:', data.code);
+      mondayItemId = await createMondayDraft(data.nom_prenom, data.email, data.telephone || '', data.code);
+
+      // Mettre à jour le dossier avec le monday_item_id
+      if (mondayItemId) {
+        await supabase
+          .from('inscription_drafts')
+          .update({ monday_item_id: mondayItemId })
+          .eq('code', data.code);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       code: data.code,
@@ -381,7 +396,7 @@ export async function GET(request: NextRequest) {
       email: data.email,
       telephone: data.telephone,
       nomPrenom: data.nom_prenom,
-      mondayItemId: data.monday_item_id,
+      mondayItemId: mondayItemId,
       createdAt: data.created_at,
       updatedAt: data.updated_at,
     });
