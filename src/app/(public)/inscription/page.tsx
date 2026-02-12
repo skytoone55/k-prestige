@@ -7,10 +7,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Inscription Pessah 2026 | K Prestige',
     description: 'Inscrivez-vous pour Pessah 2026 avec K Prestige. Séjour luxueux en pension complète dans un cadre exceptionnel.',
-    url: 'https://kprestige.com/inscription',
+    url: 'https://k-prestige.vercel.app/inscription',
     images: [
       {
-        url: 'https://kprestige.com/images/hero/PANORAMIC.jpg',
+        url: 'https://k-prestige.vercel.app/images/hero/PANORAMIC.jpg',
         width: 1200,
         height: 630,
         alt: 'K Prestige - Pessah 2026',
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Inscription Pessah 2026 | K Prestige',
     description: 'Inscrivez-vous pour Pessah 2026 avec K Prestige.',
-    images: ['https://kprestige.com/images/hero/PANORAMIC.jpg'],
+    images: ['https://k-prestige.vercel.app/images/hero/PANORAMIC.jpg'],
   },
 };
 
