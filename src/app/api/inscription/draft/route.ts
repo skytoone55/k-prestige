@@ -286,15 +286,40 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Erreur lors de la sauvegarde' }, { status: 500 });
       }
 
-      // Mettre à jour Monday avec les infos navettes et composition (si mondayItemId fourni)
-      console.log('Update draft - mondayItemId:', body.mondayItemId, 'hasFormData:', !!formData);
-      if (body.mondayItemId && formData) {
-        await updateMondayDraft(body.mondayItemId, formData);
-      } else if (!body.mondayItemId) {
-        console.log('Pas de mondayItemId fourni pour update');
+      // Récupérer le monday_item_id depuis la DB si non fourni
+      let mondayItemId = body.mondayItemId;
+      if (!mondayItemId) {
+        const { data: draftData } = await supabase
+          .from('inscription_drafts')
+          .select('monday_item_id, nom_prenom, email, telephone')
+          .eq('code', code)
+          .single();
+
+        mondayItemId = draftData?.monday_item_id;
+
+        // Si toujours pas de monday_item_id, le créer maintenant
+        if (!mondayItemId && draftData?.nom_prenom && draftData?.email) {
+          console.log('Création Monday item pour dossier sans monday_item_id (update)');
+          mondayItemId = await createMondayDraft(draftData.nom_prenom, draftData.email, draftData.telephone || '', code);
+          if (mondayItemId) {
+            await supabase
+              .from('inscription_drafts')
+              .update({ monday_item_id: mondayItemId })
+              .eq('code', code);
+          }
+        }
       }
 
-      return NextResponse.json({ success: true, message: 'Sauvegardé' });
+      // Mettre à jour Monday avec les infos navettes et composition
+      console.log('Update draft - mondayItemId:', mondayItemId, 'hasFormData:', !!formData);
+      if (mondayItemId && formData) {
+        const updateResult = await updateMondayDraft(mondayItemId, formData);
+        console.log('Monday update result:', updateResult);
+      } else if (!mondayItemId) {
+        console.log('Pas de mondayItemId disponible pour update Monday');
+      }
+
+      return NextResponse.json({ success: true, mondayItemId, message: 'Sauvegardé' });
     }
 
     // Action: marquer comme soumis

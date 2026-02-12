@@ -252,6 +252,13 @@ export default function InscriptionFormContent() {
       });
       const result = await response.json();
       console.log('[saveDossier] result:', result);
+
+      // Si l'API a créé un mondayItemId, le stocker
+      if (result.mondayItemId && !mondayItemId) {
+        console.log('[saveDossier] Nouveau mondayItemId reçu:', result.mondayItemId);
+        setMondayItemId(result.mondayItemId);
+      }
+
       setLastSaved(new Date());
     } catch (err) {
       console.error('Erreur sauvegarde:', err);
@@ -260,28 +267,8 @@ export default function InscriptionFormContent() {
     }
   }, [dossierCode, mondayItemId, formData, currentStep]);
 
-  // Sauvegarde automatique quand on change d'étape
-  useEffect(() => {
-    if (dossierCode && currentStep > 1) {
-      saveDossier();
-    }
-  }, [currentStep, dossierCode, saveDossier]);
-
-  // Sauvegarde automatique avec debounce quand formData change (pour sync Monday en temps réel)
-  useEffect(() => {
-    // Ne pas déclencher si pas de dossier ou pas de mondayItemId
-    if (!dossierCode || !mondayItemId) {
-      console.log('[debounce] skip - dossierCode:', dossierCode, 'mondayItemId:', mondayItemId);
-      return;
-    }
-
-    const timeoutId = setTimeout(() => {
-      console.log('[debounce] trigger saveDossier');
-      saveDossier();
-    }, 3000); // Sauvegarde 3 secondes après le dernier changement
-
-    return () => clearTimeout(timeoutId);
-  }, [formData, dossierCode, mondayItemId, saveDossier]);
+  // NOTE: La mise à jour Monday se fait maintenant au clic sur "Suivant" (dans nextStep)
+  // Plus besoin de debounce ni de sauvegarde automatique au changement d'étape
 
   // Reprendre un dossier existant
   const resumeDossier = async () => {
@@ -392,9 +379,20 @@ export default function InscriptionFormContent() {
 
   const nextStep = async () => {
     if (currentStep < STEPS.length) {
+      console.log('[nextStep] currentStep:', currentStep, 'dossierCode:', dossierCode, 'mondayItemId:', mondayItemId);
+
       // Créer le dossier après l'étape 1 (quand on a l'email)
       if (currentStep === 1 && !dossierCode) {
+        console.log('[nextStep] Création dossier...');
         await createDossier();
+      } else if (dossierCode) {
+        // Mettre à jour Monday à chaque clic sur "Suivant" (comme la validation finale)
+        console.log('[nextStep] Mise à jour Monday avant passage étape', currentStep, '->', currentStep + 1);
+        console.log('[nextStep] formData navettes:', formData.navetteChoix, formData.heureArrivee, formData.volArrivee);
+        console.log('[nextStep] formData composition:', formData.nbAdultes, formData.nbBebe);
+        await saveDossier();
+      } else {
+        console.log('[nextStep] Pas de dossierCode, skip sauvegarde');
       }
       setCurrentStep(currentStep + 1);
     }
