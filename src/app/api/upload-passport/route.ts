@@ -6,9 +6,23 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 export async function POST(request: NextRequest) {
   try {
+    // Vérifier que les variables d'environnement sont configurées
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Variables Supabase manquantes:', {
+        hasUrl: !!supabaseUrl,
+        hasKey: !!supabaseServiceKey
+      });
+      return NextResponse.json(
+        { success: false, error: 'Configuration Supabase manquante' },
+        { status: 500 }
+      );
+    }
+
     const formData = await request.formData();
     const files = formData.getAll('files') as File[];
     const clientName = formData.get('clientName') as string;
+
+    console.log('Upload passeport - fichiers:', files.length, 'client:', clientName);
 
     if (!files || files.length === 0) {
       return NextResponse.json(

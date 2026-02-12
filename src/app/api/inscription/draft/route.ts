@@ -287,8 +287,11 @@ export async function POST(request: NextRequest) {
       }
 
       // Mettre à jour Monday avec les infos navettes et composition (si mondayItemId fourni)
+      console.log('Update draft - mondayItemId:', body.mondayItemId, 'hasFormData:', !!formData);
       if (body.mondayItemId && formData) {
         await updateMondayDraft(body.mondayItemId, formData);
+      } else if (!body.mondayItemId) {
+        console.log('Pas de mondayItemId fourni pour update');
       }
 
       return NextResponse.json({ success: true, message: 'Sauvegardé' });
