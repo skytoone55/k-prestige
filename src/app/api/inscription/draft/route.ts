@@ -250,7 +250,7 @@ export async function GET(request: NextRequest) {
 // Fonction d'envoi d'email
 async function sendDossierEmail(email: string, code: string, nomPrenom?: string) {
   const resend = new Resend(process.env.RESEND_API_KEY);
-  const fromEmail = process.env.RESEND_FROM_EMAIL || 'K Prestige <onboarding@resend.dev>';
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'K Prestige <inscription@k-prestige.com>';
 
   const htmlContent = `
     <!DOCTYPE html>
