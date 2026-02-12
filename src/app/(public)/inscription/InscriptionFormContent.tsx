@@ -692,6 +692,9 @@ export default function InscriptionFormContent() {
               <p className="text-[#8B7355] text-sm text-center">
                 💡 <strong>Gardez ce numéro précieusement !</strong> Il vous permettra de reprendre votre inscription à tout moment.
               </p>
+              <p className="text-[#8B7355]/80 text-xs text-center mt-1">
+                📧 Un email vous a été envoyé avec ce code. <strong>Pensez à vérifier vos spams</strong> et ajoutez inscription@k-prestige.com à vos contacts.
+              </p>
             </div>
           )}
 
