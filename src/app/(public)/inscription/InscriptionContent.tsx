@@ -792,12 +792,12 @@ export default function InscriptionFormContent() {
                 </div>
               )}
 
-              {/* Étape 2: Composition du groupe */}
+              {/* Étape 2: Composition de la famille */}
               {currentStep === 2 && (
                 <div className="space-y-6 animate-fadeIn">
                   <div className="mb-8">
                     <h2 className="text-2xl md:text-3xl text-gray-800" style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}>
-                      Composition du groupe
+                      Composition de la famille
                     </h2>
                     <p className="text-gray-500 mt-2">Détails des participants à votre séjour</p>
                   </div>
@@ -1336,7 +1336,7 @@ export default function InscriptionFormContent() {
                   <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
                     <h4 className="text-sm font-semibold text-[#C9A227] uppercase tracking-wide mb-4 flex items-center gap-2">
                       <Users className="w-4 h-4" />
-                      Composition du groupe
+                      Composition de la famille
                     </h4>
                     <div className="flex flex-wrap gap-3">
                       <span className="px-4 py-2 bg-[#C9A227]/10 rounded-xl text-sm font-semibold text-gray-700">
