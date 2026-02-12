@@ -239,6 +239,7 @@ export default function InscriptionFormContent() {
         body: JSON.stringify({
           action: 'update',
           code: dossierCode,
+          mondayItemId,
           formData,
           currentStep,
           email: formData.email,
@@ -252,7 +253,7 @@ export default function InscriptionFormContent() {
     } finally {
       setIsSaving(false);
     }
-  }, [dossierCode, formData, currentStep]);
+  }, [dossierCode, mondayItemId, formData, currentStep]);
 
   // Sauvegarde automatique quand on change d'étape
   useEffect(() => {

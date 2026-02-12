@@ -52,6 +52,117 @@ async function createMondayDraft(nomPrenom: string, email: string, telephone: st
   }
 }
 
+// Mettre à jour l'item Monday avec les infos en cours (navettes, composition, etc.)
+interface FormDataType {
+  navetteChoix?: string;
+  dateArrivee?: string;
+  heureArrivee?: string;
+  volArrivee?: string;
+  dateRetour?: string;
+  heureDepart?: string;
+  volDepart?: string;
+  nbAdultes?: number;
+  nbBebe?: number;
+  nbEnfants3ans?: number;
+  nbEnfants4a6?: number;
+  nbEnfants7a11?: number;
+  nbPersonnesTotal?: string;
+}
+
+async function updateMondayDraft(mondayItemId: string, formData: FormDataType) {
+  try {
+    const columnValues: Record<string, unknown> = {};
+
+    // Navettes
+    if (formData.navetteChoix !== undefined) {
+      columnValues[MONDAY_COLUMNS.navetteChoix] = { index: parseInt(formData.navetteChoix) };
+    }
+
+    // Dates et infos navette arrivée
+    if (formData.dateArrivee) {
+      columnValues[MONDAY_COLUMNS.dateArrivee] = { date: formData.dateArrivee };
+    }
+    if (formData.heureArrivee) {
+      columnValues[MONDAY_COLUMNS.heureArrivee] = formData.heureArrivee;
+    }
+    if (formData.volArrivee) {
+      columnValues[MONDAY_COLUMNS.volArrivee] = formData.volArrivee;
+    }
+
+    // Dates et infos navette retour
+    if (formData.dateRetour) {
+      columnValues[MONDAY_COLUMNS.dateRetour] = { date: formData.dateRetour };
+    }
+    if (formData.heureDepart) {
+      columnValues[MONDAY_COLUMNS.heureDepart] = formData.heureDepart;
+    }
+    if (formData.volDepart) {
+      columnValues[MONDAY_COLUMNS.volDepart] = formData.volDepart;
+    }
+
+    // Composition groupe
+    if (formData.nbAdultes) {
+      columnValues[MONDAY_COLUMNS.nbAdultes] = String(formData.nbAdultes);
+    }
+    if (formData.nbBebe) {
+      columnValues[MONDAY_COLUMNS.nbBebe] = String(formData.nbBebe);
+    }
+    if (formData.nbEnfants3ans) {
+      columnValues[MONDAY_COLUMNS.nbEnfants3ans] = String(formData.nbEnfants3ans);
+    }
+    if (formData.nbEnfants4a6) {
+      columnValues[MONDAY_COLUMNS.nbEnfants4a6] = String(formData.nbEnfants4a6);
+    }
+    if (formData.nbEnfants7a11) {
+      columnValues[MONDAY_COLUMNS.nbEnfants7a11] = String(formData.nbEnfants7a11);
+    }
+
+    // Nombre de personnes total
+    if (formData.nbPersonnesTotal) {
+      const nbPersonnesIndex = MONDAY_OPTIONS.nbPersonnes[formData.nbPersonnesTotal as keyof typeof MONDAY_OPTIONS.nbPersonnes];
+      if (nbPersonnesIndex !== undefined) {
+        columnValues[MONDAY_COLUMNS.nbPersonnesTotal] = { index: parseInt(nbPersonnesIndex) };
+      }
+    }
+
+    // Si aucune donnée à mettre à jour, on ne fait rien
+    if (Object.keys(columnValues).length === 0) {
+      return true;
+    }
+
+    const mutation = `
+      mutation {
+        change_multiple_column_values (
+          board_id: ${MONDAY_CONFIG.BOARD_ID},
+          item_id: ${mondayItemId},
+          column_values: ${JSON.stringify(JSON.stringify(columnValues))}
+        ) {
+          id
+        }
+      }
+    `;
+
+    const response = await fetch(MONDAY_CONFIG.API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': MONDAY_CONFIG.API_KEY,
+      },
+      body: JSON.stringify({ query: mutation }),
+    });
+
+    const result = await response.json();
+    if (result.errors) {
+      console.error('Erreur update Monday:', result.errors);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error('Erreur update Monday:', error);
+    return false;
+  }
+}
+
 // Génération d'un code de dossier unique (format: KP + 2 chiffres année + 3 chiffres aléatoires)
 function generateDossierCode(): string {
   const year = new Date().getFullYear().toString().slice(-2);
@@ -147,6 +258,11 @@ export async function POST(request: NextRequest) {
       if (error) {
         console.error('Erreur mise à jour brouillon:', error);
         return NextResponse.json({ error: 'Erreur lors de la sauvegarde' }, { status: 500 });
+      }
+
+      // Mettre à jour Monday avec les infos navettes et composition (si mondayItemId fourni)
+      if (body.mondayItemId && formData) {
+        await updateMondayDraft(body.mondayItemId, formData);
       }
 
       return NextResponse.json({ success: true, message: 'Sauvegardé' });
