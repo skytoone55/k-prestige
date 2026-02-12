@@ -12,6 +12,13 @@ const supabase = createClient(
 // Créer un item Monday avec statut "EN COURS"
 async function createMondayDraft(nomPrenom: string, email: string, telephone: string, dossierCode: string) {
   try {
+    // Lire la clé API directement pour s'assurer qu'elle est disponible
+    const mondayApiKey = process.env.MONDAY_API_KEY;
+    if (!mondayApiKey) {
+      console.error('MONDAY_API_KEY non configurée');
+      return null;
+    }
+
     const columnValues: Record<string, unknown> = {
       [MONDAY_COLUMNS.status]: { index: parseInt(MONDAY_OPTIONS.statut.EN_COURS) },
       [MONDAY_COLUMNS.email]: { email, text: email },
@@ -35,16 +42,25 @@ async function createMondayDraft(nomPrenom: string, email: string, telephone: st
       }
     `;
 
+    console.log('Création Monday draft pour:', nomPrenom, 'code:', dossierCode);
+
     const response = await fetch(MONDAY_CONFIG.API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': MONDAY_CONFIG.API_KEY,
+        'Authorization': mondayApiKey,
       },
       body: JSON.stringify({ query: mutation }),
     });
 
     const result = await response.json();
+
+    if (result.errors) {
+      console.error('Erreur API Monday:', JSON.stringify(result.errors));
+      return null;
+    }
+
+    console.log('Monday item créé:', result.data?.create_item?.id);
     return result.data?.create_item?.id || null;
   } catch (error) {
     console.error('Erreur création Monday:', error);
@@ -71,6 +87,13 @@ interface FormDataType {
 
 async function updateMondayDraft(mondayItemId: string, formData: FormDataType) {
   try {
+    // Lire la clé API directement
+    const mondayApiKey = process.env.MONDAY_API_KEY;
+    if (!mondayApiKey) {
+      console.error('MONDAY_API_KEY non configurée pour update');
+      return false;
+    }
+
     const columnValues: Record<string, unknown> = {};
 
     // Navettes
@@ -142,20 +165,23 @@ async function updateMondayDraft(mondayItemId: string, formData: FormDataType) {
       }
     `;
 
+    console.log('Update Monday draft:', mondayItemId, 'colonnes:', Object.keys(columnValues));
+
     const response = await fetch(MONDAY_CONFIG.API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': MONDAY_CONFIG.API_KEY,
+        'Authorization': mondayApiKey,
       },
       body: JSON.stringify({ query: mutation }),
     });
 
     const result = await response.json();
     if (result.errors) {
-      console.error('Erreur update Monday:', result.errors);
+      console.error('Erreur update Monday:', JSON.stringify(result.errors));
       return false;
     }
+    console.log('Monday update réussi pour item:', mondayItemId);
     return true;
   } catch (error) {
     console.error('Erreur update Monday:', error);
