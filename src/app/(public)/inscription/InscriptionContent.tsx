@@ -101,6 +101,7 @@ const STEPS = [
   { id: 4, title: 'Voyageurs', shortTitle: 'Voyageurs', icon: UserCheck },
   { id: 5, title: 'Repas', shortTitle: 'Repas', icon: Utensils },
   { id: 6, title: 'Infos', shortTitle: 'Infos', icon: MessageSquare },
+  { id: 7, title: 'Récap', shortTitle: 'Récap', icon: CheckCircle },
 ];
 
 // Validation email simple
@@ -285,6 +286,7 @@ export default function InscriptionContent() {
       case 4: return formData.participants.every(p => p.nom && p.dateNaissance);
       case 5: return !!formData.questionnaireOuiNon;
       case 6: return true;
+      case 7: return true;
       default: return false;
     }
   };
@@ -1029,133 +1031,155 @@ export default function InscriptionContent() {
                       placeholder="Demandes particulières, célébrations, contraintes..."
                     />
                   </div>
+                </div>
+              )}
 
-                  {/* Récapitulatif complet */}
-                  <div className="bg-gradient-to-br from-[#C9A227]/5 to-[#D4AF37]/10 rounded-2xl p-6 border border-[#C9A227]/20">
-                    <h3 className="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2" style={{ fontFamily: 'var(--font-cormorant)' }}>
-                      <CheckCircle className="w-5 h-5 text-[#C9A227]" />
+              {/* Étape 7: Récapitulatif */}
+              {currentStep === 7 && (
+                <div className="space-y-6 animate-fadeIn">
+                  <div className="mb-8">
+                    <h2 className="text-2xl md:text-3xl text-gray-800" style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}>
                       Récapitulatif de votre inscription
-                    </h3>
+                    </h2>
+                    <p className="text-gray-500 mt-2">Vérifiez vos informations avant d'envoyer</p>
+                  </div>
 
-                    {/* Contact */}
-                    <div className="mb-6">
-                      <h4 className="text-sm font-semibold text-[#C9A227] uppercase tracking-wide mb-3">Contact</h4>
-                      <div className="bg-white/60 rounded-xl p-4 space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-gray-500">Nom</span>
-                          <span className="font-medium text-gray-800">{formData.nomPrenom}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-500">Email</span>
-                          <span className="font-medium text-gray-800">{formData.email}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-500">Téléphone</span>
-                          <span className="font-medium text-gray-800">{formData.telephone}</span>
-                        </div>
-                        {formData.numDevis && (
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">N° Devis</span>
-                            <span className="font-medium text-gray-800">{formData.numDevis}</span>
-                          </div>
-                        )}
+                  {/* Contact */}
+                  <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                    <h4 className="text-sm font-semibold text-[#C9A227] uppercase tracking-wide mb-4 flex items-center gap-2">
+                      <User className="w-4 h-4" />
+                      Contact
+                    </h4>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                        <span className="text-gray-500">Nom complet</span>
+                        <span className="font-medium text-gray-800">{formData.nomPrenom}</span>
                       </div>
-                    </div>
-
-                    {/* Groupe */}
-                    <div className="mb-6">
-                      <h4 className="text-sm font-semibold text-[#C9A227] uppercase tracking-wide mb-3">Composition du groupe</h4>
-                      <div className="bg-white/60 rounded-xl p-4">
-                        <div className="flex flex-wrap gap-3">
-                          <span className="px-3 py-1 bg-[#C9A227]/10 rounded-full text-sm font-medium text-gray-700">
-                            {formData.nbAdultes} adulte{formData.nbAdultes > 1 ? 's' : ''}
-                          </span>
-                          {formData.nbEnfants7a11 > 0 && (
-                            <span className="px-3 py-1 bg-blue-50 rounded-full text-sm font-medium text-gray-700">
-                              {formData.nbEnfants7a11} enfant{formData.nbEnfants7a11 > 1 ? 's' : ''} (7-11 ans)
-                            </span>
-                          )}
-                          {formData.nbEnfants4a6 > 0 && (
-                            <span className="px-3 py-1 bg-green-50 rounded-full text-sm font-medium text-gray-700">
-                              {formData.nbEnfants4a6} enfant{formData.nbEnfants4a6 > 1 ? 's' : ''} (4-6 ans)
-                            </span>
-                          )}
-                          {formData.nbEnfants3ans > 0 && (
-                            <span className="px-3 py-1 bg-purple-50 rounded-full text-sm font-medium text-gray-700">
-                              {formData.nbEnfants3ans} enfant{formData.nbEnfants3ans > 1 ? 's' : ''} (-3 ans)
-                            </span>
-                          )}
-                          {formData.nbBebe > 0 && (
-                            <span className="px-3 py-1 bg-pink-50 rounded-full text-sm font-medium text-gray-700">
-                              {formData.nbBebe} bébé{formData.nbBebe > 1 ? 's' : ''}
-                            </span>
-                          )}
+                      <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                        <span className="text-gray-500">Email</span>
+                        <span className="font-medium text-gray-800">{formData.email}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                        <span className="text-gray-500">Téléphone</span>
+                        <span className="font-medium text-gray-800">{formData.telephone}</span>
+                      </div>
+                      {formData.numDevis && (
+                        <div className="flex justify-between items-center py-2">
+                          <span className="text-gray-500">N° Devis</span>
+                          <span className="font-medium text-gray-800">{formData.numDevis}</span>
                         </div>
-                      </div>
+                      )}
                     </div>
+                  </div>
 
-                    {/* Navettes */}
-                    <div className="mb-6">
-                      <h4 className="text-sm font-semibold text-[#C9A227] uppercase tracking-wide mb-3">Navettes aéroport</h4>
-                      <div className="bg-white/60 rounded-xl p-4 space-y-3">
-                        {formData.navetteChoix === '3' ? (
-                          <p className="text-gray-600 italic">Pas de navette demandée</p>
-                        ) : (
-                          <>
-                            {(formData.navetteChoix === '0' || formData.navetteChoix === '2') && (
-                              <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
-                                <Plane className="w-5 h-5 text-green-600 mt-0.5" />
-                                <div>
-                                  <p className="font-semibold text-gray-800">Arrivée - 31 Mars 2026</p>
-                                  <p className="text-sm text-gray-600">Vol {formData.volArrivee} à {formData.heureArrivee}</p>
-                                </div>
-                              </div>
-                            )}
-                            {(formData.navetteChoix === '1' || formData.navetteChoix === '2') && (
-                              <div className="flex items-start gap-3 p-3 bg-orange-50 rounded-lg">
-                                <Plane className="w-5 h-5 text-orange-600 mt-0.5 rotate-45" />
-                                <div>
-                                  <p className="font-semibold text-gray-800">Départ - 12 Avril 2026</p>
-                                  <p className="text-sm text-gray-600">Vol {formData.volDepart} à {formData.heureDepart}</p>
-                                </div>
-                              </div>
-                            )}
-                          </>
-                        )}
-                      </div>
+                  {/* Groupe */}
+                  <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                    <h4 className="text-sm font-semibold text-[#C9A227] uppercase tracking-wide mb-4 flex items-center gap-2">
+                      <Users className="w-4 h-4" />
+                      Composition du groupe
+                    </h4>
+                    <div className="flex flex-wrap gap-3">
+                      <span className="px-4 py-2 bg-[#C9A227]/10 rounded-xl text-sm font-semibold text-gray-700">
+                        {formData.nbAdultes} adulte{formData.nbAdultes > 1 ? 's' : ''}
+                      </span>
+                      {formData.nbEnfants7a11 > 0 && (
+                        <span className="px-4 py-2 bg-blue-50 rounded-xl text-sm font-semibold text-gray-700">
+                          {formData.nbEnfants7a11} enfant{formData.nbEnfants7a11 > 1 ? 's' : ''} (7-11 ans)
+                        </span>
+                      )}
+                      {formData.nbEnfants4a6 > 0 && (
+                        <span className="px-4 py-2 bg-green-50 rounded-xl text-sm font-semibold text-gray-700">
+                          {formData.nbEnfants4a6} enfant{formData.nbEnfants4a6 > 1 ? 's' : ''} (4-6 ans)
+                        </span>
+                      )}
+                      {formData.nbEnfants3ans > 0 && (
+                        <span className="px-4 py-2 bg-purple-50 rounded-xl text-sm font-semibold text-gray-700">
+                          {formData.nbEnfants3ans} enfant{formData.nbEnfants3ans > 1 ? 's' : ''} (-3 ans)
+                        </span>
+                      )}
+                      {formData.nbBebe > 0 && (
+                        <span className="px-4 py-2 bg-pink-50 rounded-xl text-sm font-semibold text-gray-700">
+                          {formData.nbBebe} bébé{formData.nbBebe > 1 ? 's' : ''}
+                        </span>
+                      )}
                     </div>
+                  </div>
 
-                    {/* Voyageurs */}
-                    <div className="mb-6">
-                      <h4 className="text-sm font-semibold text-[#C9A227] uppercase tracking-wide mb-3">Voyageurs ({formData.participants.length})</h4>
-                      <div className="bg-white/60 rounded-xl p-4">
-                        <div className="space-y-2">
-                          {formData.participants.map((p, i) => (
-                            <div key={i} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
-                              <span className="font-medium text-gray-800">{p.nom}</span>
-                              <span className="text-sm text-gray-500">{p.dateNaissance}</span>
+                  {/* Navettes */}
+                  <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                    <h4 className="text-sm font-semibold text-[#C9A227] uppercase tracking-wide mb-4 flex items-center gap-2">
+                      <Bus className="w-4 h-4" />
+                      Navettes aéroport
+                    </h4>
+                    {formData.navetteChoix === '3' ? (
+                      <p className="text-gray-500 italic">Pas de navette demandée</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {(formData.navetteChoix === '0' || formData.navetteChoix === '2') && (
+                          <div className="flex items-center gap-4 p-4 bg-green-50 rounded-xl">
+                            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                              <Plane className="w-6 h-6 text-green-600" />
                             </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Passeports uploadés */}
-                    {uploadedFiles.length > 0 && (
-                      <div>
-                        <h4 className="text-sm font-semibold text-[#C9A227] uppercase tracking-wide mb-3">Passeports ({uploadedFiles.length})</h4>
-                        <div className="bg-white/60 rounded-xl p-4">
-                          <div className="flex flex-wrap gap-2">
-                            {uploadedFiles.map((file, i) => (
-                              <span key={i} className="px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm flex items-center gap-1">
-                                <Check className="w-3 h-3" />
-                                {file.name}
-                              </span>
-                            ))}
+                            <div>
+                              <p className="font-semibold text-gray-800 text-lg">Arrivée - 31 Mars 2026</p>
+                              <p className="text-gray-600">Vol <span className="font-medium">{formData.volArrivee}</span> à <span className="font-medium">{formData.heureArrivee}</span></p>
+                            </div>
                           </div>
-                        </div>
+                        )}
+                        {(formData.navetteChoix === '1' || formData.navetteChoix === '2') && (
+                          <div className="flex items-center gap-4 p-4 bg-orange-50 rounded-xl">
+                            <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                              <Plane className="w-6 h-6 text-orange-600 rotate-45" />
+                            </div>
+                            <div>
+                              <p className="font-semibold text-gray-800 text-lg">Départ - 12 Avril 2026</p>
+                              <p className="text-gray-600">Vol <span className="font-medium">{formData.volDepart}</span> à <span className="font-medium">{formData.heureDepart}</span></p>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
+                  </div>
+
+                  {/* Voyageurs */}
+                  <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                    <h4 className="text-sm font-semibold text-[#C9A227] uppercase tracking-wide mb-4 flex items-center gap-2">
+                      <UserCheck className="w-4 h-4" />
+                      Voyageurs ({formData.participants.length})
+                    </h4>
+                    <div className="space-y-2">
+                      {formData.participants.map((p, i) => (
+                        <div key={i} className="flex justify-between items-center py-3 px-4 bg-gray-50 rounded-xl">
+                          <span className="font-medium text-gray-800">{p.nom}</span>
+                          <span className="text-sm text-gray-500 bg-white px-3 py-1 rounded-lg">{p.dateNaissance}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Passeports uploadés */}
+                  {uploadedFiles.length > 0 && (
+                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                      <h4 className="text-sm font-semibold text-[#C9A227] uppercase tracking-wide mb-4 flex items-center gap-2">
+                        <FileIcon className="w-4 h-4" />
+                        Passeports ({uploadedFiles.length})
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {uploadedFiles.map((file, i) => (
+                          <span key={i} className="px-4 py-2 bg-green-50 text-green-700 rounded-xl text-sm font-medium flex items-center gap-2">
+                            <Check className="w-4 h-4" />
+                            {file.name}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Message de confirmation */}
+                  <div className="bg-gradient-to-r from-[#C9A227]/10 to-[#D4AF37]/10 rounded-2xl p-6 border border-[#C9A227]/20">
+                    <p className="text-center text-gray-700">
+                      En cliquant sur <span className="font-semibold">"Envoyer l'inscription"</span>, vous confirmez l'exactitude des informations ci-dessus.
+                    </p>
                   </div>
                 </div>
               )}
