@@ -171,7 +171,7 @@ function StyledSelect({
   );
 }
 
-export default function InscriptionContent() {
+export default function InscriptionFormContent() {
   const { dir } = useLanguage();
   const [hasStarted, setHasStarted] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);

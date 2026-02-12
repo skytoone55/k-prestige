@@ -26,8 +26,21 @@ const heebo = Heebo({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://kprestige.com'),
   title: "K PRESTIGE | Pessah 2026 - Cabogata Beach Hotel 5★",
   description: "Séjour Pessah 2026 au Cabogata Beach Hotel 5★ en Espagne. Glatt Kasher Laméhadrine. 31 Mars - 10 Avril 2026.",
+  openGraph: {
+    siteName: 'K Prestige',
+    type: 'website',
+    images: [
+      {
+        url: '/images/hero/PANORAMIC.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'K Prestige - Pessah 2026',
+      },
+    ],
+  },
   icons: {
     icon: [
       { url: '/icon.png', sizes: '32x32', type: 'image/png' },

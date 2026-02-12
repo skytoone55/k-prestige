@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import InscriptionContent from './InscriptionContent';
+import InscriptionFormContent from './InscriptionFormContent';
 
 export const metadata: Metadata = {
   title: 'Inscription Pessah 2026 | K Prestige',
@@ -20,14 +20,8 @@ export const metadata: Metadata = {
     siteName: 'K Prestige',
     locale: 'fr_FR',
   },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Inscription Pessah 2026 | K Prestige',
-    description: 'Inscrivez-vous pour Pessah 2026 avec K Prestige.',
-    images: ['https://kprestige.com/images/hero/PANORAMIC.jpg'],
-  },
 };
 
-export default function InscriptionPage() {
-  return <InscriptionContent />;
+export default function InscriptionTestPage() {
+  return <InscriptionFormContent />;
 }

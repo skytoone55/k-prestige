@@ -1392,6 +1392,180 @@ export const translations = {
   // ============================================
   // HILLOULA DETAIL PAGE
   // ============================================
+  // ============================================
+  // INSCRIPTION PAGE
+  // ============================================
+  inscription: {
+    pageTitle: {
+      fr: "Formulaire d'inscription",
+      en: 'Registration Form',
+      es: 'Formulario de inscripción',
+      he: 'טופס הרשמה',
+    },
+    pageSubtitle: {
+      fr: 'Complétez votre inscription pour le séjour Pessah 2026 au Cabogata Beach Hotel 5★',
+      en: 'Complete your registration for the Passover 2026 stay at Cabogata Beach Hotel 5★',
+      es: 'Complete su inscripción para la estancia de Pésaj 2026 en el Cabogata Beach Hotel 5★',
+      he: 'השלם את ההרשמה שלך לשהיית פסח 2026 במלון קבוגאטה ביץ\' 5★',
+    },
+    importantInfo: {
+      fr: 'Informations importantes',
+      en: 'Important Information',
+      es: 'Información importante',
+      he: 'מידע חשוב',
+    },
+    oneFormPerFamily: {
+      fr: 'Merci de remplir un formulaire par famille.',
+      en: 'Please fill out one form per family.',
+      es: 'Por favor complete un formulario por familia.',
+      he: 'נא למלא טופס אחד לכל משפחה.',
+    },
+    familyExplanation: {
+      fr: 'Chaque famille (parents + enfants) doit compléter son propre formulaire, même si la réservation a été faite par une seule personne pour plusieurs proches.',
+      en: 'Each family (parents + children) must complete their own form, even if the reservation was made by one person for several relatives.',
+      es: 'Cada familia (padres + hijos) debe completar su propio formulario, incluso si la reserva fue realizada por una sola persona para varios familiares.',
+      he: 'כל משפחה (הורים + ילדים) חייבת למלא טופס משלה, גם אם ההזמנה בוצעה על ידי אדם אחד עבור מספר קרובים.',
+    },
+    ifYouReservedFor: {
+      fr: 'Si vous avez réservé pour :',
+      en: 'If you have reserved for:',
+      es: 'Si ha reservado para:',
+      he: 'אם הזמנת עבור:',
+    },
+    yourParents: {
+      fr: 'Vos parents',
+      en: 'Your parents',
+      es: 'Sus padres',
+      he: 'ההורים שלך',
+    },
+    yourChildren: {
+      fr: 'Vos enfants',
+      en: 'Your children',
+      es: 'Sus hijos',
+      he: 'הילדים שלך',
+    },
+    cousins: {
+      fr: 'Des cousins',
+      en: 'Cousins',
+      es: 'Primos',
+      he: 'בני דודים',
+    },
+    anotherFamily: {
+      fr: 'Une autre famille',
+      en: 'Another family',
+      es: 'Otra familia',
+      he: 'משפחה אחרת',
+    },
+    separateFormRequired: {
+      fr: 'Alors chaque foyer doit remplir un formulaire séparé avec ses propres informations (noms, dates de séjour, passeports, etc.).',
+      en: 'Then each household must fill out a separate form with their own information (names, stay dates, passports, etc.).',
+      es: 'Entonces cada hogar debe completar un formulario separado con su propia información (nombres, fechas de estancia, pasaportes, etc.).',
+      he: 'אז כל משק בית חייב למלא טופס נפרד עם המידע שלו (שמות, תאריכי שהייה, דרכונים וכו\').',
+    },
+    organizationNote: {
+      fr: "Cela nous permet d'organiser correctement les chambres, transferts et formalités administratives.",
+      en: 'This allows us to properly organize rooms, transfers, and administrative formalities.',
+      es: 'Esto nos permite organizar correctamente las habitaciones, traslados y trámites administrativos.',
+      he: 'זה מאפשר לנו לארגן כראוי חדרים, העברות ופורמליות מנהליות.',
+    },
+    thanksForCooperation: {
+      fr: 'Merci pour votre collaboration.',
+      en: 'Thank you for your cooperation.',
+      es: 'Gracias por su colaboración.',
+      he: 'תודה על שיתוף הפעולה.',
+    },
+    teamSignature: {
+      fr: "L'équipe K PRESTIGE",
+      en: 'The K PRESTIGE Team',
+      es: 'El equipo K PRESTIGE',
+      he: 'צוות K PRESTIGE',
+    },
+    startButton: {
+      fr: 'Commencer',
+      en: 'Start',
+      es: 'Comenzar',
+      he: 'התחל',
+    },
+    whatsIncluded: {
+      fr: 'Ce qui est inclus',
+      en: "What's included",
+      es: 'Qué está incluido',
+      he: 'מה כלול',
+    },
+    fullBoardKosher: {
+      fr: 'Pension complète cachère Glatt',
+      en: 'Full board Glatt Kosher',
+      es: 'Pensión completa Glatt Kosher',
+      he: 'פנסיון מלא גלאט כשר',
+    },
+    luxuryAccommodation: {
+      fr: 'Hébergement en hôtel de luxe',
+      en: 'Luxury hotel accommodation',
+      es: 'Alojamiento en hotel de lujo',
+      he: 'לינה במלון יוקרה',
+    },
+    entertainmentShows: {
+      fr: 'Animations et spectacles',
+      en: 'Entertainment and shows',
+      es: 'Animaciones y espectáculos',
+      he: 'בידור ומופעים',
+    },
+    kidsProgram: {
+      fr: 'Programme pour enfants',
+      en: 'Kids program',
+      es: 'Programa para niños',
+      he: 'תוכנית לילדים',
+    },
+    communitySeders: {
+      fr: 'Sedarim communautaires',
+      en: 'Community Seders',
+      es: 'Sedarim comunitarios',
+      he: 'סדרים קהילתיים',
+    },
+    onSiteSynagogue: {
+      fr: 'Synagogue sur place',
+      en: 'On-site synagogue',
+      es: 'Sinagoga en el lugar',
+      he: 'בית כנסת במקום',
+    },
+    needHelp: {
+      fr: "Besoin d'aide ?",
+      en: 'Need help?',
+      es: '¿Necesita ayuda?',
+      he: 'צריך עזרה?',
+    },
+    teamAvailable: {
+      fr: 'Notre équipe est disponible pour répondre à toutes vos questions',
+      en: 'Our team is available to answer all your questions',
+      es: 'Nuestro equipo está disponible para responder a todas sus preguntas',
+      he: 'הצוות שלנו זמין לענות על כל השאלות שלך',
+    },
+    phoneLabel: {
+      fr: 'Téléphone',
+      en: 'Phone',
+      es: 'Teléfono',
+      he: 'טלפון',
+    },
+    whatsappLabel: {
+      fr: 'WhatsApp',
+      en: 'WhatsApp',
+      es: 'WhatsApp',
+      he: 'WhatsApp',
+    },
+    contactUs: {
+      fr: 'Nous contacter',
+      en: 'Contact us',
+      es: 'Contáctenos',
+      he: 'צור קשר',
+    },
+    emailLabel: {
+      fr: 'Email',
+      en: 'Email',
+      es: 'Correo electrónico',
+      he: 'אימייל',
+    },
+  },
+
   hilloulaDetail: {
     photoAVenir: {
       fr: 'Photo à venir',
