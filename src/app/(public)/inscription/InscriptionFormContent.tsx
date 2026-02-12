@@ -228,18 +228,21 @@ export default function InscriptionFormContent() {
   }, [dossierCode, formData, currentStep]);
 
   // Sauvegarder le dossier
-  const saveDossier = useCallback(async () => {
+  const saveDossier = useCallback(async (forceMonday?: string) => {
     if (!dossierCode) return;
+
+    const mondayId = forceMonday || mondayItemId;
+    console.log('[saveDossier] code:', dossierCode, 'mondayId:', mondayId, 'step:', currentStep);
 
     setIsSaving(true);
     try {
-      await fetch('/api/inscription/draft', {
+      const response = await fetch('/api/inscription/draft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'update',
           code: dossierCode,
-          mondayItemId,
+          mondayItemId: mondayId,
           formData,
           currentStep,
           email: formData.email,
@@ -247,6 +250,8 @@ export default function InscriptionFormContent() {
           nomPrenom: formData.nomPrenom,
         }),
       });
+      const result = await response.json();
+      console.log('[saveDossier] result:', result);
       setLastSaved(new Date());
     } catch (err) {
       console.error('Erreur sauvegarde:', err);
@@ -264,14 +269,19 @@ export default function InscriptionFormContent() {
 
   // Sauvegarde automatique avec debounce quand formData change (pour sync Monday en temps réel)
   useEffect(() => {
-    if (!dossierCode || !mondayItemId || currentStep <= 1) return;
+    // Ne pas déclencher si pas de dossier ou pas de mondayItemId
+    if (!dossierCode || !mondayItemId) {
+      console.log('[debounce] skip - dossierCode:', dossierCode, 'mondayItemId:', mondayItemId);
+      return;
+    }
 
     const timeoutId = setTimeout(() => {
+      console.log('[debounce] trigger saveDossier');
       saveDossier();
     }, 3000); // Sauvegarde 3 secondes après le dernier changement
 
     return () => clearTimeout(timeoutId);
-  }, [formData, dossierCode, mondayItemId, currentStep, saveDossier]);
+  }, [formData, dossierCode, mondayItemId, saveDossier]);
 
   // Reprendre un dossier existant
   const resumeDossier = async () => {
