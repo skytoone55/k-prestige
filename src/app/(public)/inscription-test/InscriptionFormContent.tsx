@@ -68,7 +68,7 @@ const initialFormData: FormData = {
   nomPrenom: '',
   telephone: '',
   email: '',
-  nbAdultes: 1,
+  nbAdultes: 0,
   nbBebe: 0,
   nbEnfants3ans: 0,
   nbEnfants4a6: 0,
@@ -559,36 +559,41 @@ export default function InscriptionFormContent() {
                       label="Adultes"
                       required
                       type="number"
-                      min={1}
-                      value={formData.nbAdultes}
-                      onChange={(e) => setFormData({ ...formData, nbAdultes: parseInt(e.target.value) || 1 })}
+                      min={0}
+                      placeholder=""
+                      value={formData.nbAdultes || ''}
+                      onChange={(e) => setFormData({ ...formData, nbAdultes: parseInt(e.target.value) || 0 })}
                     />
                     <StyledInput
                       label="Bébés (0-2 ans)"
                       type="number"
                       min={0}
-                      value={formData.nbBebe}
+                      placeholder=""
+                      value={formData.nbBebe || ''}
                       onChange={(e) => setFormData({ ...formData, nbBebe: parseInt(e.target.value) || 0 })}
                     />
                     <StyledInput
                       label="Enfants 3 ans"
                       type="number"
                       min={0}
-                      value={formData.nbEnfants3ans}
+                      placeholder=""
+                      value={formData.nbEnfants3ans || ''}
                       onChange={(e) => setFormData({ ...formData, nbEnfants3ans: parseInt(e.target.value) || 0 })}
                     />
                     <StyledInput
                       label="Enfants 4-6 ans"
                       type="number"
                       min={0}
-                      value={formData.nbEnfants4a6}
+                      placeholder=""
+                      value={formData.nbEnfants4a6 || ''}
                       onChange={(e) => setFormData({ ...formData, nbEnfants4a6: parseInt(e.target.value) || 0 })}
                     />
                     <StyledInput
                       label="Enfants 7-11 ans"
                       type="number"
                       min={0}
-                      value={formData.nbEnfants7a11}
+                      placeholder=""
+                      value={formData.nbEnfants7a11 || ''}
                       onChange={(e) => setFormData({ ...formData, nbEnfants7a11: parseInt(e.target.value) || 0 })}
                     />
                   </div>
