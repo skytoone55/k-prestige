@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { PublicNavigation } from '@/components/layout/PublicNavigation';
 import { Footer } from '@/components/layout/Footer';
@@ -22,7 +22,10 @@ import {
   File as FileIcon,
   Plane,
   Calendar,
-  Clock
+  Clock,
+  Copy,
+  RefreshCw,
+  FolderOpen
 } from 'lucide-react';
 import { useLanguage } from '@/lib/LanguageContext';
 import { cn } from '@/lib/utils';
@@ -172,7 +175,7 @@ function StyledSelect({
   );
 }
 
-export default function InscriptionContent() {
+export default function InscriptionFormContent() {
   const { dir } = useLanguage();
   const [hasStarted, setHasStarted] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
@@ -182,6 +185,122 @@ export default function InscriptionContent() {
   const [error, setError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<{ name: string; url: string }[]>([]);
+
+  // Système de dossier
+  const [dossierCode, setDossierCode] = useState<string | null>(null);
+  const [isLoadingDossier, setIsLoadingDossier] = useState(false);
+  const [showResumeModal, setShowResumeModal] = useState(false);
+  const [resumeCode, setResumeCode] = useState('');
+  const [resumeError, setResumeError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [codeCopied, setCodeCopied] = useState(false);
+
+  // Créer un nouveau dossier après l'étape 1
+  const createDossier = useCallback(async () => {
+    if (dossierCode) return; // Déjà créé
+
+    try {
+      const response = await fetch('/api/inscription/draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'create',
+          formData,
+          currentStep,
+          email: formData.email,
+          telephone: formData.telephone,
+          nomPrenom: formData.nomPrenom,
+        }),
+      });
+      const result = await response.json();
+      if (result.success) {
+        setDossierCode(result.code);
+        setLastSaved(new Date());
+      }
+    } catch (err) {
+      console.error('Erreur création dossier:', err);
+    }
+  }, [dossierCode, formData, currentStep]);
+
+  // Sauvegarder le dossier
+  const saveDossier = useCallback(async () => {
+    if (!dossierCode) return;
+
+    setIsSaving(true);
+    try {
+      await fetch('/api/inscription/draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update',
+          code: dossierCode,
+          formData,
+          currentStep,
+          email: formData.email,
+          telephone: formData.telephone,
+          nomPrenom: formData.nomPrenom,
+        }),
+      });
+      setLastSaved(new Date());
+    } catch (err) {
+      console.error('Erreur sauvegarde:', err);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [dossierCode, formData, currentStep]);
+
+  // Sauvegarde automatique quand on change d'étape
+  useEffect(() => {
+    if (dossierCode && currentStep > 1) {
+      saveDossier();
+    }
+  }, [currentStep, dossierCode, saveDossier]);
+
+  // Reprendre un dossier existant
+  const resumeDossier = async () => {
+    if (!resumeCode.trim()) {
+      setResumeError('Veuillez entrer un code de dossier');
+      return;
+    }
+
+    setIsLoadingDossier(true);
+    setResumeError(null);
+
+    try {
+      const response = await fetch(`/api/inscription/draft?code=${resumeCode.toUpperCase()}`);
+      const result = await response.json();
+
+      if (result.success) {
+        setDossierCode(result.code);
+        setFormData(result.formData);
+        setCurrentStep(result.currentStep || 1);
+        if (result.formData.passportUrls?.length > 0) {
+          setUploadedFiles(result.formData.passportUrls.map((url: string) => ({
+            name: url.split('/').pop() || 'passport',
+            url
+          })));
+        }
+        setShowResumeModal(false);
+        setHasStarted(true);
+      } else {
+        setResumeError(result.error || 'Dossier non trouvé');
+      }
+    } catch {
+      setResumeError('Erreur de connexion');
+    } finally {
+      setIsLoadingDossier(false);
+    }
+  };
+
+  // Copier le code
+  const copyCode = () => {
+    if (dossierCode) {
+      navigator.clipboard.writeText(dossierCode);
+      setCodeCopied(true);
+      setTimeout(() => setCodeCopied(false), 2000);
+    }
+  };
 
   const handleNbPersonnesChange = (value: string) => {
     const nb = Math.min(Math.max(parseInt(value) || 1, 1), 8);
@@ -242,7 +361,15 @@ export default function InscriptionContent() {
     setFormData({ ...formData, [field]: [...current, id] });
   };
 
-  const nextStep = () => currentStep < STEPS.length && setCurrentStep(currentStep + 1);
+  const nextStep = async () => {
+    if (currentStep < STEPS.length) {
+      // Créer le dossier après l'étape 1 (quand on a l'email)
+      if (currentStep === 1 && !dossierCode) {
+        await createDossier();
+      }
+      setCurrentStep(currentStep + 1);
+    }
+  };
   const prevStep = () => currentStep > 1 && setCurrentStep(currentStep - 1);
 
   const handleSubmit = async () => {
@@ -256,6 +383,18 @@ export default function InscriptionContent() {
       });
       const result = await response.json();
       if (result.success) {
+        // Marquer le dossier comme soumis
+        if (dossierCode) {
+          await fetch('/api/inscription/draft', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'submit',
+              code: dossierCode,
+              mondayItemId: result.itemId,
+            }),
+          });
+        }
         setIsSuccess(true);
       } else {
         setError(result.error || 'Une erreur est survenue');
@@ -348,20 +487,82 @@ export default function InscriptionContent() {
                 </p>
               </div>
 
-              {/* Bouton commencer */}
-              <div className="text-center">
+              {/* Boutons commencer et reprendre */}
+              <div className="space-y-4">
                 <button
                   onClick={() => setHasStarted(true)}
-                  className="inline-flex items-center justify-center gap-3 px-10 py-4 bg-gradient-to-r from-[#C9A227] to-[#D4AF37]
+                  className="w-full inline-flex items-center justify-center gap-3 px-10 py-4 bg-gradient-to-r from-[#C9A227] to-[#D4AF37]
                            hover:from-[#B8922A] hover:to-[#C9A227] text-white rounded-xl font-medium text-lg
                            transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
-                  Commencer
+                  Nouvelle inscription
                   <ChevronRight className="w-5 h-5" />
+                </button>
+
+                <button
+                  onClick={() => setShowResumeModal(true)}
+                  className="w-full inline-flex items-center justify-center gap-3 px-10 py-4 bg-white border-2 border-[#C9A227]
+                           hover:bg-[#faf9f6] text-[#C9A227] rounded-xl font-medium text-lg
+                           transition-all duration-300"
+                >
+                  <FolderOpen className="w-5 h-5" />
+                  Reprendre une inscription
                 </button>
               </div>
             </div>
           </div>
+
+          {/* Modal reprendre inscription */}
+          {showResumeModal && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-semibold text-gray-800" style={{ fontFamily: 'var(--font-cormorant)' }}>
+                    Reprendre mon inscription
+                  </h3>
+                  <button
+                    onClick={() => { setShowResumeModal(false); setResumeError(null); setResumeCode(''); }}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <p className="text-gray-600 mb-4 text-sm">
+                  Entrez le code de dossier que vous avez reçu par email pour reprendre votre inscription.
+                </p>
+
+                <div className="mb-4">
+                  <input
+                    type="text"
+                    value={resumeCode}
+                    onChange={(e) => setResumeCode(e.target.value.toUpperCase())}
+                    placeholder="Ex: KP26123"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl text-center text-2xl font-mono tracking-widest
+                             focus:outline-none focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]"
+                    maxLength={7}
+                  />
+                </div>
+
+                {resumeError && (
+                  <p className="text-red-500 text-sm mb-4 text-center">{resumeError}</p>
+                )}
+
+                <button
+                  onClick={resumeDossier}
+                  disabled={isLoadingDossier}
+                  className="w-full py-3 bg-gradient-to-r from-[#C9A227] to-[#D4AF37] text-white rounded-xl font-medium
+                           hover:from-[#B8922A] hover:to-[#C9A227] transition-all disabled:opacity-50"
+                >
+                  {isLoadingDossier ? (
+                    <Loader2 className="w-5 h-5 animate-spin mx-auto" />
+                  ) : (
+                    'Reprendre'
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
         </main>
         <Footer />
       </>
@@ -440,8 +641,51 @@ export default function InscriptionContent() {
 
         {/* Formulaire */}
         <div className="max-w-4xl mx-auto px-4 md:px-6 -mt-16 relative z-10 pb-20">
+          {/* Bandeau code dossier */}
+          {dossierCode && (
+            <div className="bg-gradient-to-r from-[#1a1a2e] to-[#16213e] rounded-t-2xl px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-[#C9A227]/20 rounded-lg p-2">
+                  <FolderOpen className="w-4 h-4 text-[#C9A227]" />
+                </div>
+                <div>
+                  <p className="text-white/60 text-xs">Votre dossier</p>
+                  <p className="text-white font-mono text-lg tracking-wider">{dossierCode}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {isSaving ? (
+                  <span className="text-white/60 text-xs flex items-center gap-1">
+                    <RefreshCw className="w-3 h-3 animate-spin" />
+                    Sauvegarde...
+                  </span>
+                ) : lastSaved && (
+                  <span className="text-green-400/80 text-xs hidden sm:block">
+                    ✓ Sauvegardé
+                  </span>
+                )}
+                <button
+                  onClick={copyCode}
+                  className="flex items-center gap-1 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-white text-sm transition-colors"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  {codeCopied ? 'Copié !' : 'Copier'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Info conservez le code - affiché une fois après création */}
+          {dossierCode && currentStep === 2 && (
+            <div className="bg-blue-50 border-b border-blue-100 px-4 py-3">
+              <p className="text-blue-800 text-sm text-center">
+                💡 <strong>Gardez ce numéro précieusement !</strong> Il vous permettra de reprendre votre inscription à tout moment.
+              </p>
+            </div>
+          )}
+
           {/* Carte principale */}
-          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+          <div className={cn("bg-white shadow-2xl overflow-hidden", dossierCode ? "rounded-b-3xl" : "rounded-3xl")}>
             {/* Progress bar */}
             <div className="px-3 md:px-8 pt-6 pb-4 border-b border-gray-100">
               {/* Steps - version compacte */}
