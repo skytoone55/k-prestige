@@ -188,6 +188,7 @@ export default function InscriptionFormContent() {
 
   // Système de dossier
   const [dossierCode, setDossierCode] = useState<string | null>(null);
+  const [mondayItemId, setMondayItemId] = useState<string | null>(null);
   const [isLoadingDossier, setIsLoadingDossier] = useState(false);
   const [showResumeModal, setShowResumeModal] = useState(false);
   const [resumeCode, setResumeCode] = useState('');
@@ -216,6 +217,9 @@ export default function InscriptionFormContent() {
       const result = await response.json();
       if (result.success) {
         setDossierCode(result.code);
+        if (result.mondayItemId) {
+          setMondayItemId(result.mondayItemId);
+        }
         setLastSaved(new Date());
       }
     } catch (err) {
@@ -273,6 +277,9 @@ export default function InscriptionFormContent() {
 
       if (result.success) {
         setDossierCode(result.code);
+        if (result.mondayItemId) {
+          setMondayItemId(result.mondayItemId);
+        }
         setFormData(result.formData);
         setCurrentStep(result.currentStep || 1);
         if (result.formData.passportUrls?.length > 0) {
@@ -379,7 +386,11 @@ export default function InscriptionFormContent() {
       const response = await fetch('/api/monday', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          mondayItemId,  // ID Monday existant pour mise à jour
+          dossierCode,   // Code dossier pour traçabilité
+        }),
       });
       const result = await response.json();
       if (result.success) {

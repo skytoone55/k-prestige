@@ -1,12 +1,56 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
+import { MONDAY_CONFIG, MONDAY_COLUMNS, MONDAY_OPTIONS } from '@/lib/monday-config';
 
 // Supabase client avec service role pour accès complet
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
+
+// Créer un item Monday avec statut "EN COURS"
+async function createMondayDraft(nomPrenom: string, email: string, telephone: string, dossierCode: string) {
+  try {
+    const columnValues: Record<string, unknown> = {
+      [MONDAY_COLUMNS.status]: { index: parseInt(MONDAY_OPTIONS.statut.EN_COURS) },
+      [MONDAY_COLUMNS.email]: { email, text: email },
+      [MONDAY_COLUMNS.liaison]: dossierCode,
+    };
+
+    if (telephone) {
+      columnValues[MONDAY_COLUMNS.phone] = { phone: telephone.replace(/\s/g, ''), countryShortName: 'FR' };
+    }
+
+    const mutation = `
+      mutation {
+        create_item (
+          board_id: ${MONDAY_CONFIG.BOARD_ID},
+          item_name: "${nomPrenom.replace(/"/g, '\\"')}",
+          column_values: ${JSON.stringify(JSON.stringify(columnValues))}
+        ) {
+          id
+          name
+        }
+      }
+    `;
+
+    const response = await fetch(MONDAY_CONFIG.API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': MONDAY_CONFIG.API_KEY,
+      },
+      body: JSON.stringify({ query: mutation }),
+    });
+
+    const result = await response.json();
+    return result.data?.create_item?.id || null;
+  } catch (error) {
+    console.error('Erreur création Monday:', error);
+    return null;
+  }
+}
 
 // Génération d'un code de dossier unique (format: KP + 2 chiffres année + 3 chiffres aléatoires)
 function generateDossierCode(): string {
@@ -40,6 +84,12 @@ export async function POST(request: NextRequest) {
         attempts++;
       }
 
+      // Créer l'item Monday avec statut "EN COURS"
+      let mondayItemId: string | null = null;
+      if (nomPrenom && email) {
+        mondayItemId = await createMondayDraft(nomPrenom, email, telephone || '', dossierCode);
+      }
+
       // Insérer le brouillon
       const { data, error } = await supabase
         .from('inscription_drafts')
@@ -50,6 +100,7 @@ export async function POST(request: NextRequest) {
           email: email || null,
           telephone: telephone || null,
           nom_prenom: nomPrenom || null,
+          monday_item_id: mondayItemId,
         })
         .select()
         .single();
@@ -72,6 +123,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         code: dossierCode,
+        mondayItemId,
         message: 'Dossier créé avec succès'
       });
     }
@@ -184,6 +236,7 @@ export async function GET(request: NextRequest) {
       email: data.email,
       telephone: data.telephone,
       nomPrenom: data.nom_prenom,
+      mondayItemId: data.monday_item_id,
       createdAt: data.created_at,
       updatedAt: data.updated_at,
     });

@@ -107,11 +107,12 @@ export const MONDAY_COLUMNS = {
 // Options pour les status/dropdown
 export const MONDAY_OPTIONS = {
   statut: {
-    NOUVEAU: '5',
-    DEVIS_ENVOYE: '0',
+    INSCRIT: '0',       // Inscription terminée
+    VALIDE: '1',        // Validé
+    HS: '2',            // Hors service
     ATTENTE_ACOMPTE: '3',
-    VALIDE: '1',
-    HS: '2',
+    EN_COURS: '4',      // Inscription en cours
+    NOUVEAU: '5',       // Nouveau (devis)
   },
 
   nbPersonnes: {

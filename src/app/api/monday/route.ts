@@ -52,6 +52,10 @@ interface FormData {
 
   // Passeports
   passportUrls?: string[];
+
+  // Monday item existant (si inscription reprise)
+  mondayItemId?: string;
+  dossierCode?: string;
 }
 
 async function mondayRequest(query: string) {
@@ -151,8 +155,13 @@ export async function POST(request: NextRequest) {
       };
     }
 
-    // Statut = NOUVEAU
-    columnValues[MONDAY_COLUMNS.status] = { label: 'NOUVEAU' };
+    // Statut = INSCRIT (inscription terminée)
+    columnValues[MONDAY_COLUMNS.status] = { index: parseInt(MONDAY_OPTIONS.statut.INSCRIT) };
+
+    // Code dossier dans LIAISON
+    if (data.dossierCode) {
+      columnValues[MONDAY_COLUMNS.liaison] = data.dossierCode;
+    }
 
     // Composition groupe
     if (data.nbAdultes) columnValues[MONDAY_COLUMNS.nbAdultes] = String(data.nbAdultes);
@@ -269,31 +278,61 @@ export async function POST(request: NextRequest) {
       columnValues[MONDAY_COLUMNS.infosComplementaires] = { text: data.infosComplementaires };
     }
 
-    // Créer l'item sur Monday (sans les passeports d'abord)
-    const query = `
-      mutation {
-        create_item (
-          board_id: ${BOARD_ID},
-          item_name: "${data.nomPrenom.replace(/"/g, '\\"')}",
-          column_values: ${JSON.stringify(JSON.stringify(columnValues))}
-        ) {
-          id
-          name
+    let itemId: string | undefined;
+    let result;
+
+    // Si un item Monday existe déjà, on le met à jour
+    if (data.mondayItemId) {
+      const updateQuery = `
+        mutation {
+          change_multiple_column_values (
+            board_id: ${BOARD_ID},
+            item_id: ${data.mondayItemId},
+            column_values: ${JSON.stringify(JSON.stringify(columnValues))}
+          ) {
+            id
+            name
+          }
         }
+      `;
+
+      result = await mondayRequest(updateQuery);
+
+      if (result.errors) {
+        console.error('Monday API update errors:', result.errors);
+        // En cas d'erreur de mise à jour, on crée un nouvel item
+      } else {
+        itemId = result.data?.change_multiple_column_values?.id;
       }
-    `;
-
-    const result = await mondayRequest(query);
-
-    if (result.errors) {
-      console.error('Monday API errors:', result.errors);
-      return NextResponse.json(
-        { success: false, error: 'Erreur lors de la création sur Monday' },
-        { status: 500 }
-      );
     }
 
-    const itemId = result.data?.create_item?.id;
+    // Si pas d'item existant ou erreur de mise à jour, créer un nouvel item
+    if (!itemId) {
+      const createQuery = `
+        mutation {
+          create_item (
+            board_id: ${BOARD_ID},
+            item_name: "${data.nomPrenom.replace(/"/g, '\\"')}",
+            column_values: ${JSON.stringify(JSON.stringify(columnValues))}
+          ) {
+            id
+            name
+          }
+        }
+      `;
+
+      result = await mondayRequest(createQuery);
+
+      if (result.errors) {
+        console.error('Monday API errors:', result.errors);
+        return NextResponse.json(
+          { success: false, error: 'Erreur lors de la création sur Monday' },
+          { status: 500 }
+        );
+      }
+
+      itemId = result.data?.create_item?.id;
+    }
 
     // Upload passeports vers la colonne fichier Monday
     if (itemId && data.passportUrls && data.passportUrls.length > 0) {
