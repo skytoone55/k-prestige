@@ -26,7 +26,7 @@ const heebo = Heebo({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://k-prestige.vercel.app'),
+  metadataBase: new URL('https://k-prestige.com'),
   title: "K PRESTIGE | Pessah 2026 - Cabogata Beach Hotel 5★",
   description: "Séjour Pessah 2026 au Cabogata Beach Hotel 5★ en Espagne. Glatt Kasher Laméhadrine. 31 Mars - 10 Avril 2026.",
   openGraph: {
