@@ -233,12 +233,13 @@ export default function InscriptionFormContent() {
 
     setIsSaving(true);
     try {
-      await fetch('/api/inscription/draft', {
+      const response = await fetch('/api/inscription/draft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'update',
           code: dossierCode,
+          mondayItemId, // Important: envoyer le mondayItemId pour l'update
           formData,
           currentStep,
           email: formData.email,
@@ -246,13 +247,18 @@ export default function InscriptionFormContent() {
           nomPrenom: formData.nomPrenom,
         }),
       });
+      const result = await response.json();
+      // Si l'API a créé/récupéré un mondayItemId, le stocker
+      if (result.mondayItemId && !mondayItemId) {
+        setMondayItemId(result.mondayItemId);
+      }
       setLastSaved(new Date());
     } catch (err) {
       console.error('Erreur sauvegarde:', err);
     } finally {
       setIsSaving(false);
     }
-  }, [dossierCode, formData, currentStep]);
+  }, [dossierCode, mondayItemId, formData, currentStep]);
 
   // Sauvegarde automatique quand on change d'étape
   useEffect(() => {
@@ -400,6 +406,9 @@ export default function InscriptionFormContent() {
       // Créer le dossier après l'étape 1 (quand on a l'email)
       if (currentStep === 1 && !dossierCode) {
         await createDossier();
+      } else if (dossierCode) {
+        // Mettre à jour Monday à chaque clic sur "Suivant"
+        await saveDossier();
       }
       setCurrentStep(currentStep + 1);
     }
