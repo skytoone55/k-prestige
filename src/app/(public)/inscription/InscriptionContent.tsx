@@ -35,6 +35,8 @@ import { MONDAY_LABELS } from '@/lib/monday-config';
 interface Participant {
   nom: string;
   dateNaissance: string;
+  passportUrl?: string;
+  passportFileName?: string;
 }
 
 interface FormData {
@@ -85,7 +87,7 @@ const initialFormData: FormData = {
   heureDepart: '',
   volDepart: '',
   nbPersonnesTotal: '1',
-  participants: [{ nom: '', dateNaissance: '' }],
+  participants: [{ nom: '', dateNaissance: '', passportUrl: '', passportFileName: '' }],
   questionnaireOuiNon: '',
   preferenceAlimentaire: [],
   autrePreciser: '',
@@ -183,8 +185,6 @@ export default function InscriptionFormContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState<{ name: string; url: string }[]>([]);
 
   // Système de dossier
   const [dossierCode, setDossierCode] = useState<string | null>(null);
@@ -282,12 +282,6 @@ export default function InscriptionFormContent() {
         }
         setFormData(result.formData);
         setCurrentStep(result.currentStep || 1);
-        if (result.formData.passportUrls?.length > 0) {
-          setUploadedFiles(result.formData.passportUrls.map((url: string) => ({
-            name: url.split('/').pop() || 'passport',
-            url
-          })));
-        }
         setShowResumeModal(false);
         setHasStarted(true);
       } else {
@@ -313,7 +307,7 @@ export default function InscriptionFormContent() {
     const nb = Math.min(Math.max(parseInt(value) || 1, 1), 8);
     const newParticipants = [...formData.participants];
     while (newParticipants.length < nb) {
-      newParticipants.push({ nom: '', dateNaissance: '' });
+      newParticipants.push({ nom: '', dateNaissance: '', passportUrl: '', passportFileName: '' });
     }
     while (newParticipants.length > nb) {
       newParticipants.pop();
@@ -327,35 +321,68 @@ export default function InscriptionFormContent() {
     setFormData({ ...formData, participants: newParticipants });
   };
 
-  const handlePassportUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // State pour suivre quel participant est en cours d'upload
+  const [uploadingParticipantIndex, setUploadingParticipantIndex] = useState<number | null>(null);
+
+  const handleParticipantPassportUpload = async (e: React.ChangeEvent<HTMLInputElement>, participantIndex: number) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-    setIsUploading(true);
+
+    setUploadingParticipantIndex(participantIndex);
     setError(null);
+
     try {
       const uploadFormData = new FormData();
-      Array.from(files).forEach(file => uploadFormData.append('files', file));
-      uploadFormData.append('clientName', formData.nomPrenom || 'client');
+      uploadFormData.append('files', files[0]); // Un seul fichier par participant
+      const participantName = formData.participants[participantIndex]?.nom || formData.nomPrenom || 'client';
+      uploadFormData.append('clientName', participantName);
+
       const response = await fetch('/api/upload-passport', { method: 'POST', body: uploadFormData });
       const result = await response.json();
-      if (result.success) {
-        const newFiles = Array.from(files).map((file, index) => ({ name: file.name, url: result.urls[index] }));
-        setUploadedFiles(prev => [...prev, ...newFiles]);
-        setFormData(prev => ({ ...prev, passportUrls: [...prev.passportUrls, ...result.urls] }));
+
+      if (result.success && result.urls[0]) {
+        const newParticipants = [...formData.participants];
+        newParticipants[participantIndex] = {
+          ...newParticipants[participantIndex],
+          passportUrl: result.urls[0],
+          passportFileName: files[0].name
+        };
+        // Mettre à jour passportUrls pour Monday (cumul de tous les passeports)
+        const allPassportUrls = newParticipants
+          .map(p => p.passportUrl)
+          .filter((url): url is string => !!url);
+        setFormData(prev => ({
+          ...prev,
+          participants: newParticipants,
+          passportUrls: allPassportUrls
+        }));
       } else {
         setError(result.error || 'Erreur lors de l\'upload');
       }
     } catch {
       setError('Erreur de connexion lors de l\'upload');
     } finally {
-      setIsUploading(false);
+      setUploadingParticipantIndex(null);
       e.target.value = '';
     }
   };
 
-  const removeUploadedFile = (index: number) => {
-    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
-    setFormData(prev => ({ ...prev, passportUrls: prev.passportUrls.filter((_, i) => i !== index) }));
+  const removeParticipantPassport = (participantIndex: number) => {
+    const newParticipants = [...formData.participants];
+    newParticipants[participantIndex] = {
+      ...newParticipants[participantIndex],
+      passportUrl: '',
+      passportFileName: ''
+    };
+    // Mettre à jour passportUrls pour Monday
+    const allPassportUrls = newParticipants
+      .map(p => p.passportUrl)
+      .filter((url): url is string => !!url);
+    setFormData(prev => ({
+      ...prev,
+      participants: newParticipants,
+      passportUrls: allPassportUrls
+    }));
   };
 
   const handleMultiSelect = (field: 'preferenceAlimentaire' | 'salades' | 'preferenceAlcool', id: number) => {
@@ -996,13 +1023,6 @@ export default function InscriptionFormContent() {
                     <p className="text-gray-500 mt-2">Identité de chaque participant</p>
                   </div>
 
-                  {/* Alert passeports */}
-                  <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-5 border border-amber-100">
-                    <p className="text-sm text-amber-800">
-                      <strong>Important :</strong> Merci de télécharger des passeports parfaitement lisibles et en bonne qualité.
-                    </p>
-                  </div>
-
                   {/* Nombre de personnes */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -1027,7 +1047,14 @@ export default function InscriptionFormContent() {
                     </div>
                   </div>
 
-                  {/* Liste des participants */}
+                  {/* Info importante */}
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                    <p className="text-sm text-amber-800">
+                      <strong>Important :</strong> Pour chaque personne, téléchargez son passeport (photo lisible et de bonne qualité).
+                    </p>
+                  </div>
+
+                  {/* Liste des participants avec upload passeport */}
                   <div className="space-y-4">
                     {formData.participants.map((participant, index) => (
                       <div key={index} className="bg-gray-50 rounded-2xl p-5">
@@ -1037,7 +1064,7 @@ export default function InscriptionFormContent() {
                           </div>
                           Personne {index + 1}
                         </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                           <StyledInput
                             label="Nom + Prénom"
                             required
@@ -1053,50 +1080,60 @@ export default function InscriptionFormContent() {
                             onChange={(e) => updateParticipant(index, 'dateNaissance', e.target.value)}
                           />
                         </div>
+
+                        {/* Upload passeport pour ce participant */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-600 mb-2">
+                            Passeport
+                          </label>
+
+                          {participant.passportUrl ? (
+                            // Fichier uploadé
+                            <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+                              <div className="flex items-center gap-3">
+                                <FileIcon className="w-5 h-5 text-green-600" />
+                                <span className="text-sm text-green-800 font-medium">{participant.passportFileName || 'Passeport'}</span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => removeParticipantPassport(index)}
+                                className="text-red-500 hover:text-red-700 p-1"
+                              >
+                                <X className="w-5 h-5" />
+                              </button>
+                            </div>
+                          ) : (
+                            // Zone d'upload
+                            <label className={cn(
+                              "relative flex items-center justify-center gap-3 border-2 border-dashed rounded-xl p-4 cursor-pointer transition-all duration-200",
+                              uploadingParticipantIndex === index
+                                ? "border-gray-300 bg-gray-50 cursor-wait"
+                                : "border-gray-300 hover:border-[#C9A227] hover:bg-[#C9A227]/5"
+                            )}>
+                              <input
+                                type="file"
+                                accept=".pdf,.jpg,.jpeg,.png"
+                                onChange={(e) => handleParticipantPassportUpload(e, index)}
+                                disabled={uploadingParticipantIndex !== null}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-wait"
+                              />
+                              {uploadingParticipantIndex === index ? (
+                                <>
+                                  <Loader2 className="w-5 h-5 text-[#C9A227] animate-spin" />
+                                  <span className="text-sm text-gray-500">Upload en cours...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Upload className="w-5 h-5 text-gray-400" />
+                                  <span className="text-sm text-gray-600">Cliquez pour ajouter le passeport</span>
+                                  <span className="text-xs text-gray-400">(PDF, JPG, PNG)</span>
+                                </>
+                              )}
+                            </label>
+                          )}
+                        </div>
                       </div>
                     ))}
-                  </div>
-
-                  {/* Upload passeports */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">
-                      Documents passeports
-                    </label>
-
-                    {uploadedFiles.length > 0 && (
-                      <div className="mb-4 space-y-2">
-                        {uploadedFiles.map((file, index) => (
-                          <div key={index} className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-4 py-3">
-                            <div className="flex items-center gap-3">
-                              <FileIcon className="w-5 h-5 text-green-600" />
-                              <span className="text-sm text-green-800 font-medium">{file.name}</span>
-                            </div>
-                            <button type="button" onClick={() => removeUploadedFile(index)} className="text-red-500 hover:text-red-700 p-1">
-                              <X className="w-5 h-5" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    <label className={cn(
-                      "relative flex flex-col items-center justify-center border-2 border-dashed rounded-2xl p-8 cursor-pointer transition-all duration-200",
-                      isUploading ? "border-gray-300 bg-gray-50 cursor-wait" : "border-gray-300 hover:border-[#C9A227] hover:bg-[#C9A227]/5"
-                    )}>
-                      <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png" onChange={handlePassportUpload} disabled={isUploading} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-wait" />
-                      {isUploading ? (
-                        <div className="flex flex-col items-center">
-                          <Loader2 className="w-10 h-10 text-[#C9A227] animate-spin mb-3" />
-                          <span className="text-gray-500">Upload en cours...</span>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center">
-                          <Upload className="w-10 h-10 text-gray-400 mb-3" />
-                          <span className="font-medium text-gray-600">Cliquez pour ajouter des fichiers</span>
-                          <span className="text-xs text-gray-400 mt-1">PDF, JPG ou PNG (max 10MB)</span>
-                        </div>
-                      )}
-                    </label>
                   </div>
                 </div>
               )}
@@ -1418,18 +1455,27 @@ export default function InscriptionFormContent() {
                   </div>
 
                   {/* Passeports uploadés */}
-                  {uploadedFiles.length > 0 && (
+                  {formData.participants.some(p => p.passportUrl) && (
                     <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
                       <h4 className="text-sm font-semibold text-[#C9A227] uppercase tracking-wide mb-4 flex items-center gap-2">
                         <FileIcon className="w-4 h-4" />
-                        Passeports ({uploadedFiles.length})
+                        Passeports ({formData.participants.filter(p => p.passportUrl).length}/{formData.participants.length})
                       </h4>
-                      <div className="flex flex-wrap gap-2">
-                        {uploadedFiles.map((file, i) => (
-                          <span key={i} className="px-4 py-2 bg-green-50 text-green-700 rounded-xl text-sm font-medium flex items-center gap-2">
-                            <Check className="w-4 h-4" />
-                            {file.name}
-                          </span>
+                      <div className="space-y-2">
+                        {formData.participants.map((p, i) => (
+                          <div key={i} className="flex items-center gap-2">
+                            <span className="text-sm text-gray-600 min-w-[120px]">{p.nom || `Personne ${i + 1}`}:</span>
+                            {p.passportUrl ? (
+                              <span className="px-3 py-1 bg-green-50 text-green-700 rounded-lg text-sm font-medium flex items-center gap-2">
+                                <Check className="w-4 h-4" />
+                                {p.passportFileName || 'Passeport'}
+                              </span>
+                            ) : (
+                              <span className="px-3 py-1 bg-red-50 text-red-600 rounded-lg text-sm">
+                                Non fourni
+                              </span>
+                            )}
+                          </div>
                         ))}
                       </div>
                     </div>
