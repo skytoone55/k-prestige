@@ -1082,9 +1082,13 @@ export default function InscriptionFormContent() {
 
                   {/* Upload passeports */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">
-                      Documents passeports
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Passeports de tous les participants
                     </label>
+                    <p className="text-sm text-gray-500 mb-4">
+                      Téléchargez les passeports de <strong>toutes les personnes</strong> de votre famille/groupe inscrites au séjour.
+                      Vous pouvez les regrouper en un seul fichier PDF ou les télécharger séparément (un fichier par personne).
+                    </p>
 
                     {uploadedFiles.length > 0 && (
                       <div className="mb-4 space-y-2">
@@ -1115,8 +1119,9 @@ export default function InscriptionFormContent() {
                       ) : (
                         <div className="flex flex-col items-center">
                           <Upload className="w-10 h-10 text-gray-400 mb-3" />
-                          <span className="font-medium text-gray-600">Cliquez pour ajouter des fichiers</span>
-                          <span className="text-xs text-gray-400 mt-1">PDF, JPG ou PNG (max 10MB)</span>
+                          <span className="font-medium text-gray-600">Cliquez pour ajouter les passeports</span>
+                          <span className="text-sm text-gray-500 mt-1">Ajoutez plusieurs fichiers si nécessaire</span>
+                          <span className="text-xs text-gray-400 mt-1">PDF, JPG ou PNG (max 10MB par fichier)</span>
                         </div>
                       )}
                     </label>
