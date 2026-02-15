@@ -173,6 +173,14 @@ export async function POST(request: NextRequest) {
     // N° Devis
     if (data.numDevis) columnValues[MONDAY_COLUMNS.numDevis] = data.numDevis;
 
+    // Dates de séjour (différent des dates de navette)
+    if (data.dateArrivee) {
+      columnValues[MONDAY_COLUMNS.dateSejourArrivee] = { date: data.dateArrivee };
+    }
+    if (data.dateRetour) {
+      columnValues[MONDAY_COLUMNS.dateSejourDepart] = { date: data.dateRetour };
+    }
+
     // Nombre de personnes total (status)
     if (data.nbPersonnesTotal) {
       const nbPersonnesIndex = MONDAY_OPTIONS.nbPersonnes[data.nbPersonnesTotal as keyof typeof MONDAY_OPTIONS.nbPersonnes];
@@ -184,28 +192,42 @@ export async function POST(request: NextRequest) {
     // Navettes - la valeur est directement l'index ('0', '1', '2', '3')
     if (data.navetteChoix) {
       columnValues[MONDAY_COLUMNS.navetteChoix] = { index: parseInt(data.navetteChoix) };
-    }
 
-    // Dates et infos navette arrivée
-    if (data.dateArrivee) {
-      columnValues[MONDAY_COLUMNS.dateArrivee] = { date: data.dateArrivee };
-    }
-    if (data.heureArrivee) {
-      columnValues[MONDAY_COLUMNS.heureArrivee] = data.heureArrivee;
-    }
-    if (data.volArrivee) {
-      columnValues[MONDAY_COLUMNS.volArrivee] = data.volArrivee;
-    }
+      // Si "Pas de besoin" (3), effacer tous les champs navette
+      if (data.navetteChoix === '3') {
+        columnValues[MONDAY_COLUMNS.heureArrivee] = '';
+        columnValues[MONDAY_COLUMNS.volArrivee] = '';
+        columnValues[MONDAY_COLUMNS.heureDepart] = '';
+        columnValues[MONDAY_COLUMNS.volDepart] = '';
+      } else {
+        // Infos navette arrivée (pour choix 0 ou 2)
+        if (data.navetteChoix === '0' || data.navetteChoix === '2') {
+          if (data.heureArrivee) {
+            columnValues[MONDAY_COLUMNS.heureArrivee] = data.heureArrivee;
+          }
+          if (data.volArrivee) {
+            columnValues[MONDAY_COLUMNS.volArrivee] = data.volArrivee;
+          }
+        } else {
+          // Si pas de navette arrivée, effacer les champs
+          columnValues[MONDAY_COLUMNS.heureArrivee] = '';
+          columnValues[MONDAY_COLUMNS.volArrivee] = '';
+        }
 
-    // Dates et infos navette retour
-    if (data.dateRetour) {
-      columnValues[MONDAY_COLUMNS.dateRetour] = { date: data.dateRetour };
-    }
-    if (data.heureDepart) {
-      columnValues[MONDAY_COLUMNS.heureDepart] = data.heureDepart;
-    }
-    if (data.volDepart) {
-      columnValues[MONDAY_COLUMNS.volDepart] = data.volDepart;
+        // Infos navette retour (pour choix 1 ou 2)
+        if (data.navetteChoix === '1' || data.navetteChoix === '2') {
+          if (data.heureDepart) {
+            columnValues[MONDAY_COLUMNS.heureDepart] = data.heureDepart;
+          }
+          if (data.volDepart) {
+            columnValues[MONDAY_COLUMNS.volDepart] = data.volDepart;
+          }
+        } else {
+          // Si pas de navette retour, effacer les champs
+          columnValues[MONDAY_COLUMNS.heureDepart] = '';
+          columnValues[MONDAY_COLUMNS.volDepart] = '';
+        }
+      }
     }
 
     // Participants (jusqu'à 7)

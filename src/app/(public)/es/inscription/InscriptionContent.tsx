@@ -163,6 +163,7 @@ export default function InscriptionContentES() {
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [codeCopied, setCodeCopied] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   // Créer un nouveau dossier après l'étape 1
   const createDossier = useCallback(async () => {
@@ -368,13 +369,18 @@ export default function InscriptionContentES() {
   };
 
   const nextStep = async () => {
-    if (currentStep < STEPS.length) {
-      if (currentStep === 1 && !dossierCode) {
-        await createDossier();
-      } else if (dossierCode) {
-        await saveDossier();
+    if (currentStep < STEPS.length && !isNavigating) {
+      setIsNavigating(true);
+      try {
+        if (currentStep === 1 && !dossierCode) {
+          await createDossier();
+        } else if (dossierCode) {
+          await saveDossier();
+        }
+        setCurrentStep(currentStep + 1);
+      } finally {
+        setIsNavigating(false);
       }
-      setCurrentStep(currentStep + 1);
     }
   };
   const prevStep = () => currentStep > 1 && setCurrentStep(currentStep - 1);
@@ -403,6 +409,7 @@ export default function InscriptionContentES() {
               action: 'submit',
               code: dossierCode,
               mondayItemId: result.itemId,
+              lang: 'es',
             }),
           });
         }
@@ -1530,23 +1537,37 @@ export default function InscriptionContentES() {
                   <button
                     type="button"
                     onClick={nextStep}
-                    disabled={!isStepValid(currentStep)}
+                    disabled={!isStepValid(currentStep) || isNavigating}
                     className={cn(
-                      "flex items-center gap-2 px-8 py-3 rounded-xl font-medium transition-all duration-300",
-                      isStepValid(currentStep)
-                        ? "bg-gradient-to-r from-[#C9A227] to-[#D4AF37] text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+                      "flex items-center gap-2 px-8 py-3 rounded-xl font-medium transition-all duration-200",
+                      isStepValid(currentStep) && !isNavigating
+                        ? "bg-gradient-to-r from-[#C9A227] to-[#D4AF37] text-white shadow-lg cursor-pointer hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02] hover:brightness-110 active:scale-[0.98] active:translate-y-0"
                         : "bg-gray-200 text-gray-400 cursor-not-allowed"
                     )}
                   >
-                    Siguiente
-                    <ChevronRight className="w-5 h-5" />
+                    {isNavigating ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Cargando...
+                      </>
+                    ) : (
+                      <>
+                        Siguiente
+                        <ChevronRight className="w-5 h-5" />
+                      </>
+                    )}
                   </button>
                 ) : (
                   <button
                     type="button"
                     onClick={handleSubmit}
                     disabled={isSubmitting}
-                    className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-[#C9A227] to-[#D4AF37] text-white rounded-xl font-medium shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    className={cn(
+                      "flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-[#C9A227] to-[#D4AF37] text-white rounded-xl font-medium shadow-lg transition-all duration-200",
+                      isSubmitting
+                        ? "opacity-50 cursor-not-allowed"
+                        : "cursor-pointer hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02] hover:brightness-110 active:scale-[0.98] active:translate-y-0"
+                    )}
                   >
                     {isSubmitting ? (
                       <>
