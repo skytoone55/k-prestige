@@ -216,6 +216,7 @@ export default function InscriptionFormContent() {
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [codeCopied, setCodeCopied] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false); // Chargement pendant passage à l'étape suivante
 
   // Créer un nouveau dossier après l'étape 1
   const createDossier = useCallback(async () => {
@@ -424,14 +425,19 @@ export default function InscriptionFormContent() {
 
   const nextStep = async () => {
     if (currentStep < STEPS.length) {
-      // Créer le dossier après l'étape 1 (quand on a l'email)
-      if (currentStep === 1 && !dossierCode) {
-        await createDossier();
-      } else if (dossierCode) {
-        // Mettre à jour Monday à chaque clic sur "Suivant"
-        await saveDossier();
+      setIsNavigating(true);
+      try {
+        // Créer le dossier après l'étape 1 (quand on a l'email)
+        if (currentStep === 1 && !dossierCode) {
+          await createDossier();
+        } else if (dossierCode) {
+          // Mettre à jour Monday à chaque clic sur "Suivant"
+          await saveDossier();
+        }
+        setCurrentStep(currentStep + 1);
+      } finally {
+        setIsNavigating(false);
       }
-      setCurrentStep(currentStep + 1);
     }
   };
   const prevStep = () => currentStep > 1 && setCurrentStep(currentStep - 1);
@@ -478,7 +484,7 @@ export default function InscriptionFormContent() {
   const isStepValid = (step: number): boolean => {
     switch (step) {
       case 1: return !!(formData.nomPrenom && formData.telephone && formData.email && isValidEmail(formData.email));
-      case 2: return formData.nbAdultes >= 1;
+      case 2: return formData.nbAdultes >= 1 && !!formData.dateSejourArrivee && !!formData.dateSejourDepart;
       case 3: {
         if (!formData.navetteChoix) return false;
         // Navette arrivée ou les deux
@@ -1600,16 +1606,25 @@ export default function InscriptionFormContent() {
                   <button
                     type="button"
                     onClick={nextStep}
-                    disabled={!isStepValid(currentStep)}
+                    disabled={!isStepValid(currentStep) || isNavigating}
                     className={cn(
                       "flex items-center gap-2 px-8 py-3 rounded-xl font-medium transition-all duration-300",
-                      isStepValid(currentStep)
+                      isStepValid(currentStep) && !isNavigating
                         ? "bg-gradient-to-r from-[#C9A227] to-[#D4AF37] text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5"
                         : "bg-gray-200 text-gray-400 cursor-not-allowed"
                     )}
                   >
-                    {t('nextButton')}
-                    <ChevronRight className="w-5 h-5" />
+                    {isNavigating ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        {t('saving')}
+                      </>
+                    ) : (
+                      <>
+                        {t('nextButton')}
+                        <ChevronRight className="w-5 h-5" />
+                      </>
+                    )}
                   </button>
                 ) : (
                   <button
