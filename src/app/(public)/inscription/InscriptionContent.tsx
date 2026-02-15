@@ -476,7 +476,7 @@ export default function InscriptionFormContent() {
         }
         return true;
       }
-      case 4: return formData.participants.every(p => p.nom && p.dateNaissance);
+      case 4: return formData.participants.every(p => p.nom && p.dateNaissance && p.passportUrl);
       case 5: return !!formData.questionnaireOuiNon;
       case 6: return true;
       case 7: return true;
@@ -1152,10 +1152,10 @@ export default function InscriptionFormContent() {
                           />
                         </div>
 
-                        {/* Upload passeport pour ce participant */}
+                        {/* Upload passeport ou CI pour ce participant */}
                         <div>
                           <label className="block text-sm font-medium text-gray-600 mb-2">
-                            Passeport
+                            Passeport ou Carte d'identité <span className="text-[#C9A227]">*</span>
                           </label>
 
                           {participant.passportUrl ? (
@@ -1163,7 +1163,7 @@ export default function InscriptionFormContent() {
                             <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-4 py-3">
                               <div className="flex items-center gap-3">
                                 <FileIcon className="w-5 h-5 text-green-600" />
-                                <span className="text-sm text-green-800 font-medium">{participant.passportFileName || 'Passeport'}</span>
+                                <span className="text-sm text-green-800 font-medium">{participant.passportFileName || 'Document'}</span>
                               </div>
                               <button
                                 type="button"
@@ -1196,7 +1196,7 @@ export default function InscriptionFormContent() {
                               ) : (
                                 <>
                                   <Upload className="w-5 h-5 text-gray-400" />
-                                  <span className="text-sm text-gray-600">Cliquez pour ajouter le passeport</span>
+                                  <span className="text-sm text-gray-600">Cliquez pour ajouter le document</span>
                                   <span className="text-xs text-gray-400">(PDF, JPG, PNG)</span>
                                 </>
                               )}
@@ -1525,32 +1525,30 @@ export default function InscriptionFormContent() {
                     </div>
                   </div>
 
-                  {/* Passeports uploadés */}
-                  {formData.participants.some(p => p.passportUrl) && (
-                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-                      <h4 className="text-sm font-semibold text-[#C9A227] uppercase tracking-wide mb-4 flex items-center gap-2">
-                        <FileIcon className="w-4 h-4" />
-                        Passeports ({formData.participants.filter(p => p.passportUrl).length}/{formData.participants.length})
-                      </h4>
-                      <div className="space-y-2">
-                        {formData.participants.map((p, i) => (
-                          <div key={i} className="flex items-center gap-2">
-                            <span className="text-sm text-gray-600 min-w-[120px]">{p.nom || `Personne ${i + 1}`}:</span>
-                            {p.passportUrl ? (
-                              <span className="px-3 py-1 bg-green-50 text-green-700 rounded-lg text-sm font-medium flex items-center gap-2">
-                                <Check className="w-4 h-4" />
-                                {p.passportFileName || 'Passeport'}
-                              </span>
-                            ) : (
-                              <span className="px-3 py-1 bg-red-50 text-red-600 rounded-lg text-sm">
-                                Non fourni
-                              </span>
-                            )}
-                          </div>
-                        ))}
-                      </div>
+                  {/* Documents d'identité uploadés */}
+                  <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                    <h4 className="text-sm font-semibold text-[#C9A227] uppercase tracking-wide mb-4 flex items-center gap-2">
+                      <FileIcon className="w-4 h-4" />
+                      Documents d'identité ({formData.participants.filter(p => p.passportUrl).length}/{formData.participants.length})
+                    </h4>
+                    <div className="space-y-2">
+                      {formData.participants.map((p, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <span className="text-sm text-gray-600 min-w-[120px]">{p.nom || `Personne ${i + 1}`}:</span>
+                          {p.passportUrl ? (
+                            <span className="px-3 py-1 bg-green-50 text-green-700 rounded-lg text-sm font-medium flex items-center gap-2">
+                              <Check className="w-4 h-4" />
+                              {p.passportFileName || 'Document'}
+                            </span>
+                          ) : (
+                            <span className="px-3 py-1 bg-red-50 text-red-600 rounded-lg text-sm">
+                              Non fourni
+                            </span>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                  )}
+                  </div>
 
                   {/* Message de confirmation */}
                   <div className="bg-gradient-to-r from-[#C9A227]/10 to-[#D4AF37]/10 rounded-2xl p-6 border border-[#C9A227]/20">
