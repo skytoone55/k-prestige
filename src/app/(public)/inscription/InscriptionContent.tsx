@@ -84,9 +84,9 @@ const initialFormData: FormData = {
   nbEnfants4a6: 0,
   nbEnfants7a11: 0,
   numDevis: '',
-  // Dates de séjour
-  dateSejourArrivee: '2026-03-31',
-  dateSejourDepart: '2026-04-12',
+  // Dates de séjour (vide par défaut, le client doit remplir)
+  dateSejourArrivee: '',
+  dateSejourDepart: '',
   // Navettes
   navetteChoix: '',
   dateArrivee: '2026-03-31',
