@@ -5,6 +5,7 @@ import { Language, LANGUAGES, isRTL, getDir } from './translations';
 
 interface LanguageContextType {
   lang: Language;
+  language: Language;  // Alias for compatibility
   setLang: (lang: Language) => void;
   isRTL: boolean;
   dir: 'rtl' | 'ltr';
@@ -50,6 +51,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   const value: LanguageContextType = {
     lang,
+    language: lang,  // Alias for compatibility
     setLang,
     isRTL: isRTL(lang),
     dir: getDir(lang),

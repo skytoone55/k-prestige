@@ -211,7 +211,8 @@ function generateDossierCode(): string {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { action, code, formData, currentStep, email, telephone, nomPrenom } = body;
+    const { action, code, formData, currentStep, email, telephone, nomPrenom, language } = body;
+    const lang = language || 'fr'; // Langue par défaut: français
 
     // Action: créer un nouveau dossier
     if (action === 'create') {
@@ -256,6 +257,7 @@ export async function POST(request: NextRequest) {
           telephone: telephone || null,
           nom_prenom: nomPrenom || null,
           monday_item_id: mondayItemId,
+          language: lang,
         })
         .select()
         .single();
@@ -268,7 +270,7 @@ export async function POST(request: NextRequest) {
       // Envoyer l'email si email fourni et Resend configuré
       if (email && process.env.RESEND_API_KEY) {
         try {
-          await sendDossierEmail(email, dossierCode, nomPrenom);
+          await sendDossierEmail(email, dossierCode, nomPrenom, lang);
         } catch (emailError) {
           console.error('Erreur envoi email:', emailError);
           // On continue même si l'email échoue
@@ -366,7 +368,7 @@ export async function POST(request: NextRequest) {
       }
 
       try {
-        await sendDossierEmail(email, code, nomPrenom);
+        await sendDossierEmail(email, code, nomPrenom, lang);
         return NextResponse.json({ success: true, message: 'Email envoyé' });
       } catch (emailError) {
         console.error('Erreur envoi email:', emailError);
@@ -450,23 +452,206 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Fonction d'envoi d'email
-async function sendDossierEmail(email: string, code: string, nomPrenom?: string) {
+// Traductions pour les emails
+const emailTranslations = {
+  dossier: {
+    subject: {
+      fr: 'Votre dossier K Prestige',
+      en: 'Your K Prestige file',
+      he: 'תיק K Prestige שלך',
+      es: 'Su expediente K Prestige',
+    },
+    greeting: {
+      fr: 'Bonjour',
+      en: 'Hello',
+      he: 'שלום',
+      es: 'Hola',
+    },
+    intro: {
+      fr: 'Votre dossier d\'inscription a été créé. Voici votre numéro de dossier :',
+      en: 'Your registration file has been created. Here is your file number:',
+      he: 'תיק ההרשמה שלך נוצר. הנה מספר התיק שלך:',
+      es: 'Su expediente de inscripción ha sido creado. Aquí está su número de expediente:',
+    },
+    codeLabel: {
+      fr: 'Numéro de dossier',
+      en: 'File number',
+      he: 'מספר תיק',
+      es: 'Número de expediente',
+    },
+    keepCode: {
+      fr: 'Conservez précieusement ce numéro !',
+      en: 'Keep this number safe!',
+      he: 'שמור על מספר זה!',
+      es: '¡Guarde este número con cuidado!',
+    },
+    keepCodeDesc: {
+      fr: 'Il vous permettra de reprendre votre inscription à tout moment si vous devez l\'interrompre.',
+      en: 'It will allow you to resume your registration at any time if you need to interrupt it.',
+      he: 'הוא יאפשר לך לחדש את ההרשמה שלך בכל עת אם תצטרך להפסיק אותה.',
+      es: 'Le permitirá reanudar su inscripción en cualquier momento si necesita interrumpirla.',
+    },
+    resumeLabel: {
+      fr: 'Pour reprendre votre inscription :',
+      en: 'To resume your registration:',
+      he: 'לחידוש ההרשמה שלך:',
+      es: 'Para reanudar su inscripción:',
+    },
+    autoSave: {
+      fr: 'Votre progression est sauvegardée automatiquement. Vous pouvez fermer cette page et revenir plus tard.',
+      en: 'Your progress is saved automatically. You can close this page and come back later.',
+      he: 'ההתקדמות שלך נשמרת אוטומטית. אתה יכול לסגור את הדף הזה ולחזור מאוחר יותר.',
+      es: 'Su progreso se guarda automáticamente. Puede cerrar esta página y volver más tarde.',
+    },
+    footer: {
+      fr: 'Séjour de luxe pour Pessah',
+      en: 'Luxury stay for Passover',
+      he: 'חופשת יוקרה לפסח',
+      es: 'Estancia de lujo para Pésaj',
+    },
+  },
+  confirmation: {
+    subject: {
+      fr: 'Confirmation de votre inscription - K Prestige Pessah 2026',
+      en: 'Registration confirmation - K Prestige Passover 2026',
+      he: 'אישור הרשמה - K Prestige פסח 2026',
+      es: 'Confirmación de inscripción - K Prestige Pésaj 2026',
+    },
+    greeting: {
+      fr: 'Bonjour',
+      en: 'Hello',
+      he: 'שלום',
+      es: 'Hola',
+    },
+    thankYou: {
+      fr: 'Merci pour votre inscription !',
+      en: 'Thank you for your registration!',
+      he: 'תודה על ההרשמה שלך!',
+      es: '¡Gracias por su inscripción!',
+    },
+    confirmed: {
+      fr: 'Votre inscription pour le séjour Pessah 2026 au Cabogata Beach Hotel 5* a bien été enregistrée.',
+      en: 'Your registration for the Passover 2026 stay at Cabogata Beach Hotel 5* has been recorded.',
+      he: 'ההרשמה שלך לחופשת פסח 2026 במלון Cabogata Beach 5* נרשמה.',
+      es: 'Su inscripción para la estancia de Pésaj 2026 en el Cabogata Beach Hotel 5* ha sido registrada.',
+    },
+    summaryTitle: {
+      fr: 'Récapitulatif de votre dossier',
+      en: 'Your file summary',
+      he: 'סיכום התיק שלך',
+      es: 'Resumen de su expediente',
+    },
+    fileNumber: {
+      fr: 'N° de dossier',
+      en: 'File number',
+      he: 'מספר תיק',
+      es: 'Número de expediente',
+    },
+    contact: {
+      fr: 'Contact',
+      en: 'Contact',
+      he: 'איש קשר',
+      es: 'Contacto',
+    },
+    composition: {
+      fr: 'Composition',
+      en: 'Group composition',
+      he: 'הרכב הקבוצה',
+      es: 'Composición',
+    },
+    adults: {
+      fr: 'adulte(s)',
+      en: 'adult(s)',
+      he: 'מבוגר(ים)',
+      es: 'adulto(s)',
+    },
+    children: {
+      fr: 'enfant(s)',
+      en: 'child(ren)',
+      he: 'ילד(ים)',
+      es: 'niño(s)',
+    },
+    babies: {
+      fr: 'bébé(s)',
+      en: 'baby(ies)',
+      he: 'תינוק(ות)',
+      es: 'bebé(s)',
+    },
+    shuttles: {
+      fr: 'Navettes',
+      en: 'Shuttles',
+      he: 'הסעות',
+      es: 'Traslados',
+    },
+    arrival: {
+      fr: 'Arrivée',
+      en: 'Arrival',
+      he: 'הגעה',
+      es: 'Llegada',
+    },
+    departure: {
+      fr: 'Départ',
+      en: 'Departure',
+      he: 'יציאה',
+      es: 'Salida',
+    },
+    nextSteps: {
+      fr: 'Prochaines étapes',
+      en: 'Next steps',
+      he: 'צעדים הבאים',
+      es: 'Próximos pasos',
+    },
+    nextStepsDesc: {
+      fr: 'Notre équipe va étudier votre dossier et vous recontactera très prochainement pour finaliser votre réservation.',
+      en: 'Our team will review your file and contact you very soon to finalize your reservation.',
+      he: 'הצוות שלנו יבדוק את התיק שלך וייצור איתך קשר בקרוב מאוד כדי לסיים את ההזמנה.',
+      es: 'Nuestro equipo revisará su expediente y le contactará muy pronto para finalizar su reserva.',
+    },
+    questions: {
+      fr: 'Des questions ?',
+      en: 'Questions?',
+      he: 'שאלות?',
+      es: '¿Preguntas?',
+    },
+    contactUs: {
+      fr: 'N\'hésitez pas à nous contacter',
+      en: 'Feel free to contact us',
+      he: 'אל תהסס לפנות אלינו',
+      es: 'No dude en contactarnos',
+    },
+    footer: {
+      fr: 'Séjour de luxe pour Pessah',
+      en: 'Luxury stay for Passover',
+      he: 'חופשת יוקרה לפסח',
+      es: 'Estancia de lujo para Pésaj',
+    },
+  },
+};
+
+type Language = 'fr' | 'en' | 'he' | 'es';
+
+// Fonction d'envoi d'email avec code de dossier
+async function sendDossierEmail(email: string, code: string, nomPrenom?: string, language: Language = 'fr') {
   const resend = new Resend(process.env.RESEND_API_KEY);
   const fromEmail = process.env.RESEND_FROM_EMAIL || 'K Prestige <inscription@k-prestige.com>';
+  const t = emailTranslations.dossier;
+  const lang = language as Language;
+  const isRTL = lang === 'he';
+  const dir = isRTL ? 'rtl' : 'ltr';
+  const textAlign = isRTL ? 'right' : 'left';
 
   const htmlContent = `
     <!DOCTYPE html>
-    <html>
+    <html dir="${dir}" lang="${lang}">
     <head>
       <meta charset="utf-8">
       <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background: #f5f5f5; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background: #f5f5f5; direction: ${dir}; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
         .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 40px 30px; text-align: center; border-radius: 10px 10px 0 0; }
         .header h1 { margin: 0; font-size: 28px; color: #C9A227; }
         .header .subtitle { margin-top: 10px; opacity: 0.9; font-size: 14px; }
-        .content { background: white; padding: 40px 30px; border-radius: 0 0 10px 10px; }
+        .content { background: white; padding: 40px 30px; border-radius: 0 0 10px 10px; text-align: ${textAlign}; }
         .code-box { background: linear-gradient(135deg, #f8f6f0 0%, #fff9e6 100%); border: 2px solid #C9A227; border-radius: 12px; padding: 25px; text-align: center; margin: 25px 0; }
         .code-label { font-size: 14px; color: #666; margin-bottom: 10px; }
         .code { font-size: 36px; font-weight: bold; color: #1a1a2e; letter-spacing: 3px; font-family: 'Courier New', monospace; }
@@ -483,31 +668,31 @@ async function sendDossierEmail(email: string, code: string, nomPrenom?: string)
           <div class="subtitle">Pessah 2026 • Cabogata Beach Hotel 5*</div>
         </div>
         <div class="content">
-          <p style="font-size: 18px; color: #1a1a2e;">Bonjour${nomPrenom ? ` ${nomPrenom}` : ''},</p>
+          <p style="font-size: 18px; color: #1a1a2e;">${t.greeting[lang]}${nomPrenom ? ` ${nomPrenom}` : ''},</p>
 
-          <p class="info-text">Votre dossier d'inscription a été créé. Voici votre numéro de dossier :</p>
+          <p class="info-text">${t.intro[lang]}</p>
 
           <div class="code-box">
-            <div class="code-label">Numéro de dossier</div>
+            <div class="code-label">${t.codeLabel[lang]}</div>
             <div class="code">${code}</div>
           </div>
 
           <p class="info-text">
-            <strong>Conservez précieusement ce numéro !</strong><br>
-            Il vous permettra de reprendre votre inscription à tout moment si vous devez l'interrompre.
+            <strong>${t.keepCode[lang]}</strong><br>
+            ${t.keepCodeDesc[lang]}
           </p>
 
           <div class="link-box">
-            <p style="margin: 0 0 10px 0; color: #555;">Pour reprendre votre inscription :</p>
+            <p style="margin: 0 0 10px 0; color: #555;">${t.resumeLabel[lang]}</p>
             <a href="https://kprestige.com/inscription">kprestige.com/inscription</a>
           </div>
 
           <p class="info-text" style="font-size: 13px; color: #888;">
-            Votre progression est sauvegardée automatiquement. Vous pouvez fermer cette page et revenir plus tard.
+            ${t.autoSave[lang]}
           </p>
         </div>
         <div class="footer">
-          <p>© 2026 K Prestige • Séjour de luxe pour Pessah</p>
+          <p>© 2026 K Prestige • ${t.footer[lang]}</p>
         </div>
       </div>
     </body>
@@ -517,7 +702,146 @@ async function sendDossierEmail(email: string, code: string, nomPrenom?: string)
   await resend.emails.send({
     from: fromEmail,
     to: [email],
-    subject: `Votre dossier K Prestige : ${code}`,
+    subject: `${t.subject[lang]} : ${code}`,
     html: htmlContent,
   });
 }
+
+// Interface pour les données du formulaire d'email de confirmation
+interface ConfirmationEmailData {
+  nomPrenom: string;
+  email: string;
+  telephone?: string;
+  dossierCode: string;
+  nbAdultes?: number;
+  nbEnfants?: number;
+  nbBebes?: number;
+  navetteArrivee?: { date?: string; heure?: string; vol?: string };
+  navetteRetour?: { date?: string; heure?: string; vol?: string };
+}
+
+// Fonction d'envoi d'email de confirmation finale
+async function sendConfirmationEmail(data: ConfirmationEmailData, language: Language = 'fr') {
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'K Prestige <inscription@k-prestige.com>';
+  const t = emailTranslations.confirmation;
+  const lang = language as Language;
+  const isRTL = lang === 'he';
+  const dir = isRTL ? 'rtl' : 'ltr';
+  const textAlign = isRTL ? 'right' : 'left';
+
+  // Construire le récapitulatif de composition
+  const compositionParts = [];
+  if (data.nbAdultes && data.nbAdultes > 0) {
+    compositionParts.push(`${data.nbAdultes} ${t.adults[lang]}`);
+  }
+  if (data.nbEnfants && data.nbEnfants > 0) {
+    compositionParts.push(`${data.nbEnfants} ${t.children[lang]}`);
+  }
+  if (data.nbBebes && data.nbBebes > 0) {
+    compositionParts.push(`${data.nbBebes} ${t.babies[lang]}`);
+  }
+  const compositionText = compositionParts.join(', ') || '-';
+
+  // Navettes
+  let shuttleHtml = '';
+  if (data.navetteArrivee?.date || data.navetteRetour?.date) {
+    shuttleHtml = `
+      <tr>
+        <td style="padding: 12px 0; border-bottom: 1px solid #eee; color: #666;">${t.shuttles[lang]}</td>
+        <td style="padding: 12px 0; border-bottom: 1px solid #eee; color: #1a1a2e;">
+          ${data.navetteArrivee?.date ? `<strong>${t.arrival[lang]}:</strong> ${data.navetteArrivee.date}${data.navetteArrivee.heure ? ` ${data.navetteArrivee.heure}` : ''}${data.navetteArrivee.vol ? ` (${data.navetteArrivee.vol})` : ''}<br>` : ''}
+          ${data.navetteRetour?.date ? `<strong>${t.departure[lang]}:</strong> ${data.navetteRetour.date}${data.navetteRetour.heure ? ` ${data.navetteRetour.heure}` : ''}${data.navetteRetour.vol ? ` (${data.navetteRetour.vol})` : ''}` : ''}
+        </td>
+      </tr>
+    `;
+  }
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html dir="${dir}" lang="${lang}">
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background: #f5f5f5; direction: ${dir}; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 40px 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .header h1 { margin: 0; font-size: 28px; color: #C9A227; }
+        .header .subtitle { margin-top: 10px; opacity: 0.9; font-size: 14px; }
+        .content { background: white; padding: 40px 30px; border-radius: 0 0 10px 10px; text-align: ${textAlign}; }
+        .success-badge { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 15px 25px; border-radius: 50px; display: inline-block; font-weight: bold; font-size: 16px; margin-bottom: 20px; }
+        .summary-box { background: #f8f9fa; border-radius: 12px; padding: 25px; margin: 25px 0; }
+        .summary-title { font-size: 18px; font-weight: bold; color: #1a1a2e; margin-bottom: 15px; }
+        .summary-table { width: 100%; }
+        .summary-table td { padding: 12px 0; border-bottom: 1px solid #eee; }
+        .next-steps { background: linear-gradient(135deg, #f8f6f0 0%, #fff9e6 100%); border: 2px solid #C9A227; border-radius: 12px; padding: 25px; margin: 25px 0; }
+        .next-steps-title { font-size: 16px; font-weight: bold; color: #C9A227; margin-bottom: 10px; }
+        .contact-box { background: #f0f7ff; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center; }
+        .footer { text-align: center; margin-top: 30px; color: #888; font-size: 12px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>K Prestige</h1>
+          <div class="subtitle">Pessah 2026 • Cabogata Beach Hotel 5*</div>
+        </div>
+        <div class="content">
+          <div style="text-align: center;">
+            <span class="success-badge">✓ ${t.thankYou[lang]}</span>
+          </div>
+
+          <p style="font-size: 18px; color: #1a1a2e;">${t.greeting[lang]} ${data.nomPrenom},</p>
+
+          <p style="color: #555;">${t.confirmed[lang]}</p>
+
+          <div class="summary-box">
+            <div class="summary-title">${t.summaryTitle[lang]}</div>
+            <table class="summary-table">
+              <tr>
+                <td style="padding: 12px 0; border-bottom: 1px solid #eee; color: #666;">${t.fileNumber[lang]}</td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #eee; color: #1a1a2e; font-weight: bold; font-family: monospace; font-size: 18px;">${data.dossierCode}</td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 0; border-bottom: 1px solid #eee; color: #666;">${t.contact[lang]}</td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #eee; color: #1a1a2e;">${data.nomPrenom}<br><span style="color: #666; font-size: 14px;">${data.email}${data.telephone ? `<br>${data.telephone}` : ''}</span></td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 0; border-bottom: 1px solid #eee; color: #666;">${t.composition[lang]}</td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #eee; color: #1a1a2e;">${compositionText}</td>
+              </tr>
+              ${shuttleHtml}
+            </table>
+          </div>
+
+          <div class="next-steps">
+            <div class="next-steps-title">${t.nextSteps[lang]}</div>
+            <p style="margin: 0; color: #555;">${t.nextStepsDesc[lang]}</p>
+          </div>
+
+          <div class="contact-box">
+            <p style="margin: 0 0 10px 0; font-weight: bold; color: #1a1a2e;">${t.questions[lang]}</p>
+            <p style="margin: 0; color: #555;">${t.contactUs[lang]}</p>
+            <p style="margin: 10px 0 0 0;">
+              <a href="mailto:contact@kprestige.com" style="color: #C9A227; text-decoration: none;">contact@kprestige.com</a>
+            </p>
+          </div>
+        </div>
+        <div class="footer">
+          <p>© 2026 K Prestige • ${t.footer[lang]}</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  await resend.emails.send({
+    from: fromEmail,
+    to: [data.email],
+    subject: t.subject[lang],
+    html: htmlContent,
+  });
+}
+
+// Export pour utilisation dans d'autres routes
+export { sendConfirmationEmail, type ConfirmationEmailData, type Language };

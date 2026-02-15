@@ -263,13 +263,53 @@ export function PublicNavigation() {
               </Link>
             </div>
 
-            {/* Mobile Menu Button */}
-            <button
-              className={cn("lg:hidden p-2 z-10 transition-colors text-gray-700", dir === 'rtl' ? 'mr-auto' : 'ml-auto')}
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+            {/* Mobile: Language + Menu Button */}
+            <div className={cn("lg:hidden flex items-center gap-2 z-10", dir === 'rtl' ? 'mr-auto flex-row-reverse' : 'ml-auto')}>
+              {/* Language Selector Mobile - Visible */}
+              <div className="relative">
+                <button
+                  onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+                  className="flex items-center gap-1 px-2 py-2 text-gray-700 hover:text-[var(--gold)] transition-colors rounded-lg"
+                >
+                  <span className="text-lg">{currentLang?.flag}</span>
+                  <ChevronDown className={cn('w-3 h-3 transition-transform', langDropdownOpen && 'rotate-180')} />
+                </button>
+
+                {langDropdownOpen && (
+                  <div className={cn("absolute top-full mt-1 z-50", dir === 'rtl' ? 'left-0' : 'right-0')}>
+                    <div className="w-36 bg-white rounded-lg shadow-xl border border-gray-200 py-2">
+                      {LANGUAGES.map((langOption) => (
+                        <button
+                          key={langOption.code}
+                          onClick={() => {
+                            setLang(langOption.code);
+                            setLangDropdownOpen(false);
+                          }}
+                          className={cn(
+                            'w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors',
+                            lang === langOption.code
+                              ? 'text-[var(--gold)] bg-[var(--gold-pale)]/20'
+                              : 'text-gray-700 hover:text-[var(--gold)] hover:bg-gray-50',
+                            dir === 'rtl' ? 'flex-row-reverse text-right' : 'text-left'
+                          )}
+                        >
+                          <span className="text-lg">{langOption.flag}</span>
+                          <span>{langOption.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Menu Button */}
+              <button
+                className="p-2 transition-colors text-gray-700"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            </div>
           </div>
         </div>
 

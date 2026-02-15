@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MONDAY_COLUMNS, MONDAY_OPTIONS } from '@/lib/monday-config';
+import { sendConfirmationEmail, type ConfirmationEmailData, type Language } from '@/app/api/inscription/draft/route';
 
 const MONDAY_API_KEY = process.env.MONDAY_API_KEY;
 const BOARD_ID = '5088974391';
@@ -56,6 +57,9 @@ interface FormData {
   // Monday item existant (si inscription reprise)
   mondayItemId?: string;
   dossierCode?: string;
+
+  // Langue pour les emails
+  language?: 'fr' | 'en' | 'he' | 'es';
 }
 
 async function mondayRequest(query: string) {
@@ -352,6 +356,39 @@ export async function POST(request: NextRequest) {
         uploadResults.push({ url, success: !!uploadResult });
       }
       console.log('Passport upload results:', uploadResults);
+    }
+
+    // Envoyer l'email de confirmation au client
+    if (data.email && process.env.RESEND_API_KEY) {
+      try {
+        const nbEnfantsTotal = (data.nbEnfants3ans || 0) + (data.nbEnfants4a6 || 0) + (data.nbEnfants7a11 || 0);
+
+        const confirmationData: ConfirmationEmailData = {
+          nomPrenom: data.nomPrenom,
+          email: data.email,
+          telephone: data.telephone,
+          dossierCode: data.dossierCode || '',
+          nbAdultes: data.nbAdultes,
+          nbEnfants: nbEnfantsTotal,
+          nbBebes: data.nbBebe,
+          navetteArrivee: data.dateArrivee ? {
+            date: data.dateArrivee,
+            heure: data.heureArrivee,
+            vol: data.volArrivee,
+          } : undefined,
+          navetteRetour: data.dateRetour ? {
+            date: data.dateRetour,
+            heure: data.heureDepart,
+            vol: data.volDepart,
+          } : undefined,
+        };
+
+        await sendConfirmationEmail(confirmationData, (data.language || 'fr') as Language);
+        console.log('Email de confirmation envoyé à:', data.email);
+      } catch (emailError) {
+        console.error('Erreur envoi email de confirmation:', emailError);
+        // On continue même si l'email échoue - l'inscription est enregistrée
+      }
     }
 
     return NextResponse.json({
