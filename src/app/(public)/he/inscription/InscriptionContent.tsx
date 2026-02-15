@@ -27,7 +27,6 @@ import {
   RefreshCw,
   FolderOpen
 } from 'lucide-react';
-import { useLanguage } from '@/lib/LanguageContext';
 import { cn } from '@/lib/utils';
 import { MONDAY_LABELS } from '@/lib/monday-config';
 
@@ -100,21 +99,29 @@ const initialFormData: FormData = {
 };
 
 const STEPS = [
-  { id: 1, title: 'Contact', shortTitle: 'Contact', icon: User },
-  { id: 2, title: 'Groupe', shortTitle: 'Groupe', icon: Users },
-  { id: 3, title: 'Navettes', shortTitle: 'Navettes', icon: Bus },
-  { id: 4, title: 'Voyageurs', shortTitle: 'Voyageurs', icon: UserCheck },
-  { id: 5, title: 'Repas', shortTitle: 'Repas', icon: Utensils },
-  { id: 6, title: 'Infos', shortTitle: 'Infos', icon: MessageSquare },
-  { id: 7, title: 'Récap', shortTitle: 'Récap', icon: CheckCircle },
+  { id: 1, title: 'פרטי קשר', shortTitle: 'קשר', icon: User },
+  { id: 2, title: 'קבוצה', shortTitle: 'קבוצה', icon: Users },
+  { id: 3, title: 'הסעות', shortTitle: 'הסעות', icon: Bus },
+  { id: 4, title: 'נוסעים', shortTitle: 'נוסעים', icon: UserCheck },
+  { id: 5, title: 'ארוחות', shortTitle: 'ארוחות', icon: Utensils },
+  { id: 6, title: 'מידע', shortTitle: 'מידע', icon: MessageSquare },
+  { id: 7, title: 'סיכום', shortTitle: 'סיכום', icon: CheckCircle },
 ];
 
-// Validation email simple
+// Shuttle options in Hebrew
+const NAVETTE_OPTIONS_HE = [
+  { value: '0', label: 'הסעה להגעה בלבד' },
+  { value: '1', label: 'הסעה ליציאה בלבד' },
+  { value: '2', label: 'שתי ההסעות' },
+  { value: '3', label: 'לא צריך הסעה' },
+];
+
+// Email validation
 const isValidEmail = (email: string): boolean => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
 
-// Composant Input stylisé
+// Styled Input component
 function StyledInput({
   label,
   required,
@@ -138,47 +145,7 @@ function StyledInput({
   );
 }
 
-// Composant Select stylisé
-function StyledSelect({
-  label,
-  required,
-  options,
-  value,
-  onChange,
-  className
-}: {
-  label?: string;
-  required?: boolean;
-  options: { value: string; label: string }[];
-  value: string;
-  onChange: (value: string) => void;
-  className?: string;
-}) {
-  return (
-    <div className={className}>
-      {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          {label} {required && <span className="text-[#C9A227]">*</span>}
-        </label>
-      )}
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full px-4 py-3 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl
-                   focus:outline-none focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]
-                   transition-all duration-200 text-gray-800 appearance-none cursor-pointer"
-      >
-        <option value="">Sélectionner...</option>
-        {options.map(opt => (
-          <option key={opt.value} value={opt.value}>{opt.label}</option>
-        ))}
-      </select>
-    </div>
-  );
-}
-
-export default function InscriptionFormContent() {
-  const { dir } = useLanguage();
+export default function InscriptionFormContentHE() {
   const [hasStarted, setHasStarted] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>(initialFormData);
@@ -186,7 +153,7 @@ export default function InscriptionFormContent() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Système de dossier
+  // Folder system
   const [dossierCode, setDossierCode] = useState<string | null>(null);
   const [mondayItemId, setMondayItemId] = useState<string | null>(null);
   const [isLoadingDossier, setIsLoadingDossier] = useState(false);
@@ -197,9 +164,8 @@ export default function InscriptionFormContent() {
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [codeCopied, setCodeCopied] = useState(false);
 
-  // Créer un nouveau dossier après l'étape 1
   const createDossier = useCallback(async () => {
-    if (dossierCode) return; // Déjà créé
+    if (dossierCode) return;
 
     try {
       const response = await fetch('/api/inscription/draft', {
@@ -212,6 +178,7 @@ export default function InscriptionFormContent() {
           email: formData.email,
           telephone: formData.telephone,
           nomPrenom: formData.nomPrenom,
+          lang: 'he',
         }),
       });
       const result = await response.json();
@@ -223,11 +190,10 @@ export default function InscriptionFormContent() {
         setLastSaved(new Date());
       }
     } catch (err) {
-      console.error('Erreur création dossier:', err);
+      console.error('שגיאה ביצירת תיק:', err);
     }
   }, [dossierCode, formData, currentStep]);
 
-  // Sauvegarder le dossier
   const saveDossier = useCallback(async () => {
     if (!dossierCode) return;
 
@@ -239,38 +205,36 @@ export default function InscriptionFormContent() {
         body: JSON.stringify({
           action: 'update',
           code: dossierCode,
-          mondayItemId, // Important: envoyer le mondayItemId pour l'update
+          mondayItemId,
           formData,
           currentStep,
           email: formData.email,
           telephone: formData.telephone,
           nomPrenom: formData.nomPrenom,
+          lang: 'he',
         }),
       });
       const result = await response.json();
-      // Si l'API a créé/récupéré un mondayItemId, le stocker
       if (result.mondayItemId && !mondayItemId) {
         setMondayItemId(result.mondayItemId);
       }
       setLastSaved(new Date());
     } catch (err) {
-      console.error('Erreur sauvegarde:', err);
+      console.error('שגיאה בשמירה:', err);
     } finally {
       setIsSaving(false);
     }
   }, [dossierCode, mondayItemId, formData, currentStep]);
 
-  // Sauvegarde automatique quand on change d'étape
   useEffect(() => {
     if (dossierCode && currentStep > 1) {
       saveDossier();
     }
   }, [currentStep, dossierCode, saveDossier]);
 
-  // Reprendre un dossier existant
   const resumeDossier = async () => {
     if (!resumeCode.trim()) {
-      setResumeError('Veuillez entrer un code de dossier');
+      setResumeError('אנא הזן קוד תיק');
       return;
     }
 
@@ -291,16 +255,15 @@ export default function InscriptionFormContent() {
         setShowResumeModal(false);
         setHasStarted(true);
       } else {
-        setResumeError(result.error || 'Dossier non trouvé');
+        setResumeError(result.error || 'התיק לא נמצא');
       }
     } catch {
-      setResumeError('Erreur de connexion');
+      setResumeError('שגיאת חיבור');
     } finally {
       setIsLoadingDossier(false);
     }
   };
 
-  // Copier le code
   const copyCode = () => {
     if (dossierCode) {
       navigator.clipboard.writeText(dossierCode);
@@ -327,7 +290,6 @@ export default function InscriptionFormContent() {
     setFormData({ ...formData, participants: newParticipants });
   };
 
-  // State pour suivre quel participant est en cours d'upload
   const [uploadingParticipantIndex, setUploadingParticipantIndex] = useState<number | null>(null);
 
   const handleParticipantPassportUpload = async (e: React.ChangeEvent<HTMLInputElement>, participantIndex: number) => {
@@ -339,7 +301,7 @@ export default function InscriptionFormContent() {
 
     try {
       const uploadFormData = new FormData();
-      uploadFormData.append('files', files[0]); // Un seul fichier par participant
+      uploadFormData.append('files', files[0]);
       const participantName = formData.participants[participantIndex]?.nom || formData.nomPrenom || 'client';
       uploadFormData.append('clientName', participantName);
 
@@ -353,7 +315,6 @@ export default function InscriptionFormContent() {
           passportUrl: result.urls[0],
           passportFileName: files[0].name
         };
-        // Mettre à jour passportUrls pour Monday (cumul de tous les passeports)
         const allPassportUrls = newParticipants
           .map(p => p.passportUrl)
           .filter((url): url is string => !!url);
@@ -363,10 +324,10 @@ export default function InscriptionFormContent() {
           passportUrls: allPassportUrls
         }));
       } else {
-        setError(result.error || 'Erreur lors de l\'upload');
+        setError(result.error || 'שגיאה בהעלאה');
       }
     } catch {
-      setError('Erreur de connexion lors de l\'upload');
+      setError('שגיאת חיבור בהעלאה');
     } finally {
       setUploadingParticipantIndex(null);
       e.target.value = '';
@@ -380,7 +341,6 @@ export default function InscriptionFormContent() {
       passportUrl: '',
       passportFileName: ''
     };
-    // Mettre à jour passportUrls pour Monday
     const allPassportUrls = newParticipants
       .map(p => p.passportUrl)
       .filter((url): url is string => !!url);
@@ -403,11 +363,9 @@ export default function InscriptionFormContent() {
 
   const nextStep = async () => {
     if (currentStep < STEPS.length) {
-      // Créer le dossier après l'étape 1 (quand on a l'email)
       if (currentStep === 1 && !dossierCode) {
         await createDossier();
       } else if (dossierCode) {
-        // Mettre à jour Monday à chaque clic sur "Suivant"
         await saveDossier();
       }
       setCurrentStep(currentStep + 1);
@@ -424,13 +382,12 @@ export default function InscriptionFormContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
-          mondayItemId,  // ID Monday existant pour mise à jour
-          dossierCode,   // Code dossier pour traçabilité
+          mondayItemId,
+          dossierCode,
         }),
       });
       const result = await response.json();
       if (result.success) {
-        // Marquer le dossier comme soumis
         if (dossierCode) {
           await fetch('/api/inscription/draft', {
             method: 'POST',
@@ -444,10 +401,10 @@ export default function InscriptionFormContent() {
         }
         setIsSuccess(true);
       } else {
-        setError(result.error || 'Une erreur est survenue');
+        setError(result.error || 'אירעה שגיאה');
       }
     } catch {
-      setError('Erreur de connexion. Veuillez réessayer.');
+      setError('שגיאת חיבור. אנא נסה שוב.');
     } finally {
       setIsSubmitting(false);
     }
@@ -459,11 +416,9 @@ export default function InscriptionFormContent() {
       case 2: return formData.nbAdultes >= 1 && !!formData.dateArrivee && !!formData.dateRetour;
       case 3: {
         if (!formData.navetteChoix) return false;
-        // Navette arrivée ou les deux
         if (formData.navetteChoix === '0' || formData.navetteChoix === '2') {
           if (!formData.heureArrivee || !formData.volArrivee) return false;
         }
-        // Navette départ ou les deux
         if (formData.navetteChoix === '1' || formData.navetteChoix === '2') {
           if (!formData.heureDepart || !formData.volDepart) return false;
         }
@@ -477,64 +432,60 @@ export default function InscriptionFormContent() {
     }
   };
 
-  // Page d'accueil avant le formulaire
+  // Home page before form - RTL
   if (!hasStarted) {
     return (
       <>
         <PublicNavigation />
-        <main className="min-h-screen bg-gradient-to-b from-[#faf9f6] to-white">
-          {/* Hero - plus petit */}
+        <main className="min-h-screen bg-gradient-to-b from-[#faf9f6] to-white" dir="rtl">
           <div className="relative h-[35vh] md:h-[40vh] overflow-hidden">
-            <Image src="/images/hotel/FAÇADE.jpg" alt="Pessah 2026" fill className="object-cover" priority />
+            <Image src="/images/hotel/FAÇADE.jpg" alt="פסח 2026" fill className="object-cover" priority />
             <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/70" />
             <div className="absolute inset-0 flex flex-col items-center justify-center text-white text-center px-6">
               <span className="text-[#C9A227] uppercase tracking-[0.3em] text-sm mb-3 font-medium">
-                Pessah 2026
+                פסח 2026
               </span>
               <h1 className="text-3xl md:text-4xl lg:text-5xl mb-2" style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}>
-                Formulaire d'inscription
+                טופס הרשמה
               </h1>
               <p className="text-white/80 text-base" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                Cabo Gata · 31 Mars - 12 Avril 2026
+                קאבו גאטה · 31 מרץ - 12 אפריל 2026
               </p>
             </div>
           </div>
 
-          {/* Contenu introduction */}
           <div className="max-w-2xl mx-auto px-6 -mt-16 relative z-10 pb-20">
             <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-10">
-              {/* Texte original Monday */}
               <div className="mb-8">
                 <p className="text-gray-700 font-semibold mb-4" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  Merci de remplir un formulaire par famille.
+                  אנא מלאו טופס אחד לכל משפחה.
                 </p>
                 <p className="text-gray-600 leading-relaxed mb-4" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  Chaque famille (parents + enfants) doit compléter son propre formulaire, même si la réservation a été faite par une seule personne pour plusieurs proches.
+                  כל משפחה (הורים + ילדים) חייבת למלא את הטופס שלה, גם אם ההזמנה בוצעה על ידי אדם אחד עבור מספר קרובים.
                 </p>
                 <p className="text-gray-600 mb-3" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  👉 Si vous avez réservé pour :
+                  👈 אם הזמנתם עבור:
                 </p>
-                <ul className="text-gray-600 mb-4 ml-6 space-y-1" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  <li>• vos parents</li>
-                  <li>• vos enfants</li>
-                  <li>• des cousins</li>
-                  <li>• une autre famille</li>
+                <ul className="text-gray-600 mb-4 mr-6 space-y-1" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                  <li>• ההורים שלכם</li>
+                  <li>• הילדים שלכם</li>
+                  <li>• בני דודים</li>
+                  <li>• משפחה אחרת</li>
                 </ul>
                 <p className="text-gray-600 leading-relaxed mb-4" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  Alors chaque foyer doit remplir un formulaire séparé avec ses propres informations (noms, dates de séjour, passeports, etc.).
+                  אז כל משק בית חייב למלא טופס נפרד עם המידע שלו (שמות, תאריכי שהייה, דרכונים וכו').
                 </p>
                 <p className="text-gray-600 leading-relaxed mb-4" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  Cela nous permet d'organiser correctement les chambres, transferts et formalités administratives.
+                  זה עוזר לנו לארגן נכון את החדרים, ההסעות והפורמליות המנהלתיות.
                 </p>
                 <p className="text-gray-600 mb-2" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  Merci pour votre collaboration.
+                  תודה על שיתוף הפעולה.
                 </p>
                 <p className="text-[#C9A227] font-semibold" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  L'équipe K PRESTIGE
+                  צוות K PRESTIGE
                 </p>
               </div>
 
-              {/* Boutons commencer et reprendre */}
               <div className="space-y-4">
                 <button
                   onClick={() => setHasStarted(true)}
@@ -542,8 +493,8 @@ export default function InscriptionFormContent() {
                            hover:from-[#B8922A] hover:to-[#C9A227] text-white rounded-xl font-medium text-lg
                            transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
-                  Nouvelle inscription
-                  <ChevronRight className="w-5 h-5" />
+                  הרשמה חדשה
+                  <ChevronLeft className="w-5 h-5" />
                 </button>
 
                 <button
@@ -553,19 +504,18 @@ export default function InscriptionFormContent() {
                            transition-all duration-300"
                 >
                   <FolderOpen className="w-5 h-5" />
-                  Reprendre une inscription
+                  המשך הרשמה
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Modal reprendre inscription */}
           {showResumeModal && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+              <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6" dir="rtl">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-semibold text-gray-800" style={{ fontFamily: 'var(--font-cormorant)' }}>
-                    Reprendre mon inscription
+                    המשך ההרשמה שלי
                   </h3>
                   <button
                     onClick={() => { setShowResumeModal(false); setResumeError(null); setResumeCode(''); }}
@@ -576,7 +526,7 @@ export default function InscriptionFormContent() {
                 </div>
 
                 <p className="text-gray-600 mb-4 text-sm">
-                  Entrez le code de dossier que vous avez reçu par email pour reprendre votre inscription.
+                  הזן את קוד התיק שקיבלת במייל כדי להמשיך את ההרשמה.
                 </p>
 
                 <div className="mb-4">
@@ -584,10 +534,11 @@ export default function InscriptionFormContent() {
                     type="text"
                     value={resumeCode}
                     onChange={(e) => setResumeCode(e.target.value.toUpperCase())}
-                    placeholder="Ex: KP26123"
+                    placeholder="לדוגמה: KP26123"
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl text-center text-2xl font-mono tracking-widest
                              focus:outline-none focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]"
                     maxLength={7}
+                    dir="ltr"
                   />
                 </div>
 
@@ -604,7 +555,7 @@ export default function InscriptionFormContent() {
                   {isLoadingDossier ? (
                     <Loader2 className="w-5 h-5 animate-spin mx-auto" />
                   ) : (
-                    'Reprendre'
+                    'המשך'
                   )}
                 </button>
               </div>
@@ -616,32 +567,30 @@ export default function InscriptionFormContent() {
     );
   }
 
-  // Page de succès
+  // Success page
   if (isSuccess) {
     return (
       <>
         <PublicNavigation />
-        <main className="min-h-screen bg-gradient-to-b from-[#faf9f6] to-white">
-          {/* Hero minimal */}
+        <main className="min-h-screen bg-gradient-to-b from-[#faf9f6] to-white" dir="rtl">
           <div className="relative h-[30vh] overflow-hidden">
-            <Image src="/images/hotel/FAÇADE.jpg" alt="Pessah 2026" fill className="object-cover" />
+            <Image src="/images/hotel/FAÇADE.jpg" alt="פסח 2026" fill className="object-cover" />
             <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/60" />
           </div>
 
-          {/* Contenu confirmation */}
           <div className="max-w-2xl mx-auto px-6 -mt-20 relative z-10 pb-20">
             <div className="bg-white rounded-3xl shadow-2xl p-10 text-center">
               <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-400 to-green-500 flex items-center justify-center mx-auto mb-6 shadow-lg">
                 <CheckCircle className="w-10 h-10 text-white" />
               </div>
               <h1 className="text-3xl md:text-4xl text-gray-800 mb-6" style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}>
-                Confirmation d'enregistrement
+                אישור הרשמה
               </h1>
               <div className="text-gray-600 leading-relaxed space-y-4 mb-10" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                <p>Votre demande d'enregistrement a bien été prise en compte.</p>
-                <p>Si vous avez sollicité le service de navette, l'équipe K PRESTIGE reviendra vers vous avec les informations détaillées dès que le planning des transferts sera finalisé en fonction des horaires de vol.</p>
-                <p>Merci pour votre collaboration et au plaisir de vous accueillir.</p>
-                <p className="text-[#C9A227] font-semibold text-lg mt-6">L'équipe K PRESTIGE</p>
+                <p>בקשת ההרשמה שלך התקבלה.</p>
+                <p>אם ביקשת שירות הסעות, צוות K PRESTIGE יצור איתך קשר עם מידע מפורט ברגע שלוח הזמנים של ההסעות יסתיים בהתאם לזמני הטיסות.</p>
+                <p>תודה על שיתוף הפעולה ומצפים לארח אתכם.</p>
+                <p className="text-[#C9A227] font-semibold text-lg mt-6">צוות K PRESTIGE</p>
               </div>
               <a
                 href="/"
@@ -649,7 +598,7 @@ export default function InscriptionFormContent() {
                          hover:from-[#B8922A] hover:to-[#C9A227] text-white rounded-xl font-medium
                          transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
-                Retour à l'accueil
+                חזרה לדף הבית
               </a>
             </div>
           </div>
@@ -662,12 +611,11 @@ export default function InscriptionFormContent() {
   return (
     <>
       <PublicNavigation />
-      <main className={cn("min-h-screen bg-gradient-to-b from-[#faf9f6] to-white", dir === 'rtl' && 'text-right')} dir={dir}>
-        {/* Hero avec image */}
+      <main className="min-h-screen bg-gradient-to-b from-[#faf9f6] to-white" dir="rtl">
         <div className="relative h-[35vh] md:h-[40vh] overflow-hidden">
           <Image
             src="/images/hotel/FAÇADE.jpg"
-            alt="Pessah 2026"
+            alt="פסח 2026"
             fill
             className="object-cover"
             priority
@@ -675,20 +623,18 @@ export default function InscriptionFormContent() {
           <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/70" />
           <div className="absolute inset-0 flex flex-col items-center justify-center text-white text-center px-6">
             <span className="text-[#C9A227] uppercase tracking-[0.3em] text-sm mb-3 font-medium">
-              Pessah 2026
+              פסח 2026
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl mb-3" style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}>
-              Formulaire d'inscription
+              טופס הרשמה
             </h1>
             <p className="text-white/80 text-lg" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-              Cabo Gata · 31 Mars - 12 Avril 2026
+              קאבו גאטה · 31 מרץ - 12 אפריל 2026
             </p>
           </div>
         </div>
 
-        {/* Formulaire */}
         <div className="max-w-4xl mx-auto px-4 md:px-6 -mt-16 relative z-10 pb-20">
-          {/* Bandeau code dossier */}
           {dossierCode && (
             <div className="bg-gradient-to-r from-[#1a1a2e] to-[#16213e] rounded-t-2xl px-4 py-3 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -696,19 +642,19 @@ export default function InscriptionFormContent() {
                   <FolderOpen className="w-4 h-4 text-[#C9A227]" />
                 </div>
                 <div>
-                  <p className="text-white/60 text-xs">Votre dossier</p>
-                  <p className="text-white font-mono text-lg tracking-wider">{dossierCode}</p>
+                  <p className="text-white/60 text-xs">התיק שלך</p>
+                  <p className="text-white font-mono text-lg tracking-wider" dir="ltr">{dossierCode}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 {isSaving ? (
                   <span className="text-white/60 text-xs flex items-center gap-1">
                     <RefreshCw className="w-3 h-3 animate-spin" />
-                    Sauvegarde...
+                    שומר...
                   </span>
                 ) : lastSaved && (
                   <span className="text-green-400/80 text-xs hidden sm:block">
-                    ✓ Sauvegardé
+                    ✓ נשמר
                   </span>
                 )}
                 <button
@@ -716,29 +662,25 @@ export default function InscriptionFormContent() {
                   className="flex items-center gap-1 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-white text-sm transition-colors"
                 >
                   <Copy className="w-3.5 h-3.5" />
-                  {codeCopied ? 'Copié !' : 'Copier'}
+                  {codeCopied ? 'הועתק!' : 'העתק'}
                 </button>
               </div>
             </div>
           )}
 
-          {/* Info conservez le code - affiché une fois après création */}
           {dossierCode && currentStep === 2 && (
             <div className="bg-blue-50 border-b border-blue-100 px-4 py-3">
               <p className="text-blue-800 text-sm text-center">
-                💡 <strong>Gardez ce numéro précieusement !</strong> Il vous permettra de reprendre votre inscription à tout moment.
+                💡 <strong>שמרו את המספר הזה!</strong> הוא יאפשר לכם להמשיך את ההרשמה בכל עת.
               </p>
               <p className="text-blue-600 text-xs text-center mt-1">
-                📧 Un email vous a été envoyé. <strong>Pensez à vérifier vos spams</strong> si vous ne le trouvez pas.
+                📧 נשלח אליכם מייל. <strong>אנא בדקו את תיקיית הספאם</strong> אם לא מצאתם אותו.
               </p>
             </div>
           )}
 
-          {/* Carte principale */}
           <div className={cn("bg-white shadow-2xl overflow-hidden", dossierCode ? "rounded-b-3xl" : "rounded-3xl")}>
-            {/* Progress bar */}
             <div className="px-3 md:px-8 pt-6 pb-4 border-b border-gray-100">
-              {/* Steps - version compacte */}
               <div className="flex items-center justify-between mb-3">
                 {STEPS.map((step, index) => {
                   const Icon = step.icon;
@@ -774,7 +716,6 @@ export default function InscriptionFormContent() {
                   );
                 })}
               </div>
-              {/* Barre de progression */}
               <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-[#C9A227] to-[#D4AF37] transition-all duration-500 ease-out"
@@ -783,80 +724,79 @@ export default function InscriptionFormContent() {
               </div>
             </div>
 
-            {/* Contenu du formulaire */}
             <div className="p-6 md:p-10">
-              {/* Étape 1: Contact */}
+              {/* Step 1: Contact */}
               {currentStep === 1 && (
                 <div className="space-y-6 animate-fadeIn">
                   <div className="mb-8">
                     <h2 className="text-2xl md:text-3xl text-gray-800" style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}>
-                      Vos coordonnées
+                      פרטי הקשר שלך
                     </h2>
-                    <p className="text-gray-500 mt-2">Informations de contact pour votre réservation</p>
+                    <p className="text-gray-500 mt-2">פרטי יצירת קשר להזמנה שלך</p>
                   </div>
 
                   <StyledInput
-                    label="Nom + Prénom"
+                    label="שם מלא"
                     required
                     value={formData.nomPrenom}
                     onChange={(e) => setFormData({ ...formData, nomPrenom: e.target.value })}
-                    placeholder="Ex: Dupont Jean"
+                    placeholder="לדוגמה: ישראל ישראלי"
                   />
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Téléphone portable <span className="text-[#C9A227]">*</span>
+                      טלפון נייד <span className="text-[#C9A227]">*</span>
                     </label>
                     <PhoneInput
                       value={formData.telephone}
                       onChange={(phone) => setFormData({ ...formData, telephone: phone })}
                       required
-                      dir={dir}
+                      dir="ltr"
                     />
                   </div>
 
                   <div>
                     <StyledInput
-                      label="E-mail"
+                      label="דואר אלקטרוני"
                       required
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder="votre@email.com"
+                      placeholder="your@email.com"
+                      dir="ltr"
                     />
                     {formData.email && !isValidEmail(formData.email) && (
-                      <p className="text-red-500 text-xs mt-1">Veuillez entrer une adresse email valide</p>
+                      <p className="text-red-500 text-xs mt-1">אנא הזן כתובת מייל תקינה</p>
                     )}
                   </div>
                 </div>
               )}
 
-              {/* Étape 2: Composition de la famille */}
+              {/* Step 2: Family Composition */}
               {currentStep === 2 && (
                 <div className="space-y-6 animate-fadeIn">
                   <div className="mb-8">
                     <h2 className="text-2xl md:text-3xl text-gray-800" style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}>
-                      Composition de la famille
+                      הרכב המשפחה
                     </h2>
-                    <p className="text-gray-500 mt-2">Détails des participants à votre séjour</p>
+                    <p className="text-gray-500 mt-2">פרטי המשתתפים בשהייה שלך</p>
                   </div>
 
                   <StyledInput
-                    label="N° Devis"
+                    label="מספר הצעת מחיר"
                     value={formData.numDevis}
                     onChange={(e) => setFormData({ ...formData, numDevis: e.target.value })}
-                    placeholder="Si vous avez déjà reçu un devis"
+                    placeholder="אם כבר קיבלת הצעת מחיר"
                   />
 
-                  {/* Dates de séjour */}
                   <div className="bg-gradient-to-r from-[#faf9f6] to-[#f5f3ee] rounded-2xl p-5 border border-[#C9A227]/20">
                     <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-[#C9A227]" />
-                      Dates de séjour
+                      תאריכי שהייה
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <StyledInput
-                        label="Date d'arrivée"
+                        label="תאריך הגעה"
                         required
                         type="date"
                         value={formData.dateArrivee}
@@ -865,7 +805,7 @@ export default function InscriptionFormContent() {
                         max="2026-04-12"
                       />
                       <StyledInput
-                        label="Date de départ"
+                        label="תאריך יציאה"
                         required
                         type="date"
                         value={formData.dateRetour}
@@ -875,49 +815,44 @@ export default function InscriptionFormContent() {
                       />
                     </div>
                     <p className="text-sm text-gray-500 mt-3">
-                      Séjour du 31 mars au 12 avril 2026
+                      שהייה מ-31 מרץ עד 12 אפריל 2026
                     </p>
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <StyledInput
-                      label="Adultes"
+                      label="מבוגרים"
                       required
                       type="number"
                       min={0}
-                      placeholder=""
                       value={formData.nbAdultes || ''}
                       onChange={(e) => setFormData({ ...formData, nbAdultes: parseInt(e.target.value) || 0 })}
                     />
                     <StyledInput
-                      label="Bébés (0-2 ans)"
+                      label="תינוקות (0-2)"
                       type="number"
                       min={0}
-                      placeholder=""
                       value={formData.nbBebe || ''}
                       onChange={(e) => setFormData({ ...formData, nbBebe: parseInt(e.target.value) || 0 })}
                     />
                     <StyledInput
-                      label="Enfants 3 ans"
+                      label="ילדים גיל 3"
                       type="number"
                       min={0}
-                      placeholder=""
                       value={formData.nbEnfants3ans || ''}
                       onChange={(e) => setFormData({ ...formData, nbEnfants3ans: parseInt(e.target.value) || 0 })}
                     />
                     <StyledInput
-                      label="Enfants 4-6 ans"
+                      label="ילדים 4-6"
                       type="number"
                       min={0}
-                      placeholder=""
                       value={formData.nbEnfants4a6 || ''}
                       onChange={(e) => setFormData({ ...formData, nbEnfants4a6: parseInt(e.target.value) || 0 })}
                     />
                     <StyledInput
-                      label="Enfants 7-11 ans"
+                      label="ילדים 7-11"
                       type="number"
                       min={0}
-                      placeholder=""
                       value={formData.nbEnfants7a11 || ''}
                       onChange={(e) => setFormData({ ...formData, nbEnfants7a11: parseInt(e.target.value) || 0 })}
                     />
@@ -925,31 +860,30 @@ export default function InscriptionFormContent() {
                 </div>
               )}
 
-              {/* Étape 3: Navettes */}
+              {/* Step 3: Shuttles */}
               {currentStep === 3 && (
                 <div className="space-y-6 animate-fadeIn">
                   <div className="mb-8">
                     <h2 className="text-2xl md:text-3xl text-gray-800" style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}>
-                      Service navette aéroport
+                      שירות הסעות משדה התעופה
                     </h2>
-                    <p className="text-gray-500 mt-2">Transferts depuis/vers l'aéroport de Malaga</p>
+                    <p className="text-gray-500 mt-2">הסעות משדה התעופה מאלגה ואליו</p>
                   </div>
 
-                  {/* Info box */}
                   <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-5 border border-blue-100">
                     <div className="flex gap-3">
                       <Plane className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
                       <div className="text-sm text-blue-800">
-                        <p className="font-medium mb-2">Service navette Malaga uniquement</p>
+                        <p className="font-medium mb-2">שירות הסעות מאלגה בלבד</p>
                         <p className="text-blue-700 mb-2">
-                          Les navettes sont organisées uniquement au départ de l'aéroport de Malaga.
+                          ההסעות מאורגנות רק משדה התעופה של מאלגה.
                         </p>
                         <ul className="space-y-1 text-blue-700">
-                          <li>• <strong>31 mars 2026</strong> : navettes arrivées uniquement</li>
-                          <li>• <strong>12 avril 2026</strong> : navettes départs uniquement</li>
+                          <li>• <strong>31 מרץ 2026</strong>: הסעות הגעה בלבד</li>
+                          <li>• <strong>12 אפריל 2026</strong>: הסעות יציאה בלבד</li>
                         </ul>
                         <p className="text-blue-600 mt-2 text-xs">
-                          Les horaires de prise en charge seront communiqués ultérieurement en fonction des vols.
+                          זמני האיסוף יימסרו בהמשך בהתאם ללוח הטיסות.
                         </p>
                       </div>
                     </div>
@@ -957,29 +891,25 @@ export default function InscriptionFormContent() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-3">
-                      Navettes souhaitées <span className="text-[#C9A227]">*</span>
+                      הסעות מבוקשות <span className="text-[#C9A227]">*</span>
                     </label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {MONDAY_LABELS.navetteChoix.map((option) => (
+                      {NAVETTE_OPTIONS_HE.map((option) => (
                         <button
                           key={option.value}
                           type="button"
                           onClick={() => {
-                            // Réinitialiser les champs de navette quand on change de choix
                             const newData: Partial<FormData> = { navetteChoix: option.value };
-                            // Si "Pas de besoin" (value 3), on efface tous les champs
                             if (option.value === '3') {
                               newData.heureArrivee = '';
                               newData.volArrivee = '';
                               newData.heureDepart = '';
                               newData.volDepart = '';
                             }
-                            // Si navette arrivée uniquement, on efface les champs départ
                             if (option.value === '0') {
                               newData.heureDepart = '';
                               newData.volDepart = '';
                             }
-                            // Si navette départ uniquement, on efface les champs arrivée
                             if (option.value === '1') {
                               newData.heureArrivee = '';
                               newData.volArrivee = '';
@@ -987,7 +917,7 @@ export default function InscriptionFormContent() {
                             setFormData({ ...formData, ...newData });
                           }}
                           className={cn(
-                            "p-4 rounded-2xl border-2 text-left transition-all duration-200",
+                            "p-4 rounded-2xl border-2 text-right transition-all duration-200",
                             formData.navetteChoix === option.value
                               ? "border-[#C9A227] bg-[#C9A227]/5 shadow-md"
                               : "border-gray-200 hover:border-[#C9A227]/50 hover:bg-gray-50"
@@ -1007,22 +937,21 @@ export default function InscriptionFormContent() {
                     </div>
                   </div>
 
-                  {/* Champs arrivée - Date fixe 31 mars */}
                   {(formData.navetteChoix === '0' || formData.navetteChoix === '2') && (
                     <div className="bg-gray-50 rounded-2xl p-6 space-y-4 animate-fadeIn">
                       <h3 className="font-semibold text-gray-800 flex items-center gap-2">
                         <Plane className="w-4 h-4 text-[#C9A227]" />
-                        Informations arrivée
+                        פרטי הגעה
                       </h3>
                       <div className="flex items-center gap-2 mb-4 p-3 bg-[#C9A227]/10 rounded-xl">
                         <Calendar className="w-4 h-4 text-[#C9A227]" />
-                        <span className="font-medium text-gray-700">Date : <span className="text-[#C9A227]">31 Mars 2026</span></span>
+                        <span className="font-medium text-gray-700">תאריך: <span className="text-[#C9A227]">31 מרץ 2026</span></span>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4 text-gray-400" />
                           <StyledInput
-                            label="Heure d'arrivée"
+                            label="שעת הגעה"
                             required
                             type="time"
                             value={formData.heureArrivee}
@@ -1031,32 +960,32 @@ export default function InscriptionFormContent() {
                           />
                         </div>
                         <StyledInput
-                          label="Numéro de vol"
+                          label="מספר טיסה"
                           required
                           value={formData.volArrivee}
                           onChange={(e) => setFormData({ ...formData, volArrivee: e.target.value })}
-                          placeholder="Ex: AF1234"
+                          placeholder="לדוגמה: LY1234"
+                          dir="ltr"
                         />
                       </div>
                     </div>
                   )}
 
-                  {/* Champs départ - Date fixe 12 avril */}
                   {(formData.navetteChoix === '1' || formData.navetteChoix === '2') && (
                     <div className="bg-gray-50 rounded-2xl p-6 space-y-4 animate-fadeIn">
                       <h3 className="font-semibold text-gray-800 flex items-center gap-2">
                         <Plane className="w-4 h-4 text-[#C9A227] rotate-45" />
-                        Informations départ
+                        פרטי יציאה
                       </h3>
                       <div className="flex items-center gap-2 mb-4 p-3 bg-[#C9A227]/10 rounded-xl">
                         <Calendar className="w-4 h-4 text-[#C9A227]" />
-                        <span className="font-medium text-gray-700">Date : <span className="text-[#C9A227]">12 Avril 2026</span></span>
+                        <span className="font-medium text-gray-700">תאריך: <span className="text-[#C9A227]">12 אפריל 2026</span></span>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4 text-gray-400" />
                           <StyledInput
-                            label="Heure de départ"
+                            label="שעת יציאה"
                             required
                             type="time"
                             value={formData.heureDepart}
@@ -1065,11 +994,12 @@ export default function InscriptionFormContent() {
                           />
                         </div>
                         <StyledInput
-                          label="Numéro de vol"
+                          label="מספר טיסה"
                           required
                           value={formData.volDepart}
                           onChange={(e) => setFormData({ ...formData, volDepart: e.target.value })}
-                          placeholder="Ex: AF5678"
+                          placeholder="לדוגמה: LY5678"
+                          dir="ltr"
                         />
                       </div>
                     </div>
@@ -1077,20 +1007,19 @@ export default function InscriptionFormContent() {
                 </div>
               )}
 
-              {/* Étape 4: Participants */}
+              {/* Step 4: Participants */}
               {currentStep === 4 && (
                 <div className="space-y-6 animate-fadeIn">
                   <div className="mb-8">
                     <h2 className="text-2xl md:text-3xl text-gray-800" style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}>
-                      Informations voyageurs
+                      פרטי הנוסעים
                     </h2>
-                    <p className="text-gray-500 mt-2">Identité de chaque participant</p>
+                    <p className="text-gray-500 mt-2">זהות כל משתתף</p>
                   </div>
 
-                  {/* Nombre de personnes */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-3">
-                      Nombre de personnes <span className="text-[#C9A227]">*</span>
+                      מספר אנשים <span className="text-[#C9A227]">*</span>
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {['1', '2', '3', '4', '5', '6', '7', '8'].map((num) => (
@@ -1111,14 +1040,12 @@ export default function InscriptionFormContent() {
                     </div>
                   </div>
 
-                  {/* Info importante */}
                   <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                     <p className="text-sm text-amber-800">
-                      <strong>Important :</strong> Pour chaque personne, téléchargez son passeport (photo lisible et de bonne qualité).
+                      <strong>חשוב:</strong> עבור כל אדם, העלו את הדרכון שלו (תמונה ברורה וקריאה).
                     </p>
                   </div>
 
-                  {/* Liste des participants avec upload passeport */}
                   <div className="space-y-4">
                     {formData.participants.map((participant, index) => (
                       <div key={index} className="bg-gray-50 rounded-2xl p-5">
@@ -1126,18 +1053,18 @@ export default function InscriptionFormContent() {
                           <div className="w-6 h-6 rounded-full bg-[#C9A227]/20 text-[#C9A227] flex items-center justify-center text-sm font-bold">
                             {index + 1}
                           </div>
-                          Personne {index + 1}
+                          אדם {index + 1}
                         </h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                           <StyledInput
-                            label="Nom + Prénom"
+                            label="שם מלא"
                             required
                             value={participant.nom}
                             onChange={(e) => updateParticipant(index, 'nom', e.target.value)}
-                            placeholder="Tel qu'il apparaît sur le passeport"
+                            placeholder="כפי שמופיע בדרכון"
                           />
                           <StyledInput
-                            label="Date de naissance"
+                            label="תאריך לידה"
                             required
                             type="date"
                             value={participant.dateNaissance}
@@ -1145,18 +1072,16 @@ export default function InscriptionFormContent() {
                           />
                         </div>
 
-                        {/* Upload passeport pour ce participant */}
                         <div>
                           <label className="block text-sm font-medium text-gray-600 mb-2">
-                            Passeport
+                            דרכון
                           </label>
 
                           {participant.passportUrl ? (
-                            // Fichier uploadé
                             <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-4 py-3">
                               <div className="flex items-center gap-3">
                                 <FileIcon className="w-5 h-5 text-green-600" />
-                                <span className="text-sm text-green-800 font-medium">{participant.passportFileName || 'Passeport'}</span>
+                                <span className="text-sm text-green-800 font-medium">{participant.passportFileName || 'דרכון'}</span>
                               </div>
                               <button
                                 type="button"
@@ -1167,7 +1092,6 @@ export default function InscriptionFormContent() {
                               </button>
                             </div>
                           ) : (
-                            // Zone d'upload
                             <label className={cn(
                               "relative flex items-center justify-center gap-3 border-2 border-dashed rounded-xl p-4 cursor-pointer transition-all duration-200",
                               uploadingParticipantIndex === index
@@ -1184,12 +1108,12 @@ export default function InscriptionFormContent() {
                               {uploadingParticipantIndex === index ? (
                                 <>
                                   <Loader2 className="w-5 h-5 text-[#C9A227] animate-spin" />
-                                  <span className="text-sm text-gray-500">Upload en cours...</span>
+                                  <span className="text-sm text-gray-500">מעלה...</span>
                                 </>
                               ) : (
                                 <>
                                   <Upload className="w-5 h-5 text-gray-400" />
-                                  <span className="text-sm text-gray-600">Cliquez pour ajouter le passeport</span>
+                                  <span className="text-sm text-gray-600">לחץ להוספת דרכון</span>
                                   <span className="text-xs text-gray-400">(PDF, JPG, PNG)</span>
                                 </>
                               )}
@@ -1202,35 +1126,34 @@ export default function InscriptionFormContent() {
                 </div>
               )}
 
-              {/* Étape 5: Préférences alimentaires */}
+              {/* Step 5: Food Preferences */}
               {currentStep === 5 && (
                 <div className="space-y-6 animate-fadeIn">
                   <div className="mb-8">
                     <h2 className="text-2xl md:text-3xl text-gray-800" style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}>
-                      Préférences alimentaires
+                      העדפות מזון
                     </h2>
-                    <p className="text-gray-500 mt-2">Aidez-nous à personnaliser votre expérience culinaire</p>
+                    <p className="text-gray-500 mt-2">עזרו לנו להתאים את חוויית האוכל שלכם</p>
                   </div>
 
-                  {/* Question principale */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-3">
-                      Souhaitez-vous répondre au questionnaire ? <span className="text-[#C9A227]">*</span>
+                      האם תרצו לענות על השאלון? <span className="text-[#C9A227]">*</span>
                     </label>
                     <div className="flex gap-3">
-                      {['OUI', 'NON'].map((option) => (
+                      {[{ value: 'OUI', label: 'כן' }, { value: 'NON', label: 'לא' }].map((option) => (
                         <button
-                          key={option}
+                          key={option.value}
                           type="button"
-                          onClick={() => setFormData({ ...formData, questionnaireOuiNon: option })}
+                          onClick={() => setFormData({ ...formData, questionnaireOuiNon: option.value })}
                           className={cn(
                             "flex-1 py-4 rounded-xl font-semibold transition-all duration-200",
-                            formData.questionnaireOuiNon === option
+                            formData.questionnaireOuiNon === option.value
                               ? "bg-gradient-to-br from-[#C9A227] to-[#D4AF37] text-white shadow-lg"
                               : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                           )}
                         >
-                          {option}
+                          {option.label}
                         </button>
                       ))}
                     </div>
@@ -1238,9 +1161,8 @@ export default function InscriptionFormContent() {
 
                   {formData.questionnaireOuiNon === 'OUI' && (
                     <div className="space-y-8 animate-fadeIn">
-                      {/* Préférences alimentaires */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-3">Préférences alimentaires</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-3">העדפות אוכל</label>
                         <div className="flex flex-wrap gap-2">
                           {MONDAY_LABELS.preferenceAlimentaire.map((item) => (
                             <button
@@ -1262,7 +1184,7 @@ export default function InscriptionFormContent() {
 
                       {formData.preferenceAlimentaire.includes(5) && (
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Autre, précisez :</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">אחר, פרט:</label>
                           <textarea
                             value={formData.autrePreciser}
                             onChange={(e) => setFormData({ ...formData, autrePreciser: e.target.value })}
@@ -1272,16 +1194,15 @@ export default function InscriptionFormContent() {
                         </div>
                       )}
 
-                      {/* Salades */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Vos 5 salades préférées
+                          5 הסלטים האהובים עליכם
                         </label>
                         <p className={cn(
                           "text-sm mb-3 font-medium",
                           formData.salades.length >= 5 ? "text-green-600" : "text-gray-400"
                         )}>
-                          {formData.salades.length}/5 sélectionnées {formData.salades.length >= 5 && "✓"}
+                          {formData.salades.length}/5 נבחרו {formData.salades.length >= 5 && "✓"}
                         </p>
                         <div className="flex flex-wrap gap-2 max-h-52 overflow-y-auto p-1">
                           {MONDAY_LABELS.salades.map((item) => (
@@ -1305,9 +1226,8 @@ export default function InscriptionFormContent() {
                         </div>
                       </div>
 
-                      {/* Alcools */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-3">Préférences alcool</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-3">העדפות אלכוהול</label>
                         <div className="flex flex-wrap gap-2">
                           {MONDAY_LABELS.preferenceAlcool.map((item) => (
                             <button
@@ -1327,26 +1247,25 @@ export default function InscriptionFormContent() {
                         </div>
                       </div>
 
-                      {/* Carte des vins */}
                       {(formData.preferenceAlcool.includes(0) || formData.preferenceAlcool.includes(1) || formData.preferenceAlcool.includes(2)) && (
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-3">
-                            Souhaitez-vous recevoir notre carte des vins payante ?
+                            האם תרצו לקבל את רשימת היינות בתשלום?
                           </label>
                           <div className="flex gap-3">
-                            {['OUI', 'NON'].map((option) => (
+                            {[{ value: 'OUI', label: 'כן' }, { value: 'NON', label: 'לא' }].map((option) => (
                               <button
-                                key={option}
+                                key={option.value}
                                 type="button"
-                                onClick={() => setFormData({ ...formData, carteVins: option })}
+                                onClick={() => setFormData({ ...formData, carteVins: option.value })}
                                 className={cn(
                                   "px-8 py-3 rounded-xl font-medium transition-all duration-200",
-                                  formData.carteVins === option
+                                  formData.carteVins === option.value
                                     ? "bg-[#C9A227] text-white shadow-md"
                                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                                 )}
                               >
-                                {option}
+                                {option.label}
                               </button>
                             ))}
                           </div>
@@ -1357,123 +1276,114 @@ export default function InscriptionFormContent() {
                 </div>
               )}
 
-              {/* Étape 6: Informations complémentaires */}
+              {/* Step 6: Additional Information */}
               {currentStep === 6 && (
                 <div className="space-y-6 animate-fadeIn">
                   <div className="mb-8">
                     <h2 className="text-2xl md:text-3xl text-gray-800" style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}>
-                      Informations complémentaires
+                      מידע נוסף
                     </h2>
-                    <p className="text-gray-500 mt-2">Dernières précisions pour votre séjour</p>
+                    <p className="text-gray-500 mt-2">פרטים אחרונים לשהייה שלכם</p>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Familles avec lesquelles vous souhaitez vous asseoir
+                      משפחות שתרצו לשבת איתן
                     </label>
                     <textarea
                       value={formData.famillesTable}
                       onChange={(e) => setFormData({ ...formData, famillesTable: e.target.value })}
                       className="w-full px-4 py-3 bg-white/80 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227] transition-all"
                       rows={3}
-                      placeholder="Nom complet, prénom, téléphone si possible"
+                      placeholder="שם מלא, שם פרטי, טלפון אם אפשר"
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Autres informations
+                      מידע נוסף
                     </label>
                     <textarea
                       value={formData.infosComplementaires}
                       onChange={(e) => setFormData({ ...formData, infosComplementaires: e.target.value })}
                       className="w-full px-4 py-3 bg-white/80 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227] transition-all"
                       rows={4}
-                      placeholder="Demandes particulières, célébrations, contraintes..."
+                      placeholder="בקשות מיוחדות, חגיגות, מגבלות..."
                     />
                   </div>
                 </div>
               )}
 
-              {/* Étape 7: Récapitulatif */}
+              {/* Step 7: Summary */}
               {currentStep === 7 && (
                 <div className="space-y-6 animate-fadeIn">
                   <div className="mb-8">
                     <h2 className="text-2xl md:text-3xl text-gray-800" style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}>
-                      Récapitulatif de votre inscription
+                      סיכום ההרשמה
                     </h2>
-                    <p className="text-gray-500 mt-2">Vérifiez vos informations avant d'envoyer</p>
+                    <p className="text-gray-500 mt-2">בדקו את הפרטים לפני השליחה</p>
                   </div>
 
-                  {/* Contact */}
                   <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
                     <h4 className="text-sm font-semibold text-[#C9A227] uppercase tracking-wide mb-4 flex items-center gap-2">
                       <User className="w-4 h-4" />
-                      Contact
+                      פרטי קשר
                     </h4>
                     <div className="space-y-3">
                       <div className="flex justify-between items-center py-2 border-b border-gray-50">
-                        <span className="text-gray-500">Nom complet</span>
+                        <span className="text-gray-500">שם מלא</span>
                         <span className="font-medium text-gray-800">{formData.nomPrenom}</span>
                       </div>
                       <div className="flex justify-between items-center py-2 border-b border-gray-50">
-                        <span className="text-gray-500">Email</span>
-                        <span className="font-medium text-gray-800">{formData.email}</span>
+                        <span className="text-gray-500">מייל</span>
+                        <span className="font-medium text-gray-800" dir="ltr">{formData.email}</span>
                       </div>
                       <div className="flex justify-between items-center py-2 border-b border-gray-50">
-                        <span className="text-gray-500">Téléphone</span>
-                        <span className="font-medium text-gray-800">{formData.telephone}</span>
+                        <span className="text-gray-500">טלפון</span>
+                        <span className="font-medium text-gray-800" dir="ltr">{formData.telephone}</span>
                       </div>
-                      {formData.numDevis && (
-                        <div className="flex justify-between items-center py-2">
-                          <span className="text-gray-500">N° Devis</span>
-                          <span className="font-medium text-gray-800">{formData.numDevis}</span>
-                        </div>
-                      )}
                     </div>
                   </div>
 
-                  {/* Groupe */}
                   <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
                     <h4 className="text-sm font-semibold text-[#C9A227] uppercase tracking-wide mb-4 flex items-center gap-2">
                       <Users className="w-4 h-4" />
-                      Composition de la famille
+                      הרכב המשפחה
                     </h4>
                     <div className="flex flex-wrap gap-3">
                       <span className="px-4 py-2 bg-[#C9A227]/10 rounded-xl text-sm font-semibold text-gray-700">
-                        {formData.nbAdultes} adulte{formData.nbAdultes > 1 ? 's' : ''}
+                        {formData.nbAdultes} מבוגרים
                       </span>
                       {formData.nbEnfants7a11 > 0 && (
                         <span className="px-4 py-2 bg-blue-50 rounded-xl text-sm font-semibold text-gray-700">
-                          {formData.nbEnfants7a11} enfant{formData.nbEnfants7a11 > 1 ? 's' : ''} (7-11 ans)
+                          {formData.nbEnfants7a11} ילדים (7-11)
                         </span>
                       )}
                       {formData.nbEnfants4a6 > 0 && (
                         <span className="px-4 py-2 bg-green-50 rounded-xl text-sm font-semibold text-gray-700">
-                          {formData.nbEnfants4a6} enfant{formData.nbEnfants4a6 > 1 ? 's' : ''} (4-6 ans)
+                          {formData.nbEnfants4a6} ילדים (4-6)
                         </span>
                       )}
                       {formData.nbEnfants3ans > 0 && (
                         <span className="px-4 py-2 bg-purple-50 rounded-xl text-sm font-semibold text-gray-700">
-                          {formData.nbEnfants3ans} enfant{formData.nbEnfants3ans > 1 ? 's' : ''} (-3 ans)
+                          {formData.nbEnfants3ans} ילדים (3-)
                         </span>
                       )}
                       {formData.nbBebe > 0 && (
                         <span className="px-4 py-2 bg-pink-50 rounded-xl text-sm font-semibold text-gray-700">
-                          {formData.nbBebe} bébé{formData.nbBebe > 1 ? 's' : ''}
+                          {formData.nbBebe} תינוקות
                         </span>
                       )}
                     </div>
                   </div>
 
-                  {/* Navettes */}
                   <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
                     <h4 className="text-sm font-semibold text-[#C9A227] uppercase tracking-wide mb-4 flex items-center gap-2">
                       <Bus className="w-4 h-4" />
-                      Navettes aéroport
+                      הסעות משדה התעופה
                     </h4>
                     {formData.navetteChoix === '3' ? (
-                      <p className="text-gray-500 italic">Pas de navette demandée</p>
+                      <p className="text-gray-500 italic">לא נדרשת הסעה</p>
                     ) : (
                       <div className="space-y-3">
                         {(formData.navetteChoix === '0' || formData.navetteChoix === '2') && (
@@ -1482,8 +1392,8 @@ export default function InscriptionFormContent() {
                               <Plane className="w-6 h-6 text-green-600" />
                             </div>
                             <div>
-                              <p className="font-semibold text-gray-800 text-lg">Arrivée - 31 Mars 2026</p>
-                              <p className="text-gray-600">Vol <span className="font-medium">{formData.volArrivee}</span> à <span className="font-medium">{formData.heureArrivee}</span></p>
+                              <p className="font-semibold text-gray-800 text-lg">הגעה - 31 מרץ 2026</p>
+                              <p className="text-gray-600">טיסה <span className="font-medium" dir="ltr">{formData.volArrivee}</span> בשעה <span className="font-medium">{formData.heureArrivee}</span></p>
                             </div>
                           </div>
                         )}
@@ -1493,8 +1403,8 @@ export default function InscriptionFormContent() {
                               <Plane className="w-6 h-6 text-orange-600 rotate-45" />
                             </div>
                             <div>
-                              <p className="font-semibold text-gray-800 text-lg">Départ - 12 Avril 2026</p>
-                              <p className="text-gray-600">Vol <span className="font-medium">{formData.volDepart}</span> à <span className="font-medium">{formData.heureDepart}</span></p>
+                              <p className="font-semibold text-gray-800 text-lg">יציאה - 12 אפריל 2026</p>
+                              <p className="text-gray-600">טיסה <span className="font-medium" dir="ltr">{formData.volDepart}</span> בשעה <span className="font-medium">{formData.heureDepart}</span></p>
                             </div>
                           </div>
                         )}
@@ -1502,11 +1412,10 @@ export default function InscriptionFormContent() {
                     )}
                   </div>
 
-                  {/* Voyageurs */}
                   <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
                     <h4 className="text-sm font-semibold text-[#C9A227] uppercase tracking-wide mb-4 flex items-center gap-2">
                       <UserCheck className="w-4 h-4" />
-                      Voyageurs ({formData.participants.length})
+                      נוסעים ({formData.participants.length})
                     </h4>
                     <div className="space-y-2">
                       {formData.participants.map((p, i) => (
@@ -1518,59 +1427,29 @@ export default function InscriptionFormContent() {
                     </div>
                   </div>
 
-                  {/* Passeports uploadés */}
-                  {formData.participants.some(p => p.passportUrl) && (
-                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-                      <h4 className="text-sm font-semibold text-[#C9A227] uppercase tracking-wide mb-4 flex items-center gap-2">
-                        <FileIcon className="w-4 h-4" />
-                        Passeports ({formData.participants.filter(p => p.passportUrl).length}/{formData.participants.length})
-                      </h4>
-                      <div className="space-y-2">
-                        {formData.participants.map((p, i) => (
-                          <div key={i} className="flex items-center gap-2">
-                            <span className="text-sm text-gray-600 min-w-[120px]">{p.nom || `Personne ${i + 1}`}:</span>
-                            {p.passportUrl ? (
-                              <span className="px-3 py-1 bg-green-50 text-green-700 rounded-lg text-sm font-medium flex items-center gap-2">
-                                <Check className="w-4 h-4" />
-                                {p.passportFileName || 'Passeport'}
-                              </span>
-                            ) : (
-                              <span className="px-3 py-1 bg-red-50 text-red-600 rounded-lg text-sm">
-                                Non fourni
-                              </span>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Message de confirmation */}
                   <div className="bg-gradient-to-r from-[#C9A227]/10 to-[#D4AF37]/10 rounded-2xl p-6 border border-[#C9A227]/20">
                     <p className="text-center text-gray-700">
-                      En cliquant sur <span className="font-semibold">"Envoyer l'inscription"</span>, vous confirmez l'exactitude des informations ci-dessus.
+                      בלחיצה על <span className="font-semibold">"שלח הרשמה"</span>, אתם מאשרים את נכונות המידע למעלה.
                     </p>
                   </div>
                 </div>
               )}
 
-              {/* Message d'erreur */}
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-xl p-4 mt-6">
                   <p className="text-red-800 text-sm">{error}</p>
                 </div>
               )}
 
-              {/* Boutons de navigation */}
-              <div className={cn("flex mt-10 pt-6 border-t border-gray-100", currentStep === 1 ? "justify-end" : "justify-between")}>
+              <div className={cn("flex mt-10 pt-6 border-t border-gray-100", currentStep === 1 ? "justify-start" : "justify-between")}>
                 {currentStep > 1 && (
                   <button
                     type="button"
                     onClick={prevStep}
                     className="flex items-center gap-2 px-6 py-3 text-gray-600 hover:text-gray-800 font-medium rounded-xl hover:bg-gray-100 transition-all"
                   >
-                    <ChevronLeft className="w-5 h-5" />
-                    Précédent
+                    <ChevronRight className="w-5 h-5" />
+                    הקודם
                   </button>
                 )}
 
@@ -1586,8 +1465,8 @@ export default function InscriptionFormContent() {
                         : "bg-gray-200 text-gray-400 cursor-not-allowed"
                     )}
                   >
-                    Suivant
-                    <ChevronRight className="w-5 h-5" />
+                    הבא
+                    <ChevronLeft className="w-5 h-5" />
                   </button>
                 ) : (
                   <button
@@ -1599,12 +1478,12 @@ export default function InscriptionFormContent() {
                     {isSubmitting ? (
                       <>
                         <Loader2 className="w-5 h-5 animate-spin" />
-                        Envoi en cours...
+                        שולח...
                       </>
                     ) : (
                       <>
                         <Check className="w-5 h-5" />
-                        Envoyer l'inscription
+                        שלח הרשמה
                       </>
                     )}
                   </button>
@@ -1616,7 +1495,6 @@ export default function InscriptionFormContent() {
       </main>
       <Footer />
 
-      {/* CSS pour l'animation */}
       <style jsx global>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(10px); }
