@@ -50,6 +50,10 @@ interface FormData {
   nbEnfants4a6: number;
   nbEnfants7a11: number;
   numDevis: string;
+  // Dates de séjour (différent des navettes)
+  dateSejourArrivee: string;
+  dateSejourDepart: string;
+  // Navettes
   navetteChoix: string;
   dateArrivee: string;
   heureArrivee: string;
@@ -80,6 +84,10 @@ const initialFormData: FormData = {
   nbEnfants4a6: 0,
   nbEnfants7a11: 0,
   numDevis: '',
+  // Dates de séjour
+  dateSejourArrivee: '2026-03-31',
+  dateSejourDepart: '2026-04-12',
+  // Navettes
   navetteChoix: '',
   dateArrivee: '2026-03-31',
   heureArrivee: '',
@@ -823,6 +831,7 @@ export default function InscriptionFormContent() {
                       onChange={(phone) => setFormData({ ...formData, telephone: phone })}
                       required
                       dir={dir}
+                      defaultCountryByLang={lang}
                     />
                   </div>
 
@@ -901,6 +910,29 @@ export default function InscriptionFormContent() {
                       value={formData.nbEnfants7a11 || ''}
                       onChange={(e) => setFormData({ ...formData, nbEnfants7a11: parseInt(e.target.value) || 0 })}
                     />
+                  </div>
+
+                  {/* Dates de séjour */}
+                  <div className="mt-8 pt-6 border-t border-gray-100">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4" style={{ fontFamily: 'var(--font-cormorant)' }}>
+                      {t('stayDates')}
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <StyledInput
+                        label={t('stayArrivalDate')}
+                        required
+                        type="date"
+                        value={formData.dateSejourArrivee}
+                        onChange={(e) => setFormData({ ...formData, dateSejourArrivee: e.target.value })}
+                      />
+                      <StyledInput
+                        label={t('stayDepartureDate')}
+                        required
+                        type="date"
+                        value={formData.dateSejourDepart}
+                        onChange={(e) => setFormData({ ...formData, dateSejourDepart: e.target.value })}
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -1422,6 +1454,21 @@ export default function InscriptionFormContent() {
                           {formData.nbBebe} {formData.nbBebe > 1 ? t('babiesPlural') : t('baby')}
                         </span>
                       )}
+                    </div>
+                    {/* Dates de séjour */}
+                    <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-500">{t('stayArrivalDate')}</span>
+                        <span className="font-medium text-gray-800">
+                          {new Date(formData.dateSejourArrivee).toLocaleDateString(lang === 'he' ? 'he-IL' : lang === 'es' ? 'es-ES' : lang === 'en' ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-500">{t('stayDepartureDate')}</span>
+                        <span className="font-medium text-gray-800">
+                          {new Date(formData.dateSejourDepart).toLocaleDateString(lang === 'he' ? 'he-IL' : lang === 'es' ? 'es-ES' : lang === 'en' ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                        </span>
+                      </div>
                     </div>
                   </div>
 

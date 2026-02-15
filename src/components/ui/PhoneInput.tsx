@@ -32,9 +32,21 @@ interface PhoneInputProps {
   className?: string;
   dir?: 'ltr' | 'rtl';
   label?: string;
+  defaultCountryByLang?: 'fr' | 'en' | 'he' | 'es';
 }
 
-export function PhoneInput({ value, onChange, required, className, dir, label }: PhoneInputProps) {
+// Mapping langue -> indicatif par défaut
+const LANG_TO_COUNTRY: Record<string, string> = {
+  fr: '+33',  // France
+  en: '+1',   // États-Unis
+  he: '+972', // Israël
+  es: '+34',  // Espagne
+};
+
+export function PhoneInput({ value, onChange, required, className, dir, label, defaultCountryByLang }: PhoneInputProps) {
+  // Déterminer l'indicatif par défaut selon la langue
+  const defaultCountryCode = defaultCountryByLang ? LANG_TO_COUNTRY[defaultCountryByLang] || '+33' : '+33';
+
   // Parse initial value to extract country code if present
   const parseValue = (val: string) => {
     for (const country of COUNTRY_CODES) {
@@ -42,7 +54,7 @@ export function PhoneInput({ value, onChange, required, className, dir, label }:
         return { countryCode: country.code, number: val.slice(country.code.length).trim() };
       }
     }
-    return { countryCode: '+33', number: val };
+    return { countryCode: defaultCountryCode, number: val };
   };
 
   const parsed = parseValue(value);

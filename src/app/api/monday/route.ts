@@ -23,6 +23,10 @@ interface FormData {
   // Référence
   numDevis?: string;
 
+  // Dates de séjour (différent des navettes)
+  dateSejourArrivee?: string;
+  dateSejourDepart?: string;
+
   // Navettes
   navetteChoix: string;
   dateArrivee?: string;
@@ -176,6 +180,14 @@ export async function POST(request: NextRequest) {
 
     // N° Devis
     if (data.numDevis) columnValues[MONDAY_COLUMNS.numDevis] = data.numDevis;
+
+    // Dates de séjour (différent des navettes)
+    if (data.dateSejourArrivee) {
+      columnValues[MONDAY_COLUMNS.dateSejourArrivee] = { date: data.dateSejourArrivee };
+    }
+    if (data.dateSejourDepart) {
+      columnValues[MONDAY_COLUMNS.dateSejourDepart] = { date: data.dateSejourDepart };
+    }
 
     // Nombre de personnes total (status)
     if (data.nbPersonnesTotal) {

@@ -1798,6 +1798,25 @@ export const translations = {
       es: 'Niños 7-11 años',
       he: 'ילדים 7-11 שנים',
     },
+    // Dates de séjour
+    stayDates: {
+      fr: 'Dates de séjour',
+      en: 'Stay dates',
+      es: 'Fechas de estancia',
+      he: 'תאריכי שהייה',
+    },
+    stayArrivalDate: {
+      fr: "Date d'arrivée",
+      en: 'Arrival date',
+      es: 'Fecha de llegada',
+      he: 'תאריך הגעה',
+    },
+    stayDepartureDate: {
+      fr: 'Date de départ',
+      en: 'Departure date',
+      es: 'Fecha de salida',
+      he: 'תאריך עזיבה',
+    },
     // Étape 3: Navettes
     airportShuttleService: {
       fr: 'Service navette aéroport',

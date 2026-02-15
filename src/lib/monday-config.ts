@@ -28,6 +28,10 @@ export const MONDAY_COLUMNS = {
   numDevis: 'text_mkym8td0', // N° DEVIS
   info: 'long_text_mkymvzjn', // INFO
 
+  // Dates de séjour (différent des navettes)
+  dateSejourArrivee: 'date_mm0k2cz1', // Date arrivée séjour
+  dateSejourDepart: 'date_mm0kxmg5', // Date départ séjour
+
   // Navettes
   navetteChoix: 'single_selectk3d7j6g', // Veuillez choisir les navettes souhaitées
   dateArrivee: 'date_mkymcxhm', // Date d'arrivée
