@@ -202,26 +202,32 @@ export async function POST(request: NextRequest) {
       columnValues[MONDAY_COLUMNS.navetteChoix] = { index: parseInt(data.navetteChoix) };
     }
 
-    // Dates et infos navette arrivée
-    if (data.dateArrivee) {
-      columnValues[MONDAY_COLUMNS.dateArrivee] = { date: data.dateArrivee };
-    }
-    if (data.heureArrivee) {
-      columnValues[MONDAY_COLUMNS.heureArrivee] = data.heureArrivee;
-    }
-    if (data.volArrivee) {
-      columnValues[MONDAY_COLUMNS.volArrivee] = data.volArrivee;
+    // Dates et infos navette arrivée (seulement si navette arrivée choisie: '0' ou '2')
+    const needsArrival = data.navetteChoix === '0' || data.navetteChoix === '2';
+    if (needsArrival) {
+      if (data.dateArrivee) {
+        columnValues[MONDAY_COLUMNS.dateArrivee] = { date: data.dateArrivee };
+      }
+      if (data.heureArrivee) {
+        columnValues[MONDAY_COLUMNS.heureArrivee] = data.heureArrivee;
+      }
+      if (data.volArrivee) {
+        columnValues[MONDAY_COLUMNS.volArrivee] = data.volArrivee;
+      }
     }
 
-    // Dates et infos navette retour
-    if (data.dateRetour) {
-      columnValues[MONDAY_COLUMNS.dateRetour] = { date: data.dateRetour };
-    }
-    if (data.heureDepart) {
-      columnValues[MONDAY_COLUMNS.heureDepart] = data.heureDepart;
-    }
-    if (data.volDepart) {
-      columnValues[MONDAY_COLUMNS.volDepart] = data.volDepart;
+    // Dates et infos navette retour (seulement si navette départ choisie: '1' ou '2')
+    const needsDeparture = data.navetteChoix === '1' || data.navetteChoix === '2';
+    if (needsDeparture) {
+      if (data.dateRetour) {
+        columnValues[MONDAY_COLUMNS.dateRetour] = { date: data.dateRetour };
+      }
+      if (data.heureDepart) {
+        columnValues[MONDAY_COLUMNS.heureDepart] = data.heureDepart;
+      }
+      if (data.volDepart) {
+        columnValues[MONDAY_COLUMNS.volDepart] = data.volDepart;
+      }
     }
 
     // Participants (jusqu'à 7)

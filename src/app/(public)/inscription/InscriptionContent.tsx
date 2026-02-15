@@ -976,7 +976,23 @@ export default function InscriptionFormContent() {
                         <button
                           key={option.value}
                           type="button"
-                          onClick={() => setFormData({ ...formData, navetteChoix: option.value })}
+                          onClick={() => {
+                            // Réinitialiser les champs navette selon le choix
+                            const updates: Partial<FormData> = { navetteChoix: option.value };
+
+                            // Si "Pas de besoin" ou changement qui ne nécessite plus l'arrivée
+                            if (option.value === '3' || option.value === '1') {
+                              updates.heureArrivee = '';
+                              updates.volArrivee = '';
+                            }
+                            // Si "Pas de besoin" ou changement qui ne nécessite plus le départ
+                            if (option.value === '3' || option.value === '0') {
+                              updates.heureDepart = '';
+                              updates.volDepart = '';
+                            }
+
+                            setFormData({ ...formData, ...updates });
+                          }}
                           className={cn(
                             "p-4 rounded-2xl border-2 text-left transition-all duration-200",
                             formData.navetteChoix === option.value
