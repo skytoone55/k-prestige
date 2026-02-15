@@ -30,7 +30,6 @@ import {
 import { useLanguage } from '@/lib/LanguageContext';
 import { cn } from '@/lib/utils';
 import { MONDAY_LABELS } from '@/lib/monday-config';
-import { translations, type Language } from '@/lib/translations';
 
 // Types
 interface Participant {
@@ -50,10 +49,6 @@ interface FormData {
   nbEnfants4a6: number;
   nbEnfants7a11: number;
   numDevis: string;
-  // Dates de séjour (différent des navettes)
-  dateSejourArrivee: string;
-  dateSejourDepart: string;
-  // Navettes
   navetteChoix: string;
   dateArrivee: string;
   heureArrivee: string;
@@ -84,15 +79,11 @@ const initialFormData: FormData = {
   nbEnfants4a6: 0,
   nbEnfants7a11: 0,
   numDevis: '',
-  // Dates de séjour (vide par défaut, le client doit remplir)
-  dateSejourArrivee: '',
-  dateSejourDepart: '',
-  // Navettes
   navetteChoix: '',
-  dateArrivee: '2026-03-31',
+  dateArrivee: '',
   heureArrivee: '',
   volArrivee: '',
-  dateRetour: '2026-04-12',
+  dateRetour: '',
   heureDepart: '',
   volDepart: '',
   nbPersonnesTotal: '1',
@@ -108,9 +99,15 @@ const initialFormData: FormData = {
   passportUrls: [],
 };
 
-// Les titres des étapes sont traduits dynamiquement
-const STEP_ICONS = [User, Users, Bus, UserCheck, Utensils, MessageSquare, CheckCircle];
-const STEP_KEYS = ['stepContact', 'stepGroup', 'stepShuttles', 'stepTravelers', 'stepMeals', 'stepInfo', 'stepSummary'] as const;
+const STEPS = [
+  { id: 1, title: 'Contact', shortTitle: 'Contact', icon: User },
+  { id: 2, title: 'Groupe', shortTitle: 'Groupe', icon: Users },
+  { id: 3, title: 'Navettes', shortTitle: 'Navettes', icon: Bus },
+  { id: 4, title: 'Voyageurs', shortTitle: 'Voyageurs', icon: UserCheck },
+  { id: 5, title: 'Repas', shortTitle: 'Repas', icon: Utensils },
+  { id: 6, title: 'Infos', shortTitle: 'Infos', icon: MessageSquare },
+  { id: 7, title: 'Récap', shortTitle: 'Récap', icon: CheckCircle },
+];
 
 // Validation email simple
 const isValidEmail = (email: string): boolean => {
@@ -148,8 +145,7 @@ function StyledSelect({
   options,
   value,
   onChange,
-  className,
-  placeholder
+  className
 }: {
   label?: string;
   required?: boolean;
@@ -157,7 +153,6 @@ function StyledSelect({
   value: string;
   onChange: (value: string) => void;
   className?: string;
-  placeholder?: string;
 }) {
   return (
     <div className={className}>
@@ -173,7 +168,7 @@ function StyledSelect({
                    focus:outline-none focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227]
                    transition-all duration-200 text-gray-800 appearance-none cursor-pointer"
       >
-        <option value="">{placeholder || 'Select...'}</option>
+        <option value="">Sélectionner...</option>
         {options.map(opt => (
           <option key={opt.value} value={opt.value}>{opt.label}</option>
         ))}
@@ -183,22 +178,7 @@ function StyledSelect({
 }
 
 export default function InscriptionFormContent() {
-  const { language, dir } = useLanguage();
-  const lang = language as Language;
-
-  // Helper de traduction
-  const t = (key: keyof typeof translations.inscription) => {
-    return translations.inscription[key]?.[lang] || translations.inscription[key]?.['fr'] || key;
-  };
-
-  // Générer les étapes traduites
-  const STEPS = STEP_KEYS.map((key, index) => ({
-    id: index + 1,
-    title: t(key),
-    shortTitle: t(key),
-    icon: STEP_ICONS[index],
-  }));
-
+  const { dir } = useLanguage();
   const [hasStarted, setHasStarted] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>(initialFormData);
@@ -216,7 +196,6 @@ export default function InscriptionFormContent() {
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [codeCopied, setCodeCopied] = useState(false);
-  const [isNavigating, setIsNavigating] = useState(false); // Chargement pendant passage à l'étape suivante
 
   // Créer un nouveau dossier après l'étape 1
   const createDossier = useCallback(async () => {
@@ -233,7 +212,6 @@ export default function InscriptionFormContent() {
           email: formData.email,
           telephone: formData.telephone,
           nomPrenom: formData.nomPrenom,
-          language: lang, // Passer la langue pour les emails
         }),
       });
       const result = await response.json();
@@ -247,7 +225,7 @@ export default function InscriptionFormContent() {
     } catch (err) {
       console.error('Erreur création dossier:', err);
     }
-  }, [dossierCode, formData, currentStep, lang]);
+  }, [dossierCode, formData, currentStep]);
 
   // Sauvegarder le dossier
   const saveDossier = useCallback(async () => {
@@ -292,7 +270,7 @@ export default function InscriptionFormContent() {
   // Reprendre un dossier existant
   const resumeDossier = async () => {
     if (!resumeCode.trim()) {
-      setResumeError(t('enterCode'));
+      setResumeError('Veuillez entrer un code de dossier');
       return;
     }
 
@@ -313,10 +291,10 @@ export default function InscriptionFormContent() {
         setShowResumeModal(false);
         setHasStarted(true);
       } else {
-        setResumeError(result.error || t('fileNotFound'));
+        setResumeError(result.error || 'Dossier non trouvé');
       }
     } catch {
-      setResumeError(t('connectionError'));
+      setResumeError('Erreur de connexion');
     } finally {
       setIsLoadingDossier(false);
     }
@@ -425,19 +403,14 @@ export default function InscriptionFormContent() {
 
   const nextStep = async () => {
     if (currentStep < STEPS.length) {
-      setIsNavigating(true);
-      try {
-        // Créer le dossier après l'étape 1 (quand on a l'email)
-        if (currentStep === 1 && !dossierCode) {
-          await createDossier();
-        } else if (dossierCode) {
-          // Mettre à jour Monday à chaque clic sur "Suivant"
-          await saveDossier();
-        }
-        setCurrentStep(currentStep + 1);
-      } finally {
-        setIsNavigating(false);
+      // Créer le dossier après l'étape 1 (quand on a l'email)
+      if (currentStep === 1 && !dossierCode) {
+        await createDossier();
+      } else if (dossierCode) {
+        // Mettre à jour Monday à chaque clic sur "Suivant"
+        await saveDossier();
       }
+      setCurrentStep(currentStep + 1);
     }
   };
   const prevStep = () => currentStep > 1 && setCurrentStep(currentStep - 1);
@@ -453,7 +426,6 @@ export default function InscriptionFormContent() {
           ...formData,
           mondayItemId,  // ID Monday existant pour mise à jour
           dossierCode,   // Code dossier pour traçabilité
-          language: lang, // Langue pour l'email de confirmation
         }),
       });
       const result = await response.json();
@@ -484,7 +456,7 @@ export default function InscriptionFormContent() {
   const isStepValid = (step: number): boolean => {
     switch (step) {
       case 1: return !!(formData.nomPrenom && formData.telephone && formData.email && isValidEmail(formData.email));
-      case 2: return formData.nbAdultes >= 1 && !!formData.dateSejourArrivee && !!formData.dateSejourDepart;
+      case 2: return formData.nbAdultes >= 1 && !!formData.dateArrivee && !!formData.dateRetour;
       case 3: {
         if (!formData.navetteChoix) return false;
         // Navette arrivée ou les deux
@@ -510,20 +482,20 @@ export default function InscriptionFormContent() {
     return (
       <>
         <PublicNavigation />
-        <main className={cn("min-h-screen bg-gradient-to-b from-[#faf9f6] to-white", dir === 'rtl' && 'text-right')} dir={dir}>
+        <main className="min-h-screen bg-gradient-to-b from-[#faf9f6] to-white">
           {/* Hero - plus petit */}
           <div className="relative h-[35vh] md:h-[40vh] overflow-hidden">
             <Image src="/images/hotel/FAÇADE.jpg" alt="Pessah 2026" fill className="object-cover" priority />
             <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/70" />
             <div className="absolute inset-0 flex flex-col items-center justify-center text-white text-center px-6">
               <span className="text-[#C9A227] uppercase tracking-[0.3em] text-sm mb-3 font-medium">
-                {translations.navigation.pessah2026[lang]}
+                Pessah 2026
               </span>
               <h1 className="text-3xl md:text-4xl lg:text-5xl mb-2" style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}>
-                {t('pageTitle')}
+                Formulaire d'inscription
               </h1>
               <p className="text-white/80 text-base" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                Cabo Gata · 31 {lang === 'he' ? 'מרץ' : lang === 'es' ? 'Marzo' : lang === 'en' ? 'March' : 'Mars'} - 12 {lang === 'he' ? 'אפריל' : lang === 'es' ? 'Abril' : lang === 'en' ? 'April' : 'Avril'} 2026
+                Cabo Gata · 31 Mars - 12 Avril 2026
               </p>
             </div>
           </div>
@@ -534,31 +506,31 @@ export default function InscriptionFormContent() {
               {/* Texte original Monday */}
               <div className="mb-8">
                 <p className="text-gray-700 font-semibold mb-4" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  {t('oneFormPerFamily')}
+                  Merci de remplir un formulaire par famille.
                 </p>
                 <p className="text-gray-600 leading-relaxed mb-4" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  {t('familyExplanation')}
+                  Chaque famille (parents + enfants) doit compléter son propre formulaire, même si la réservation a été faite par une seule personne pour plusieurs proches.
                 </p>
                 <p className="text-gray-600 mb-3" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  👉 {t('ifYouReservedFor')}
+                  👉 Si vous avez réservé pour :
                 </p>
-                <ul className={cn("text-gray-600 mb-4 space-y-1", dir === 'rtl' ? 'mr-6' : 'ml-6')} style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  <li>• {t('yourParents')}</li>
-                  <li>• {t('yourChildren')}</li>
-                  <li>• {t('cousins')}</li>
-                  <li>• {t('anotherFamily')}</li>
+                <ul className="text-gray-600 mb-4 ml-6 space-y-1" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                  <li>• vos parents</li>
+                  <li>• vos enfants</li>
+                  <li>• des cousins</li>
+                  <li>• une autre famille</li>
                 </ul>
                 <p className="text-gray-600 leading-relaxed mb-4" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  {t('separateFormRequired')}
+                  Alors chaque foyer doit remplir un formulaire séparé avec ses propres informations (noms, dates de séjour, passeports, etc.).
                 </p>
                 <p className="text-gray-600 leading-relaxed mb-4" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  {t('organizationNote')}
+                  Cela nous permet d'organiser correctement les chambres, transferts et formalités administratives.
                 </p>
                 <p className="text-gray-600 mb-2" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  {t('thanksForCooperation')}
+                  Merci pour votre collaboration.
                 </p>
                 <p className="text-[#C9A227] font-semibold" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                  {t('teamSignature')}
+                  L'équipe K PRESTIGE
                 </p>
               </div>
 
@@ -570,8 +542,8 @@ export default function InscriptionFormContent() {
                            hover:from-[#B8922A] hover:to-[#C9A227] text-white rounded-xl font-medium text-lg
                            transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
-                  {t('newInscription')}
-                  <ChevronRight className={cn("w-5 h-5", dir === 'rtl' && 'rotate-180')} />
+                  Nouvelle inscription
+                  <ChevronRight className="w-5 h-5" />
                 </button>
 
                 <button
@@ -581,7 +553,7 @@ export default function InscriptionFormContent() {
                            transition-all duration-300"
                 >
                   <FolderOpen className="w-5 h-5" />
-                  {t('resumeInscription')}
+                  Reprendre une inscription
                 </button>
               </div>
             </div>
@@ -590,10 +562,10 @@ export default function InscriptionFormContent() {
           {/* Modal reprendre inscription */}
           {showResumeModal && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6" dir={dir}>
+              <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-semibold text-gray-800" style={{ fontFamily: 'var(--font-cormorant)' }}>
-                    {t('resumeModalTitle')}
+                    Reprendre mon inscription
                   </h3>
                   <button
                     onClick={() => { setShowResumeModal(false); setResumeError(null); setResumeCode(''); }}
@@ -604,7 +576,7 @@ export default function InscriptionFormContent() {
                 </div>
 
                 <p className="text-gray-600 mb-4 text-sm">
-                  {t('resumeModalDesc')}
+                  Entrez le code de dossier que vous avez reçu par email pour reprendre votre inscription.
                 </p>
 
                 <div className="mb-4">
@@ -632,7 +604,7 @@ export default function InscriptionFormContent() {
                   {isLoadingDossier ? (
                     <Loader2 className="w-5 h-5 animate-spin mx-auto" />
                   ) : (
-                    t('resume')
+                    'Reprendre'
                   )}
                 </button>
               </div>
@@ -649,7 +621,7 @@ export default function InscriptionFormContent() {
     return (
       <>
         <PublicNavigation />
-        <main className={cn("min-h-screen bg-gradient-to-b from-[#faf9f6] to-white", dir === 'rtl' && 'text-right')} dir={dir}>
+        <main className="min-h-screen bg-gradient-to-b from-[#faf9f6] to-white">
           {/* Hero minimal */}
           <div className="relative h-[30vh] overflow-hidden">
             <Image src="/images/hotel/FAÇADE.jpg" alt="Pessah 2026" fill className="object-cover" />
@@ -663,13 +635,13 @@ export default function InscriptionFormContent() {
                 <CheckCircle className="w-10 h-10 text-white" />
               </div>
               <h1 className="text-3xl md:text-4xl text-gray-800 mb-6" style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}>
-                {t('confirmationTitle')}
+                Confirmation d'enregistrement
               </h1>
               <div className="text-gray-600 leading-relaxed space-y-4 mb-10" style={{ fontFamily: 'var(--font-dm-sans)' }}>
-                <p>{t('confirmationMsg1')}</p>
-                <p>{t('confirmationMsg2')}</p>
-                <p>{t('confirmationMsg3')}</p>
-                <p className="text-[#C9A227] font-semibold text-lg mt-6">{t('teamSignature')}</p>
+                <p>Votre demande d'enregistrement a bien été prise en compte.</p>
+                <p>Si vous avez sollicité le service de navette, l'équipe K PRESTIGE reviendra vers vous avec les informations détaillées dès que le planning des transferts sera finalisé en fonction des horaires de vol.</p>
+                <p>Merci pour votre collaboration et au plaisir de vous accueillir.</p>
+                <p className="text-[#C9A227] font-semibold text-lg mt-6">L'équipe K PRESTIGE</p>
               </div>
               <a
                 href="/"
@@ -677,7 +649,7 @@ export default function InscriptionFormContent() {
                          hover:from-[#B8922A] hover:to-[#C9A227] text-white rounded-xl font-medium
                          transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
-                {t('backToHome')}
+                Retour à l'accueil
               </a>
             </div>
           </div>
@@ -724,7 +696,7 @@ export default function InscriptionFormContent() {
                   <FolderOpen className="w-4 h-4 text-[#C9A227]" />
                 </div>
                 <div>
-                  <p className="text-white/60 text-xs">{t('yourFile')}</p>
+                  <p className="text-white/60 text-xs">Votre dossier</p>
                   <p className="text-white font-mono text-lg tracking-wider">{dossierCode}</p>
                 </div>
               </div>
@@ -732,11 +704,11 @@ export default function InscriptionFormContent() {
                 {isSaving ? (
                   <span className="text-white/60 text-xs flex items-center gap-1">
                     <RefreshCw className="w-3 h-3 animate-spin" />
-                    {t('saving')}
+                    Sauvegarde...
                   </span>
                 ) : lastSaved && (
                   <span className="text-green-400/80 text-xs hidden sm:block">
-                    ✓ {t('saved')}
+                    ✓ Sauvegardé
                   </span>
                 )}
                 <button
@@ -744,7 +716,7 @@ export default function InscriptionFormContent() {
                   className="flex items-center gap-1 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-white text-sm transition-colors"
                 >
                   <Copy className="w-3.5 h-3.5" />
-                  {codeCopied ? t('copied') : t('copy')}
+                  {codeCopied ? 'Copié !' : 'Copier'}
                 </button>
               </div>
             </div>
@@ -754,7 +726,7 @@ export default function InscriptionFormContent() {
           {dossierCode && currentStep === 2 && (
             <div className="bg-blue-50 border-b border-blue-100 px-4 py-3">
               <p className="text-blue-800 text-sm text-center">
-                💡 <strong>{t('keepCodeInfo')}</strong>
+                💡 <strong>Gardez ce numéro précieusement !</strong> Il vous permettra de reprendre votre inscription à tout moment.
               </p>
             </div>
           )}
@@ -815,43 +787,42 @@ export default function InscriptionFormContent() {
                 <div className="space-y-6 animate-fadeIn">
                   <div className="mb-8">
                     <h2 className="text-2xl md:text-3xl text-gray-800" style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}>
-                      {t('yourDetails')}
+                      Vos coordonnées
                     </h2>
-                    <p className="text-gray-500 mt-2">{t('contactInfoDesc')}</p>
+                    <p className="text-gray-500 mt-2">Informations de contact pour votre réservation</p>
                   </div>
 
                   <StyledInput
-                    label={t('fullName')}
+                    label="Nom + Prénom"
                     required
                     value={formData.nomPrenom}
                     onChange={(e) => setFormData({ ...formData, nomPrenom: e.target.value })}
-                    placeholder={t('fullNamePlaceholder')}
+                    placeholder="Ex: Dupont Jean"
                   />
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {t('mobilePhone')} <span className="text-[#C9A227]">*</span>
+                      Téléphone portable <span className="text-[#C9A227]">*</span>
                     </label>
                     <PhoneInput
                       value={formData.telephone}
                       onChange={(phone) => setFormData({ ...formData, telephone: phone })}
                       required
                       dir={dir}
-                      defaultCountryByLang={lang}
                     />
                   </div>
 
                   <div>
                     <StyledInput
-                      label={t('email')}
+                      label="E-mail"
                       required
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder={t('emailPlaceholder')}
+                      placeholder="votre@email.com"
                     />
                     {formData.email && !isValidEmail(formData.email) && (
-                      <p className="text-red-500 text-xs mt-1">{t('invalidEmail')}</p>
+                      <p className="text-red-500 text-xs mt-1">Veuillez entrer une adresse email valide</p>
                     )}
                   </div>
                 </div>
@@ -862,21 +833,52 @@ export default function InscriptionFormContent() {
                 <div className="space-y-6 animate-fadeIn">
                   <div className="mb-8">
                     <h2 className="text-2xl md:text-3xl text-gray-800" style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}>
-                      {t('familyComposition')}
+                      Composition de la famille
                     </h2>
-                    <p className="text-gray-500 mt-2">{t('familyDesc')}</p>
+                    <p className="text-gray-500 mt-2">Détails des participants à votre séjour</p>
                   </div>
 
                   <StyledInput
-                    label={t('quoteNumber')}
+                    label="N° Devis"
                     value={formData.numDevis}
                     onChange={(e) => setFormData({ ...formData, numDevis: e.target.value })}
-                    placeholder={t('quoteNumberPlaceholder')}
+                    placeholder="Si vous avez déjà reçu un devis"
                   />
+
+                  {/* Dates de séjour */}
+                  <div className="bg-gradient-to-r from-[#faf9f6] to-[#f5f3ee] rounded-2xl p-5 border border-[#C9A227]/20">
+                    <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-[#C9A227]" />
+                      Dates de séjour
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <StyledInput
+                        label="Date d'arrivée"
+                        required
+                        type="date"
+                        value={formData.dateArrivee}
+                        onChange={(e) => setFormData({ ...formData, dateArrivee: e.target.value })}
+                        min="2026-03-31"
+                        max="2026-04-12"
+                      />
+                      <StyledInput
+                        label="Date de départ"
+                        required
+                        type="date"
+                        value={formData.dateRetour}
+                        onChange={(e) => setFormData({ ...formData, dateRetour: e.target.value })}
+                        min="2026-03-31"
+                        max="2026-04-12"
+                      />
+                    </div>
+                    <p className="text-sm text-gray-500 mt-3">
+                      Séjour du 31 mars au 12 avril 2026
+                    </p>
+                  </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <StyledInput
-                      label={t('adults')}
+                      label="Adultes"
                       required
                       type="number"
                       min={0}
@@ -885,7 +887,7 @@ export default function InscriptionFormContent() {
                       onChange={(e) => setFormData({ ...formData, nbAdultes: parseInt(e.target.value) || 0 })}
                     />
                     <StyledInput
-                      label={t('babies')}
+                      label="Bébés (0-2 ans)"
                       type="number"
                       min={0}
                       placeholder=""
@@ -893,7 +895,7 @@ export default function InscriptionFormContent() {
                       onChange={(e) => setFormData({ ...formData, nbBebe: parseInt(e.target.value) || 0 })}
                     />
                     <StyledInput
-                      label={t('children3')}
+                      label="Enfants 3 ans"
                       type="number"
                       min={0}
                       placeholder=""
@@ -901,7 +903,7 @@ export default function InscriptionFormContent() {
                       onChange={(e) => setFormData({ ...formData, nbEnfants3ans: parseInt(e.target.value) || 0 })}
                     />
                     <StyledInput
-                      label={t('children4to6')}
+                      label="Enfants 4-6 ans"
                       type="number"
                       min={0}
                       placeholder=""
@@ -909,36 +911,13 @@ export default function InscriptionFormContent() {
                       onChange={(e) => setFormData({ ...formData, nbEnfants4a6: parseInt(e.target.value) || 0 })}
                     />
                     <StyledInput
-                      label={t('children7to11')}
+                      label="Enfants 7-11 ans"
                       type="number"
                       min={0}
                       placeholder=""
                       value={formData.nbEnfants7a11 || ''}
                       onChange={(e) => setFormData({ ...formData, nbEnfants7a11: parseInt(e.target.value) || 0 })}
                     />
-                  </div>
-
-                  {/* Dates de séjour */}
-                  <div className="mt-8 pt-6 border-t border-gray-100">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4" style={{ fontFamily: 'var(--font-cormorant)' }}>
-                      {t('stayDates')}
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <StyledInput
-                        label={t('stayArrivalDate')}
-                        required
-                        type="date"
-                        value={formData.dateSejourArrivee}
-                        onChange={(e) => setFormData({ ...formData, dateSejourArrivee: e.target.value })}
-                      />
-                      <StyledInput
-                        label={t('stayDepartureDate')}
-                        required
-                        type="date"
-                        value={formData.dateSejourDepart}
-                        onChange={(e) => setFormData({ ...formData, dateSejourDepart: e.target.value })}
-                      />
-                    </div>
                   </div>
                 </div>
               )}
@@ -948,9 +927,9 @@ export default function InscriptionFormContent() {
                 <div className="space-y-6 animate-fadeIn">
                   <div className="mb-8">
                     <h2 className="text-2xl md:text-3xl text-gray-800" style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}>
-                      {t('airportShuttleService')}
+                      Service navette aéroport
                     </h2>
-                    <p className="text-gray-500 mt-2">{t('shuttleDesc')}</p>
+                    <p className="text-gray-500 mt-2">Transferts depuis/vers l'aéroport de Malaga</p>
                   </div>
 
                   {/* Info box */}
@@ -958,16 +937,16 @@ export default function InscriptionFormContent() {
                     <div className="flex gap-3">
                       <Plane className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
                       <div className="text-sm text-blue-800">
-                        <p className="font-medium mb-2">{t('shuttleInfoTitle')}</p>
+                        <p className="font-medium mb-2">Service navette Malaga uniquement</p>
                         <p className="text-blue-700 mb-2">
-                          {t('shuttleInfoDesc')}
+                          Les navettes sont organisées uniquement au départ de l'aéroport de Malaga.
                         </p>
                         <ul className="space-y-1 text-blue-700">
-                          <li>• {t('shuttleArrivalDate')}</li>
-                          <li>• {t('shuttleDepartureDate')}</li>
+                          <li>• <strong>31 mars 2026</strong> : navettes arrivées uniquement</li>
+                          <li>• <strong>12 avril 2026</strong> : navettes départs uniquement</li>
                         </ul>
                         <p className="text-blue-600 mt-2 text-xs">
-                          {t('shuttleTimingInfo')}
+                          Les horaires de prise en charge seront communiqués ultérieurement en fonction des vols.
                         </p>
                       </div>
                     </div>
@@ -975,7 +954,7 @@ export default function InscriptionFormContent() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-3">
-                      {t('shuttlesWanted')} <span className="text-[#C9A227]">*</span>
+                      Navettes souhaitées <span className="text-[#C9A227]">*</span>
                     </label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {MONDAY_LABELS.navetteChoix.map((option) => (
@@ -983,21 +962,26 @@ export default function InscriptionFormContent() {
                           key={option.value}
                           type="button"
                           onClick={() => {
-                            // Réinitialiser les champs navette selon le choix
-                            const updates: Partial<FormData> = { navetteChoix: option.value };
-
-                            // Si "Pas de besoin" ou changement qui ne nécessite plus l'arrivée
-                            if (option.value === '3' || option.value === '1') {
-                              updates.heureArrivee = '';
-                              updates.volArrivee = '';
+                            // Réinitialiser les champs de navette quand on change de choix
+                            const newData: Partial<FormData> = { navetteChoix: option.value };
+                            // Si "Pas de besoin" (value 3), on efface tous les champs
+                            if (option.value === '3') {
+                              newData.heureArrivee = '';
+                              newData.volArrivee = '';
+                              newData.heureDepart = '';
+                              newData.volDepart = '';
                             }
-                            // Si "Pas de besoin" ou changement qui ne nécessite plus le départ
-                            if (option.value === '3' || option.value === '0') {
-                              updates.heureDepart = '';
-                              updates.volDepart = '';
+                            // Si navette arrivée uniquement, on efface les champs départ
+                            if (option.value === '0') {
+                              newData.heureDepart = '';
+                              newData.volDepart = '';
                             }
-
-                            setFormData({ ...formData, ...updates });
+                            // Si navette départ uniquement, on efface les champs arrivée
+                            if (option.value === '1') {
+                              newData.heureArrivee = '';
+                              newData.volArrivee = '';
+                            }
+                            setFormData({ ...formData, ...newData });
                           }}
                           className={cn(
                             "p-4 rounded-2xl border-2 text-left transition-all duration-200",
@@ -1025,17 +1009,17 @@ export default function InscriptionFormContent() {
                     <div className="bg-gray-50 rounded-2xl p-6 space-y-4 animate-fadeIn">
                       <h3 className="font-semibold text-gray-800 flex items-center gap-2">
                         <Plane className="w-4 h-4 text-[#C9A227]" />
-                        {t('arrivalInfo')}
+                        Informations arrivée
                       </h3>
                       <div className="flex items-center gap-2 mb-4 p-3 bg-[#C9A227]/10 rounded-xl">
                         <Calendar className="w-4 h-4 text-[#C9A227]" />
-                        <span className="font-medium text-gray-700">{t('date')} : <span className="text-[#C9A227]">{t('march31')}</span></span>
+                        <span className="font-medium text-gray-700">Date : <span className="text-[#C9A227]">31 Mars 2026</span></span>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4 text-gray-400" />
                           <StyledInput
-                            label={t('arrivalTime')}
+                            label="Heure d'arrivée"
                             required
                             type="time"
                             value={formData.heureArrivee}
@@ -1044,11 +1028,11 @@ export default function InscriptionFormContent() {
                           />
                         </div>
                         <StyledInput
-                          label={t('flightNumber')}
+                          label="Numéro de vol"
                           required
                           value={formData.volArrivee}
                           onChange={(e) => setFormData({ ...formData, volArrivee: e.target.value })}
-                          placeholder={t('flightPlaceholder')}
+                          placeholder="Ex: AF1234"
                         />
                       </div>
                     </div>
@@ -1059,17 +1043,17 @@ export default function InscriptionFormContent() {
                     <div className="bg-gray-50 rounded-2xl p-6 space-y-4 animate-fadeIn">
                       <h3 className="font-semibold text-gray-800 flex items-center gap-2">
                         <Plane className="w-4 h-4 text-[#C9A227] rotate-45" />
-                        {t('departureInfo')}
+                        Informations départ
                       </h3>
                       <div className="flex items-center gap-2 mb-4 p-3 bg-[#C9A227]/10 rounded-xl">
                         <Calendar className="w-4 h-4 text-[#C9A227]" />
-                        <span className="font-medium text-gray-700">{t('date')} : <span className="text-[#C9A227]">{t('april12')}</span></span>
+                        <span className="font-medium text-gray-700">Date : <span className="text-[#C9A227]">12 Avril 2026</span></span>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4 text-gray-400" />
                           <StyledInput
-                            label={t('departureTime')}
+                            label="Heure de départ"
                             required
                             type="time"
                             value={formData.heureDepart}
@@ -1078,11 +1062,11 @@ export default function InscriptionFormContent() {
                           />
                         </div>
                         <StyledInput
-                          label={t('flightNumber')}
+                          label="Numéro de vol"
                           required
                           value={formData.volDepart}
                           onChange={(e) => setFormData({ ...formData, volDepart: e.target.value })}
-                          placeholder={t('flightPlaceholder')}
+                          placeholder="Ex: AF5678"
                         />
                       </div>
                     </div>
@@ -1095,15 +1079,15 @@ export default function InscriptionFormContent() {
                 <div className="space-y-6 animate-fadeIn">
                   <div className="mb-8">
                     <h2 className="text-2xl md:text-3xl text-gray-800" style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}>
-                      {t('travelerInfo')}
+                      Informations voyageurs
                     </h2>
-                    <p className="text-gray-500 mt-2">{t('travelerInfoDesc')}</p>
+                    <p className="text-gray-500 mt-2">Identité de chaque participant</p>
                   </div>
 
                   {/* Nombre de personnes */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-3">
-                      {t('numberOfPeople')} <span className="text-[#C9A227]">*</span>
+                      Nombre de personnes <span className="text-[#C9A227]">*</span>
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {['1', '2', '3', '4', '5', '6', '7', '8'].map((num) => (
@@ -1127,7 +1111,7 @@ export default function InscriptionFormContent() {
                   {/* Info importante */}
                   <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                     <p className="text-sm text-amber-800">
-                      <strong>Important :</strong> {t('passportImportant')}
+                      <strong>Important :</strong> Pour chaque personne, téléchargez son passeport (photo lisible et de bonne qualité).
                     </p>
                   </div>
 
@@ -1139,18 +1123,18 @@ export default function InscriptionFormContent() {
                           <div className="w-6 h-6 rounded-full bg-[#C9A227]/20 text-[#C9A227] flex items-center justify-center text-sm font-bold">
                             {index + 1}
                           </div>
-                          {t('person')} {index + 1}
+                          Personne {index + 1}
                         </h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                           <StyledInput
-                            label={t('fullName')}
+                            label="Nom + Prénom"
                             required
                             value={participant.nom}
                             onChange={(e) => updateParticipant(index, 'nom', e.target.value)}
-                            placeholder={t('nameAsOnPassport')}
+                            placeholder="Tel qu'il apparaît sur le passeport"
                           />
                           <StyledInput
-                            label={t('dateOfBirth')}
+                            label="Date de naissance"
                             required
                             type="date"
                             value={participant.dateNaissance}
@@ -1161,7 +1145,7 @@ export default function InscriptionFormContent() {
                         {/* Upload passeport pour ce participant */}
                         <div>
                           <label className="block text-sm font-medium text-gray-600 mb-2">
-                            {t('passport')}
+                            Passeport
                           </label>
 
                           {participant.passportUrl ? (
@@ -1169,7 +1153,7 @@ export default function InscriptionFormContent() {
                             <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-4 py-3">
                               <div className="flex items-center gap-3">
                                 <FileIcon className="w-5 h-5 text-green-600" />
-                                <span className="text-sm text-green-800 font-medium">{participant.passportFileName || t('passport')}</span>
+                                <span className="text-sm text-green-800 font-medium">{participant.passportFileName || 'Passeport'}</span>
                               </div>
                               <button
                                 type="button"
@@ -1197,12 +1181,12 @@ export default function InscriptionFormContent() {
                               {uploadingParticipantIndex === index ? (
                                 <>
                                   <Loader2 className="w-5 h-5 text-[#C9A227] animate-spin" />
-                                  <span className="text-sm text-gray-500">{t('uploadInProgress')}</span>
+                                  <span className="text-sm text-gray-500">Upload en cours...</span>
                                 </>
                               ) : (
                                 <>
                                   <Upload className="w-5 h-5 text-gray-400" />
-                                  <span className="text-sm text-gray-600">{t('clickToAddPassport')}</span>
+                                  <span className="text-sm text-gray-600">Cliquez pour ajouter le passeport</span>
                                   <span className="text-xs text-gray-400">(PDF, JPG, PNG)</span>
                                 </>
                               )}
@@ -1220,30 +1204,30 @@ export default function InscriptionFormContent() {
                 <div className="space-y-6 animate-fadeIn">
                   <div className="mb-8">
                     <h2 className="text-2xl md:text-3xl text-gray-800" style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}>
-                      {t('foodPreferences')}
+                      Préférences alimentaires
                     </h2>
-                    <p className="text-gray-500 mt-2">{t('foodPreferencesDesc')}</p>
+                    <p className="text-gray-500 mt-2">Aidez-nous à personnaliser votre expérience culinaire</p>
                   </div>
 
                   {/* Question principale */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-3">
-                      {t('answerQuestionnaire')} <span className="text-[#C9A227]">*</span>
+                      Souhaitez-vous répondre au questionnaire ? <span className="text-[#C9A227]">*</span>
                     </label>
                     <div className="flex gap-3">
-                      {[{ key: 'OUI', label: t('yes') }, { key: 'NON', label: t('no') }].map((option) => (
+                      {['OUI', 'NON'].map((option) => (
                         <button
-                          key={option.key}
+                          key={option}
                           type="button"
-                          onClick={() => setFormData({ ...formData, questionnaireOuiNon: option.key })}
+                          onClick={() => setFormData({ ...formData, questionnaireOuiNon: option })}
                           className={cn(
                             "flex-1 py-4 rounded-xl font-semibold transition-all duration-200",
-                            formData.questionnaireOuiNon === option.key
+                            formData.questionnaireOuiNon === option
                               ? "bg-gradient-to-br from-[#C9A227] to-[#D4AF37] text-white shadow-lg"
                               : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                           )}
                         >
-                          {option.label}
+                          {option}
                         </button>
                       ))}
                     </div>
@@ -1253,7 +1237,7 @@ export default function InscriptionFormContent() {
                     <div className="space-y-8 animate-fadeIn">
                       {/* Préférences alimentaires */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-3">{t('foodPreferencesLabel')}</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-3">Préférences alimentaires</label>
                         <div className="flex flex-wrap gap-2">
                           {MONDAY_LABELS.preferenceAlimentaire.map((item) => (
                             <button
@@ -1275,7 +1259,7 @@ export default function InscriptionFormContent() {
 
                       {formData.preferenceAlimentaire.includes(5) && (
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">{t('otherSpecify')}</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Autre, précisez :</label>
                           <textarea
                             value={formData.autrePreciser}
                             onChange={(e) => setFormData({ ...formData, autrePreciser: e.target.value })}
@@ -1288,13 +1272,13 @@ export default function InscriptionFormContent() {
                       {/* Salades */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          {t('yourFavoriteSalads')}
+                          Vos 5 salades préférées
                         </label>
                         <p className={cn(
                           "text-sm mb-3 font-medium",
                           formData.salades.length >= 5 ? "text-green-600" : "text-gray-400"
                         )}>
-                          {formData.salades.length}/5 {t('selected')} {formData.salades.length >= 5 && "✓"}
+                          {formData.salades.length}/5 sélectionnées {formData.salades.length >= 5 && "✓"}
                         </p>
                         <div className="flex flex-wrap gap-2 max-h-52 overflow-y-auto p-1">
                           {MONDAY_LABELS.salades.map((item) => (
@@ -1320,7 +1304,7 @@ export default function InscriptionFormContent() {
 
                       {/* Alcools */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-3">{t('alcoholPreferences')}</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-3">Préférences alcool</label>
                         <div className="flex flex-wrap gap-2">
                           {MONDAY_LABELS.preferenceAlcool.map((item) => (
                             <button
@@ -1344,22 +1328,22 @@ export default function InscriptionFormContent() {
                       {(formData.preferenceAlcool.includes(0) || formData.preferenceAlcool.includes(1) || formData.preferenceAlcool.includes(2)) && (
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-3">
-                            {t('wineListQuestion')}
+                            Souhaitez-vous recevoir notre carte des vins payante ?
                           </label>
                           <div className="flex gap-3">
-                            {[{ key: 'OUI', label: t('yes') }, { key: 'NON', label: t('no') }].map((option) => (
+                            {['OUI', 'NON'].map((option) => (
                               <button
-                                key={option.key}
+                                key={option}
                                 type="button"
-                                onClick={() => setFormData({ ...formData, carteVins: option.key })}
+                                onClick={() => setFormData({ ...formData, carteVins: option })}
                                 className={cn(
                                   "px-8 py-3 rounded-xl font-medium transition-all duration-200",
-                                  formData.carteVins === option.key
+                                  formData.carteVins === option
                                     ? "bg-[#C9A227] text-white shadow-md"
                                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                                 )}
                               >
-                                {option.label}
+                                {option}
                               </button>
                             ))}
                           </div>
@@ -1375,34 +1359,34 @@ export default function InscriptionFormContent() {
                 <div className="space-y-6 animate-fadeIn">
                   <div className="mb-8">
                     <h2 className="text-2xl md:text-3xl text-gray-800" style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}>
-                      {t('additionalInfo')}
+                      Informations complémentaires
                     </h2>
-                    <p className="text-gray-500 mt-2">{t('additionalInfoDesc')}</p>
+                    <p className="text-gray-500 mt-2">Dernières précisions pour votre séjour</p>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {t('familiesTable')}
+                      Familles avec lesquelles vous souhaitez vous asseoir
                     </label>
                     <textarea
                       value={formData.famillesTable}
                       onChange={(e) => setFormData({ ...formData, famillesTable: e.target.value })}
                       className="w-full px-4 py-3 bg-white/80 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227] transition-all"
                       rows={3}
-                      placeholder={t('familiesTablePlaceholder')}
+                      placeholder="Nom complet, prénom, téléphone si possible"
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {t('otherInfo')}
+                      Autres informations
                     </label>
                     <textarea
                       value={formData.infosComplementaires}
                       onChange={(e) => setFormData({ ...formData, infosComplementaires: e.target.value })}
                       className="w-full px-4 py-3 bg-white/80 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C9A227]/30 focus:border-[#C9A227] transition-all"
                       rows={4}
-                      placeholder={t('otherInfoPlaceholder')}
+                      placeholder="Demandes particulières, célébrations, contraintes..."
                     />
                   </div>
                 </div>
@@ -1413,33 +1397,33 @@ export default function InscriptionFormContent() {
                 <div className="space-y-6 animate-fadeIn">
                   <div className="mb-8">
                     <h2 className="text-2xl md:text-3xl text-gray-800" style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 600 }}>
-                      {t('registrationSummary')}
+                      Récapitulatif de votre inscription
                     </h2>
-                    <p className="text-gray-500 mt-2">{t('summaryDesc')}</p>
+                    <p className="text-gray-500 mt-2">Vérifiez vos informations avant d'envoyer</p>
                   </div>
 
                   {/* Contact */}
                   <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
                     <h4 className="text-sm font-semibold text-[#C9A227] uppercase tracking-wide mb-4 flex items-center gap-2">
                       <User className="w-4 h-4" />
-                      {t('contact')}
+                      Contact
                     </h4>
                     <div className="space-y-3">
                       <div className="flex justify-between items-center py-2 border-b border-gray-50">
-                        <span className="text-gray-500">{t('fullNameLabel')}</span>
+                        <span className="text-gray-500">Nom complet</span>
                         <span className="font-medium text-gray-800">{formData.nomPrenom}</span>
                       </div>
                       <div className="flex justify-between items-center py-2 border-b border-gray-50">
-                        <span className="text-gray-500">{t('email')}</span>
+                        <span className="text-gray-500">Email</span>
                         <span className="font-medium text-gray-800">{formData.email}</span>
                       </div>
                       <div className="flex justify-between items-center py-2 border-b border-gray-50">
-                        <span className="text-gray-500">{t('phone')}</span>
+                        <span className="text-gray-500">Téléphone</span>
                         <span className="font-medium text-gray-800">{formData.telephone}</span>
                       </div>
                       {formData.numDevis && (
                         <div className="flex justify-between items-center py-2">
-                          <span className="text-gray-500">{t('quoteNumberLabel')}</span>
+                          <span className="text-gray-500">N° Devis</span>
                           <span className="font-medium text-gray-800">{formData.numDevis}</span>
                         </div>
                       )}
@@ -1450,47 +1434,32 @@ export default function InscriptionFormContent() {
                   <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
                     <h4 className="text-sm font-semibold text-[#C9A227] uppercase tracking-wide mb-4 flex items-center gap-2">
                       <Users className="w-4 h-4" />
-                      {t('familyComposition')}
+                      Composition de la famille
                     </h4>
                     <div className="flex flex-wrap gap-3">
                       <span className="px-4 py-2 bg-[#C9A227]/10 rounded-xl text-sm font-semibold text-gray-700">
-                        {formData.nbAdultes} {formData.nbAdultes > 1 ? t('adultsPlural') : t('adult')}
+                        {formData.nbAdultes} adulte{formData.nbAdultes > 1 ? 's' : ''}
                       </span>
                       {formData.nbEnfants7a11 > 0 && (
                         <span className="px-4 py-2 bg-blue-50 rounded-xl text-sm font-semibold text-gray-700">
-                          {formData.nbEnfants7a11} {formData.nbEnfants7a11 > 1 ? t('childrenPlural') : t('child')} (7-11)
+                          {formData.nbEnfants7a11} enfant{formData.nbEnfants7a11 > 1 ? 's' : ''} (7-11 ans)
                         </span>
                       )}
                       {formData.nbEnfants4a6 > 0 && (
                         <span className="px-4 py-2 bg-green-50 rounded-xl text-sm font-semibold text-gray-700">
-                          {formData.nbEnfants4a6} {formData.nbEnfants4a6 > 1 ? t('childrenPlural') : t('child')} (4-6)
+                          {formData.nbEnfants4a6} enfant{formData.nbEnfants4a6 > 1 ? 's' : ''} (4-6 ans)
                         </span>
                       )}
                       {formData.nbEnfants3ans > 0 && (
                         <span className="px-4 py-2 bg-purple-50 rounded-xl text-sm font-semibold text-gray-700">
-                          {formData.nbEnfants3ans} {formData.nbEnfants3ans > 1 ? t('childrenPlural') : t('child')} (3)
+                          {formData.nbEnfants3ans} enfant{formData.nbEnfants3ans > 1 ? 's' : ''} (-3 ans)
                         </span>
                       )}
                       {formData.nbBebe > 0 && (
                         <span className="px-4 py-2 bg-pink-50 rounded-xl text-sm font-semibold text-gray-700">
-                          {formData.nbBebe} {formData.nbBebe > 1 ? t('babiesPlural') : t('baby')}
+                          {formData.nbBebe} bébé{formData.nbBebe > 1 ? 's' : ''}
                         </span>
                       )}
-                    </div>
-                    {/* Dates de séjour */}
-                    <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-500">{t('stayArrivalDate')}</span>
-                        <span className="font-medium text-gray-800">
-                          {new Date(formData.dateSejourArrivee).toLocaleDateString(lang === 'he' ? 'he-IL' : lang === 'es' ? 'es-ES' : lang === 'en' ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-500">{t('stayDepartureDate')}</span>
-                        <span className="font-medium text-gray-800">
-                          {new Date(formData.dateSejourDepart).toLocaleDateString(lang === 'he' ? 'he-IL' : lang === 'es' ? 'es-ES' : lang === 'en' ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
-                        </span>
-                      </div>
                     </div>
                   </div>
 
@@ -1498,10 +1467,10 @@ export default function InscriptionFormContent() {
                   <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
                     <h4 className="text-sm font-semibold text-[#C9A227] uppercase tracking-wide mb-4 flex items-center gap-2">
                       <Bus className="w-4 h-4" />
-                      {t('airportShuttles')}
+                      Navettes aéroport
                     </h4>
                     {formData.navetteChoix === '3' ? (
-                      <p className="text-gray-500 italic">{t('noShuttleRequested')}</p>
+                      <p className="text-gray-500 italic">Pas de navette demandée</p>
                     ) : (
                       <div className="space-y-3">
                         {(formData.navetteChoix === '0' || formData.navetteChoix === '2') && (
@@ -1510,8 +1479,8 @@ export default function InscriptionFormContent() {
                               <Plane className="w-6 h-6 text-green-600" />
                             </div>
                             <div>
-                              <p className="font-semibold text-gray-800 text-lg">{t('arrival')} - {t('march31')}</p>
-                              <p className="text-gray-600">{t('flight')} <span className="font-medium">{formData.volArrivee}</span> {t('at')} <span className="font-medium">{formData.heureArrivee}</span></p>
+                              <p className="font-semibold text-gray-800 text-lg">Arrivée - 31 Mars 2026</p>
+                              <p className="text-gray-600">Vol <span className="font-medium">{formData.volArrivee}</span> à <span className="font-medium">{formData.heureArrivee}</span></p>
                             </div>
                           </div>
                         )}
@@ -1521,8 +1490,8 @@ export default function InscriptionFormContent() {
                               <Plane className="w-6 h-6 text-orange-600 rotate-45" />
                             </div>
                             <div>
-                              <p className="font-semibold text-gray-800 text-lg">{t('departure')} - {t('april12')}</p>
-                              <p className="text-gray-600">{t('flight')} <span className="font-medium">{formData.volDepart}</span> {t('at')} <span className="font-medium">{formData.heureDepart}</span></p>
+                              <p className="font-semibold text-gray-800 text-lg">Départ - 12 Avril 2026</p>
+                              <p className="text-gray-600">Vol <span className="font-medium">{formData.volDepart}</span> à <span className="font-medium">{formData.heureDepart}</span></p>
                             </div>
                           </div>
                         )}
@@ -1534,7 +1503,7 @@ export default function InscriptionFormContent() {
                   <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
                     <h4 className="text-sm font-semibold text-[#C9A227] uppercase tracking-wide mb-4 flex items-center gap-2">
                       <UserCheck className="w-4 h-4" />
-                      {t('travelers')} ({formData.participants.length})
+                      Voyageurs ({formData.participants.length})
                     </h4>
                     <div className="space-y-2">
                       {formData.participants.map((p, i) => (
@@ -1551,20 +1520,20 @@ export default function InscriptionFormContent() {
                     <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
                       <h4 className="text-sm font-semibold text-[#C9A227] uppercase tracking-wide mb-4 flex items-center gap-2">
                         <FileIcon className="w-4 h-4" />
-                        {t('passports')} ({formData.participants.filter(p => p.passportUrl).length}/{formData.participants.length})
+                        Passeports ({formData.participants.filter(p => p.passportUrl).length}/{formData.participants.length})
                       </h4>
                       <div className="space-y-2">
                         {formData.participants.map((p, i) => (
                           <div key={i} className="flex items-center gap-2">
-                            <span className="text-sm text-gray-600 min-w-[120px]">{p.nom || `${t('person')} ${i + 1}`}:</span>
+                            <span className="text-sm text-gray-600 min-w-[120px]">{p.nom || `Personne ${i + 1}`}:</span>
                             {p.passportUrl ? (
                               <span className="px-3 py-1 bg-green-50 text-green-700 rounded-lg text-sm font-medium flex items-center gap-2">
                                 <Check className="w-4 h-4" />
-                                {p.passportFileName || t('passport')}
+                                {p.passportFileName || 'Passeport'}
                               </span>
                             ) : (
                               <span className="px-3 py-1 bg-red-50 text-red-600 rounded-lg text-sm">
-                                {t('notProvided')}
+                                Non fourni
                               </span>
                             )}
                           </div>
@@ -1576,7 +1545,7 @@ export default function InscriptionFormContent() {
                   {/* Message de confirmation */}
                   <div className="bg-gradient-to-r from-[#C9A227]/10 to-[#D4AF37]/10 rounded-2xl p-6 border border-[#C9A227]/20">
                     <p className="text-center text-gray-700">
-                      {t('confirmationMessage')}
+                      En cliquant sur <span className="font-semibold">"Envoyer l'inscription"</span>, vous confirmez l'exactitude des informations ci-dessus.
                     </p>
                   </div>
                 </div>
@@ -1598,7 +1567,7 @@ export default function InscriptionFormContent() {
                     className="flex items-center gap-2 px-6 py-3 text-gray-600 hover:text-gray-800 font-medium rounded-xl hover:bg-gray-100 transition-all"
                   >
                     <ChevronLeft className="w-5 h-5" />
-                    {t('previousButton')}
+                    Précédent
                   </button>
                 )}
 
@@ -1606,25 +1575,16 @@ export default function InscriptionFormContent() {
                   <button
                     type="button"
                     onClick={nextStep}
-                    disabled={!isStepValid(currentStep) || isNavigating}
+                    disabled={!isStepValid(currentStep)}
                     className={cn(
                       "flex items-center gap-2 px-8 py-3 rounded-xl font-medium transition-all duration-300",
-                      isStepValid(currentStep) && !isNavigating
+                      isStepValid(currentStep)
                         ? "bg-gradient-to-r from-[#C9A227] to-[#D4AF37] text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5"
                         : "bg-gray-200 text-gray-400 cursor-not-allowed"
                     )}
                   >
-                    {isNavigating ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        {t('saving')}
-                      </>
-                    ) : (
-                      <>
-                        {t('nextButton')}
-                        <ChevronRight className="w-5 h-5" />
-                      </>
-                    )}
+                    Suivant
+                    <ChevronRight className="w-5 h-5" />
                   </button>
                 ) : (
                   <button
@@ -1636,12 +1596,12 @@ export default function InscriptionFormContent() {
                     {isSubmitting ? (
                       <>
                         <Loader2 className="w-5 h-5 animate-spin" />
-                        {t('sendingInProgress')}
+                        Envoi en cours...
                       </>
                     ) : (
                       <>
                         <Check className="w-5 h-5" />
-                        {t('sendRegistration')}
+                        Envoyer l'inscription
                       </>
                     )}
                   </button>

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MONDAY_COLUMNS, MONDAY_OPTIONS } from '@/lib/monday-config';
-import { sendConfirmationEmail, type ConfirmationEmailData, type Language } from '@/app/api/inscription/draft/route';
 
 const MONDAY_API_KEY = process.env.MONDAY_API_KEY;
 const BOARD_ID = '5088974391';
@@ -22,10 +21,6 @@ interface FormData {
 
   // Référence
   numDevis?: string;
-
-  // Dates de séjour (différent des navettes)
-  dateSejourArrivee?: string;
-  dateSejourDepart?: string;
 
   // Navettes
   navetteChoix: string;
@@ -61,9 +56,6 @@ interface FormData {
   // Monday item existant (si inscription reprise)
   mondayItemId?: string;
   dossierCode?: string;
-
-  // Langue pour les emails
-  language?: 'fr' | 'en' | 'he' | 'es';
 }
 
 async function mondayRequest(query: string) {
@@ -181,14 +173,6 @@ export async function POST(request: NextRequest) {
     // N° Devis
     if (data.numDevis) columnValues[MONDAY_COLUMNS.numDevis] = data.numDevis;
 
-    // Dates de séjour (différent des navettes)
-    if (data.dateSejourArrivee) {
-      columnValues[MONDAY_COLUMNS.dateSejourArrivee] = { date: data.dateSejourArrivee };
-    }
-    if (data.dateSejourDepart) {
-      columnValues[MONDAY_COLUMNS.dateSejourDepart] = { date: data.dateSejourDepart };
-    }
-
     // Nombre de personnes total (status)
     if (data.nbPersonnesTotal) {
       const nbPersonnesIndex = MONDAY_OPTIONS.nbPersonnes[data.nbPersonnesTotal as keyof typeof MONDAY_OPTIONS.nbPersonnes];
@@ -202,32 +186,26 @@ export async function POST(request: NextRequest) {
       columnValues[MONDAY_COLUMNS.navetteChoix] = { index: parseInt(data.navetteChoix) };
     }
 
-    // Dates et infos navette arrivée (seulement si navette arrivée choisie: '0' ou '2')
-    const needsArrival = data.navetteChoix === '0' || data.navetteChoix === '2';
-    if (needsArrival) {
-      if (data.dateArrivee) {
-        columnValues[MONDAY_COLUMNS.dateArrivee] = { date: data.dateArrivee };
-      }
-      if (data.heureArrivee) {
-        columnValues[MONDAY_COLUMNS.heureArrivee] = data.heureArrivee;
-      }
-      if (data.volArrivee) {
-        columnValues[MONDAY_COLUMNS.volArrivee] = data.volArrivee;
-      }
+    // Dates et infos navette arrivée
+    if (data.dateArrivee) {
+      columnValues[MONDAY_COLUMNS.dateArrivee] = { date: data.dateArrivee };
+    }
+    if (data.heureArrivee) {
+      columnValues[MONDAY_COLUMNS.heureArrivee] = data.heureArrivee;
+    }
+    if (data.volArrivee) {
+      columnValues[MONDAY_COLUMNS.volArrivee] = data.volArrivee;
     }
 
-    // Dates et infos navette retour (seulement si navette départ choisie: '1' ou '2')
-    const needsDeparture = data.navetteChoix === '1' || data.navetteChoix === '2';
-    if (needsDeparture) {
-      if (data.dateRetour) {
-        columnValues[MONDAY_COLUMNS.dateRetour] = { date: data.dateRetour };
-      }
-      if (data.heureDepart) {
-        columnValues[MONDAY_COLUMNS.heureDepart] = data.heureDepart;
-      }
-      if (data.volDepart) {
-        columnValues[MONDAY_COLUMNS.volDepart] = data.volDepart;
-      }
+    // Dates et infos navette retour
+    if (data.dateRetour) {
+      columnValues[MONDAY_COLUMNS.dateRetour] = { date: data.dateRetour };
+    }
+    if (data.heureDepart) {
+      columnValues[MONDAY_COLUMNS.heureDepart] = data.heureDepart;
+    }
+    if (data.volDepart) {
+      columnValues[MONDAY_COLUMNS.volDepart] = data.volDepart;
     }
 
     // Participants (jusqu'à 7)
@@ -374,39 +352,6 @@ export async function POST(request: NextRequest) {
         uploadResults.push({ url, success: !!uploadResult });
       }
       console.log('Passport upload results:', uploadResults);
-    }
-
-    // Envoyer l'email de confirmation au client
-    if (data.email && process.env.RESEND_API_KEY) {
-      try {
-        const nbEnfantsTotal = (data.nbEnfants3ans || 0) + (data.nbEnfants4a6 || 0) + (data.nbEnfants7a11 || 0);
-
-        const confirmationData: ConfirmationEmailData = {
-          nomPrenom: data.nomPrenom,
-          email: data.email,
-          telephone: data.telephone,
-          dossierCode: data.dossierCode || '',
-          nbAdultes: data.nbAdultes,
-          nbEnfants: nbEnfantsTotal,
-          nbBebes: data.nbBebe,
-          navetteArrivee: data.dateArrivee ? {
-            date: data.dateArrivee,
-            heure: data.heureArrivee,
-            vol: data.volArrivee,
-          } : undefined,
-          navetteRetour: data.dateRetour ? {
-            date: data.dateRetour,
-            heure: data.heureDepart,
-            vol: data.volDepart,
-          } : undefined,
-        };
-
-        await sendConfirmationEmail(confirmationData, (data.language || 'fr') as Language);
-        console.log('Email de confirmation envoyé à:', data.email);
-      } catch (emailError) {
-        console.error('Erreur envoi email de confirmation:', emailError);
-        // On continue même si l'email échoue - l'inscription est enregistrée
-      }
     }
 
     return NextResponse.json({

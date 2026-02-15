@@ -264,15 +264,16 @@ export function PublicNavigation() {
             </div>
 
             {/* Mobile: Language + Menu Button */}
-            <div className={cn("lg:hidden flex items-center gap-2 z-10", dir === 'rtl' ? 'mr-auto flex-row-reverse' : 'ml-auto')}>
-              {/* Language Selector Mobile - Visible */}
+            <div className={cn("lg:hidden flex items-center gap-3 z-10", dir === 'rtl' ? 'mr-auto flex-row-reverse' : 'ml-auto')}>
+              {/* Language Selector Mobile - Plus visible */}
               <div className="relative">
                 <button
                   onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-                  className="flex items-center gap-1 px-2 py-2 text-gray-700 hover:text-[var(--gold)] transition-colors rounded-lg"
+                  className="flex items-center gap-2 px-3 py-2 bg-[var(--gold)]/10 border border-[var(--gold)]/30 text-[var(--gold)] hover:bg-[var(--gold)]/20 transition-colors rounded-xl"
                 >
-                  <span className="text-lg">{currentLang?.flag}</span>
-                  <ChevronDown className={cn('w-3 h-3 transition-transform', langDropdownOpen && 'rotate-180')} />
+                  <Globe className="w-4 h-4" />
+                  <span className="text-xl">{currentLang?.flag}</span>
+                  <ChevronDown className={cn('w-4 h-4 transition-transform', langDropdownOpen && 'rotate-180')} />
                 </button>
 
                 {langDropdownOpen && (
